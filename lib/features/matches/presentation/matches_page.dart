@@ -1,7 +1,260 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../../../core/supabase/supabase_service.dart';
 
-class MatchesPage extends StatelessWidget {
+class MatchesPage extends StatefulWidget {
   const MatchesPage({super.key});
+
+  @override
+  State<MatchesPage> createState() => _MatchesPageState();
+}
+
+class _MatchesPageState extends State<MatchesPage> {
+  final SupabaseService supabaseService = SupabaseService();
+
+  List<Map<String, dynamic>> matches = [];
+  List<Map<String, dynamic>> teams = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
+  Future<void> loadData() async {
+    setState(() => isLoading = true);
+
+    try {
+      final teamsData = await supabaseService.getTeams();
+      final matchesData = await supabaseService.getMatches();
+
+      if (!mounted) return;
+      setState(() {
+        teams = teamsData;
+        matches = matchesData;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error cargando datos: $e')),
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> openCreateMatchDialog() async {
+    if (teams.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Primero crea al menos un equipo en la base de datos.'),
+        ),
+      );
+      return;
+    }
+
+    final opponentController = TextEditingController();
+    DateTime selectedDate = DateTime.now();
+    TimeOfDay selectedTime = TimeOfDay.now();
+    int selectedTeamId = teams.first['id'] as int;
+    String selectedSourceType = 'upload';
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setLocalState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF1A1A1A),
+              title: const Text(
+                'Nuevo partido',
+                style: TextStyle(color: Colors.white),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DropdownButtonFormField<int>(
+                      value: selectedTeamId,
+                      dropdownColor: const Color(0xFF1A1A1A),
+                      decoration: _inputDecoration('Equipo'),
+                      items: teams.map((team) {
+                        return DropdownMenuItem<int>(
+                          value: team['id'] as int,
+                          child: Text(
+                            team['name'] ?? 'Sin nombre',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setLocalState(() => selectedTeamId = value);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: opponentController,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: _inputDecoration('Rival'),
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      value: selectedSourceType,
+                      dropdownColor: const Color(0xFF1A1A1A),
+                      decoration: _inputDecoration('Tipo de fuente'),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'upload',
+                          child: Text('Upload', style: TextStyle(color: Colors.white)),
+                        ),
+                        DropdownMenuItem(
+                          value: 'youtube',
+                          child: Text('YouTube', style: TextStyle(color: Colors.white)),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setLocalState(() => selectedSourceType = value);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        'Fecha: ${DateFormat('dd/MM/yyyy').format(selectedDate)}',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      trailing: const Icon(Icons.calendar_today, color: Color(0xFFE84C1E)),
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: selectedDate,
+                          firstDate: DateTime(2024),
+                          lastDate: DateTime(2030),
+                        );
+                        if (picked != null) {
+                          setLocalState(() => selectedDate = picked);
+                        }
+                      },
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        'Hora: ${selectedTime.format(context)}',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      trailing: const Icon(Icons.access_time, color: Color(0xFFE84C1E)),
+                      onTap: () async {
+                        final picked = await showTimePicker(
+                          context: context,
+                          initialTime: selectedTime,
+                        );
+                        if (picked != null) {
+                          setLocalState(() => selectedTime = picked);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancelar'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE84C1E),
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () async {
+                    if (opponentController.text.trim().isEmpty) return;
+
+                    final matchDateTime = DateTime(
+                      selectedDate.year,
+                      selectedDate.month,
+                      selectedDate.day,
+                      selectedTime.hour,
+                      selectedTime.minute,
+                    );
+
+                    await supabaseService.createMatch(
+                      teamId: selectedTeamId,
+                      opponent: opponentController.text.trim(),
+                      matchDate: matchDateTime,
+                      sourceType: selectedSourceType,
+                      videoUrl: null,
+                      latitude: null,
+                      longitude: null,
+                    );
+
+                    if (!context.mounted) return;
+                    Navigator.pop(context);
+                    await loadData();
+
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Partido guardado correctamente')),
+                    );
+                  },
+                  child: const Text('Guardar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Colors.white70),
+      enabledBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Color(0xFF333333)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Color(0xFFE84C1E)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+    );
+  }
+
+  String formatMatchDate(String value) {
+    final date = DateTime.parse(value).toLocal();
+    return DateFormat('dd MMM yyyy • HH:mm').format(date);
+  }
+
+  Color statusColor(String? status) {
+    switch (status) {
+      case 'done':
+        return const Color(0xFF2ECC71);
+      case 'processing':
+        return const Color(0xFFFFAA00);
+      case 'uploaded':
+      default:
+        return const Color(0xFF4A90D9);
+    }
+  }
+
+  String statusLabel(String? status) {
+    switch (status) {
+      case 'done':
+        return 'Analizado';
+      case 'processing':
+        return 'Procesando';
+      case 'uploaded':
+      default:
+        return 'Cargado';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +274,12 @@ class MatchesPage extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
+            icon: const Icon(Icons.refresh, color: Color(0xFFE84C1E)),
+            onPressed: loadData,
+          ),
+          IconButton(
             icon: const Icon(Icons.add, color: Color(0xFFE84C1E)),
-            onPressed: () {},
+            onPressed: openCreateMatchDialog,
           ),
         ],
         bottom: PreferredSize(
@@ -30,64 +287,42 @@ class MatchesPage extends StatelessWidget {
           child: Container(height: 3, color: const Color(0xFFE84C1E)),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          const SizedBox(height: 4),
-          const _SectionLabel('PRÓXIMOS PARTIDOS'),
-          const SizedBox(height: 12),
-          _MatchCard(
-            rival: 'FC Barcelona B',
-            date: '18 Mar 2026',
-            time: '19:00',
-            location: 'Estadio Municipal',
-            status: MatchStatus.upcoming,
-          ),
-          _MatchCard(
-            rival: 'Deportivo Alavés',
-            date: '25 Mar 2026',
-            time: '17:30',
-            location: 'Campo Norte',
-            status: MatchStatus.upcoming,
-          ),
-          const SizedBox(height: 24),
-          const _SectionLabel('PARTIDOS RECIENTES'),
-          const SizedBox(height: 12),
-          _MatchCard(
-            rival: 'Real Sociedad B',
-            date: '10 Mar 2026',
-            time: '20:00',
-            location: 'Estadio Municipal',
-            status: MatchStatus.won,
-            score: '2 - 1',
-          ),
-          _MatchCard(
-            rival: 'Athletic Club B',
-            date: '3 Mar 2026',
-            time: '18:00',
-            location: 'Campo Sur',
-            status: MatchStatus.lost,
-            score: '0 - 1',
-          ),
-          _MatchCard(
-            rival: 'Osasuna B',
-            date: '24 Feb 2026',
-            time: '19:30',
-            location: 'Estadio Municipal',
-            status: MatchStatus.draw,
-            score: '1 - 1',
-          ),
-        ],
-      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : matches.isEmpty
+              ? const Center(
+                  child: Text(
+                    'No hay partidos guardados todavía',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                )
+              : ListView(
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    const _SectionLabel('PARTIDOS REGISTRADOS'),
+                    const SizedBox(height: 12),
+                    ...matches.map((match) {
+                      final team = match['teams'];
+                      final teamName = team is Map ? (team['name'] ?? 'Sin equipo') : 'Sin equipo';
+
+                      return _MatchCard(
+                        rival: match['opponent'] ?? 'Sin rival',
+                        date: formatMatchDate(match['match_date']),
+                        time: teamName,
+                        location: (match['source_type'] ?? 'Sin fuente').toString(),
+                        statusText: statusLabel(match['status']),
+                        statusColor: statusColor(match['status']),
+                      );
+                    }),
+                  ],
+                ),
     );
   }
 }
 
-enum MatchStatus { upcoming, won, lost, draw }
-
 class _SectionLabel extends StatelessWidget {
   final String text;
-  const _SectionLabel(this.text);
+  const _SectionLabel(this.text, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -108,43 +343,17 @@ class _MatchCard extends StatelessWidget {
   final String date;
   final String time;
   final String location;
-  final MatchStatus status;
-  final String? score;
+  final String statusText;
+  final Color statusColor;
 
   const _MatchCard({
     required this.rival,
     required this.date,
     required this.time,
     required this.location,
-    required this.status,
-    this.score,
+    required this.statusText,
+    required this.statusColor,
   });
-
-  Color get _statusColor {
-    switch (status) {
-      case MatchStatus.won:
-        return const Color(0xFF2ECC71);
-      case MatchStatus.lost:
-        return const Color(0xFFE84C1E);
-      case MatchStatus.draw:
-        return const Color(0xFFFFAA00);
-      case MatchStatus.upcoming:
-        return const Color(0xFF4A90D9);
-    }
-  }
-
-  String get _statusLabel {
-    switch (status) {
-      case MatchStatus.won:
-        return 'Victoria';
-      case MatchStatus.lost:
-        return 'Derrota';
-      case MatchStatus.draw:
-        return 'Empate';
-      case MatchStatus.upcoming:
-        return 'Próximo';
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -176,59 +385,66 @@ class _MatchCard extends StatelessWidget {
                     const Icon(Icons.calendar_today,
                         size: 12, color: Color(0xFF888888)),
                     const SizedBox(width: 4),
-                    Text(
-                      '$date · $time',
-                      style: const TextStyle(
-                          color: Color(0xFF888888), fontSize: 12),
+                    Expanded(
+                      child: Text(
+                        date,
+                        style: const TextStyle(
+                          color: Color(0xFF888888),
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 3),
                 Row(
                   children: [
-                    const Icon(Icons.location_on_outlined,
+                    const Icon(Icons.groups_2_outlined,
+                        size: 12, color: Color(0xFF888888)),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        time,
+                        style: const TextStyle(
+                          color: Color(0xFF888888),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Row(
+                  children: [
+                    const Icon(Icons.video_collection_outlined,
                         size: 12, color: Color(0xFF888888)),
                     const SizedBox(width: 4),
                     Text(
                       location,
                       style: const TextStyle(
-                          color: Color(0xFF888888), fontSize: 12),
+                        color: Color(0xFF888888),
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              if (score != null)
-                Text(
-                  score!,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              const SizedBox(height: 4),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _statusColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  _statusLabel,
-                  style: TextStyle(
-                    color: _statusColor,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: statusColor.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              statusText,
+              style: TextStyle(
+                color: statusColor,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
               ),
-            ],
+            ),
           ),
         ],
       ),

@@ -14,3 +14,7 @@ build/
 # Flutter plugins
 .flutter-plugins
 .flutter-plugins-dependencies
+
+.env
+.env.*
+!.env.example
