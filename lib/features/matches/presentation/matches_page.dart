@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/supabase/supabase_service.dart';
+import 'match_detail_page.dart';
 
 class MatchesPage extends StatefulWidget {
   const MatchesPage({super.key});
@@ -30,18 +31,21 @@ class _MatchesPageState extends State<MatchesPage> {
       final matchesData = await supabaseService.getMatches();
 
       if (!mounted) return;
+
       setState(() {
         teams = teamsData;
         matches = matchesData;
       });
     } catch (e) {
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error cargando datos: $e')),
       );
     } finally {
-      if (!mounted) return;
-      setState(() => isLoading = false);
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -63,9 +67,9 @@ class _MatchesPageState extends State<MatchesPage> {
 
     await showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return StatefulBuilder(
-          builder: (context, setLocalState) {
+          builder: (dialogContext, setLocalState) {
             return AlertDialog(
               backgroundColor: const Color(0xFF1A1A1A),
               title: const Text(
@@ -77,7 +81,7 @@ class _MatchesPageState extends State<MatchesPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     DropdownButtonFormField<int>(
-                      value: selectedTeamId,
+                      initialValue: selectedTeamId,
                       dropdownColor: const Color(0xFF1A1A1A),
                       decoration: _inputDecoration('Equipo'),
                       items: teams.map((team) {
@@ -103,17 +107,30 @@ class _MatchesPageState extends State<MatchesPage> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: selectedSourceType,
+                      initialValue: selectedSourceType,
                       dropdownColor: const Color(0xFF1A1A1A),
-                      decoration: _inputDecoration('Tipo de fuente'),
+                      decoration: _inputDecoration('Tipo de fuente inicial'),
                       items: const [
                         DropdownMenuItem(
                           value: 'upload',
-                          child: Text('Upload', style: TextStyle(color: Colors.white)),
+                          child: Text(
+                            'Upload',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                         DropdownMenuItem(
                           value: 'youtube',
-                          child: Text('YouTube', style: TextStyle(color: Colors.white)),
+                          child: Text(
+                            'YouTube',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: 'external',
+                          child: Text(
+                            'Link externo',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       ],
                       onChanged: (value) {
@@ -129,14 +146,18 @@ class _MatchesPageState extends State<MatchesPage> {
                         'Fecha: ${DateFormat('dd/MM/yyyy').format(selectedDate)}',
                         style: const TextStyle(color: Colors.white),
                       ),
-                      trailing: const Icon(Icons.calendar_today, color: Color(0xFFE84C1E)),
+                      trailing: const Icon(
+                        Icons.calendar_today,
+                        color: Color(0xFFE84C1E),
+                      ),
                       onTap: () async {
                         final picked = await showDatePicker(
-                          context: context,
+                          context: dialogContext,
                           initialDate: selectedDate,
                           firstDate: DateTime(2024),
                           lastDate: DateTime(2030),
                         );
+
                         if (picked != null) {
                           setLocalState(() => selectedDate = picked);
                         }
@@ -145,15 +166,19 @@ class _MatchesPageState extends State<MatchesPage> {
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text(
-                        'Hora: ${selectedTime.format(context)}',
+                        'Hora: ${selectedTime.format(dialogContext)}',
                         style: const TextStyle(color: Colors.white),
                       ),
-                      trailing: const Icon(Icons.access_time, color: Color(0xFFE84C1E)),
+                      trailing: const Icon(
+                        Icons.access_time,
+                        color: Color(0xFFE84C1E),
+                      ),
                       onTap: () async {
                         final picked = await showTimePicker(
-                          context: context,
+                          context: dialogContext,
                           initialTime: selectedTime,
                         );
+
                         if (picked != null) {
                           setLocalState(() => selectedTime = picked);
                         }
@@ -164,7 +189,7 @@ class _MatchesPageState extends State<MatchesPage> {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 ElevatedButton(
@@ -193,13 +218,16 @@ class _MatchesPageState extends State<MatchesPage> {
                       longitude: null,
                     );
 
-                    if (!context.mounted) return;
-                    Navigator.pop(context);
+                    if (!dialogContext.mounted) return;
+                    Navigator.of(dialogContext).pop();
+
                     await loadData();
 
                     if (!mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Partido guardado correctamente')),
+                      const SnackBar(
+                        content: Text('Partido guardado correctamente'),
+                      ),
                     );
                   },
                   child: const Text('Guardar'),
@@ -256,6 +284,24 @@ class _MatchesPageState extends State<MatchesPage> {
     }
   }
 
+  String sourceLabel(String? sourceType) {
+    switch (sourceType) {
+      case 'youtube':
+        return 'YouTube';
+      case 'external':
+        return 'Link externo';
+      case 'upload':
+        return 'Upload';
+      default:
+        return 'Sin fuente';
+    }
+  }
+
+  bool hasVideo(Map<String, dynamic> match) {
+    final videoUrl = match['video_url'];
+    return videoUrl != null && videoUrl.toString().trim().isNotEmpty;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -297,21 +343,36 @@ class _MatchesPageState extends State<MatchesPage> {
                   ),
                 )
               : ListView(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(16),
                   children: [
                     const _SectionLabel('PARTIDOS REGISTRADOS'),
                     const SizedBox(height: 12),
                     ...matches.map((match) {
                       final team = match['teams'];
-                      final teamName = team is Map ? (team['name'] ?? 'Sin equipo') : 'Sin equipo';
+                      final teamName = team is Map
+                          ? (team['name'] ?? 'Sin equipo')
+                          : 'Sin equipo';
 
-                      return _MatchCard(
-                        rival: match['opponent'] ?? 'Sin rival',
-                        date: formatMatchDate(match['match_date']),
-                        time: teamName,
-                        location: (match['source_type'] ?? 'Sin fuente').toString(),
-                        statusText: statusLabel(match['status']),
-                        statusColor: statusColor(match['status']),
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => MatchDetailPage(
+                                matchId: match['id'] as int,
+                              ),
+                            ),
+                          );
+                        },
+                        child: _MatchCard(
+                          rival: match['opponent'] ?? 'Sin rival',
+                          date: formatMatchDate(match['match_date']),
+                          teamName: teamName,
+                          sourceText: sourceLabel(match['source_type']),
+                          statusText: statusLabel(match['status']),
+                          statusColor: statusColor(match['status']),
+                          hasVideo: hasVideo(match),
+                        ),
                       );
                     }),
                   ],
@@ -322,7 +383,8 @@ class _MatchesPageState extends State<MatchesPage> {
 
 class _SectionLabel extends StatelessWidget {
   final String text;
-  const _SectionLabel(this.text, {super.key});
+
+  const _SectionLabel(this.text);
 
   @override
   Widget build(BuildContext context) {
@@ -341,22 +403,27 @@ class _SectionLabel extends StatelessWidget {
 class _MatchCard extends StatelessWidget {
   final String rival;
   final String date;
-  final String time;
-  final String location;
+  final String teamName;
+  final String sourceText;
   final String statusText;
   final Color statusColor;
+  final bool hasVideo;
 
   const _MatchCard({
     required this.rival,
     required this.date,
-    required this.time,
-    required this.location,
+    required this.teamName,
+    required this.sourceText,
     required this.statusText,
     required this.statusColor,
+    required this.hasVideo,
   });
 
   @override
   Widget build(BuildContext context) {
+    final videoColor =
+        hasVideo ? const Color(0xFF2ECC71) : const Color(0xFF888888);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -366,6 +433,7 @@ class _MatchCard extends StatelessWidget {
         border: Border.all(color: const Color(0xFF222222)),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             child: Column(
@@ -375,55 +443,83 @@ class _MatchCard extends StatelessWidget {
                   rival,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 15,
+                    fontSize: 17,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.calendar_today,
-                        size: 12, color: Color(0xFF888888)),
-                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.calendar_today,
+                      size: 13,
+                      color: Color(0xFF888888),
+                    ),
+                    const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         date,
                         style: const TextStyle(
-                          color: Color(0xFF888888),
+                          color: Color(0xFFAAAAAA),
                           fontSize: 12,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(Icons.groups_2_outlined,
-                        size: 12, color: Color(0xFF888888)),
-                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.groups_2_outlined,
+                      size: 13,
+                      color: Color(0xFF888888),
+                    ),
+                    const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        time,
+                        teamName,
                         style: const TextStyle(
-                          color: Color(0xFF888888),
+                          color: Color(0xFFAAAAAA),
                           fontSize: 12,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(Icons.video_collection_outlined,
-                        size: 12, color: Color(0xFF888888)),
-                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.link,
+                      size: 13,
+                      color: Color(0xFF888888),
+                    ),
+                    const SizedBox(width: 6),
                     Text(
-                      location,
+                      sourceText,
                       style: const TextStyle(
-                        color: Color(0xFF888888),
+                        color: Color(0xFFAAAAAA),
                         fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Icon(
+                      hasVideo ? Icons.check_circle : Icons.cancel_outlined,
+                      size: 14,
+                      color: videoColor,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      hasVideo ? 'Video asociado' : 'Sin video asociado',
+                      style: TextStyle(
+                        color: videoColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -431,11 +527,12 @@ class _MatchCard extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(width: 12),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(4),
+              color: statusColor.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(5),
             ),
             child: Text(
               statusText,

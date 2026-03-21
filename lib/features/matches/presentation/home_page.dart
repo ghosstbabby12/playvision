@@ -1,6 +1,8 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+
 import '../../../core/supabase/supabase_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -18,8 +20,15 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> teams = [];
   bool loadingTeams = false;
 
+  @override
+  void initState() {
+    super.initState();
+    loadTeams();
+  }
+
   Future<void> pickVideo() async {
     final XFile? video = await picker.pickVideo(source: ImageSource.gallery);
+
     if (video != null) {
       setState(() {
         videoFile = File(video.path);
@@ -32,18 +41,22 @@ class _HomePageState extends State<HomePage> {
 
     try {
       final data = await supabaseService.getTeams();
+
       if (!mounted) return;
+
       setState(() {
         teams = data;
       });
     } catch (e) {
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error cargando equipos: $e')),
       );
     } finally {
-      if (!mounted) return;
-      setState(() => loadingTeams = false);
+      if (mounted) {
+        setState(() => loadingTeams = false);
+      }
     }
   }
 
@@ -58,21 +71,17 @@ class _HomePageState extends State<HomePage> {
       await loadTeams();
 
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Equipo creado en Supabase')),
       );
     } catch (e) {
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error creando equipo: $e')),
       );
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    loadTeams();
   }
 
   @override
@@ -89,10 +98,13 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: const [
-                      Icon(Icons.sports_soccer,
-                          color: Color(0xFFE84C1E), size: 28),
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.sports_soccer,
+                        color: Color(0xFFE84C1E),
+                        size: 28,
+                      ),
                       SizedBox(width: 10),
                       Text(
                         'PLAYVISION',
@@ -180,8 +192,11 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 16),
                     Row(
                       children: const [
-                        Icon(Icons.check_circle,
-                            color: Color(0xFFE84C1E), size: 18),
+                        Icon(
+                          Icons.check_circle,
+                          color: Color(0xFFE84C1E),
+                          size: 18,
+                        ),
                         SizedBox(width: 8),
                         Text(
                           'Video cargado correctamente',
@@ -275,7 +290,7 @@ class _HomePageState extends State<HomePage> {
                         border: Border.all(color: const Color(0xFF222222)),
                       ),
                       child: const Text(
-                        'No hay equipos todavía. Usa "CREAR EQUIPO DEMO".',
+                        'No hay equipos todavía. Usa CREAR EQUIPO DEMO.',
                         style: TextStyle(color: Colors.white70),
                       ),
                     )
@@ -311,7 +326,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      '${team['club'] ?? 'Sin club'} • ${team['category'] ?? 'Sin categoría'}',
+                                      '${team['club'] ?? 'Sin club'} · ${team['category'] ?? 'Sin categoría'}',
                                       style: const TextStyle(
                                         color: Color(0xFFAAAAAA),
                                         fontSize: 12,
@@ -339,7 +354,10 @@ class _FeatureItem extends StatelessWidget {
   final IconData icon;
   final String text;
 
-  const _FeatureItem({required this.icon, required this.text});
+  const _FeatureItem({
+    required this.icon,
+    required this.text,
+  });
 
   @override
   Widget build(BuildContext context) {

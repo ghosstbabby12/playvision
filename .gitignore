@@ -1,20 +1,63 @@
-# Flutter
+# =========================
+# FLUTTER / DART
+# =========================
 .dart_tool/
 .packages
 .pub/
 build/
-
-# macOS
-.DS_Store
-
-# IDE
-.idea/
-.vscode/
-
-# Flutter plugins
 .flutter-plugins
 .flutter-plugins-dependencies
+.flutter-plugins
+.metadata
 
+# Generated
+*.lock
+!pubspec.lock
+
+# =========================
+# PYTHON
+# =========================
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.python-version
+.pytest_cache/
+.mypy_cache/
+
+# =========================
+# YOLO / ULTRALYTICS
+# =========================
+runs/
+*.pt
+*.onnx
+*.engine
+
+# =========================
+# ENV FILES
+# =========================
 .env
 .env.*
 !.env.example
+
+# =========================
+# IDE / EDITORS
+# =========================
+.idea/
+.vscode/
+*.iml
+
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# OPTIONAL LOGS
+# =========================
+*.log
