@@ -18,3 +18,4 @@ build/
 .env
 .env.*
 !.env.example
+playvision_ai/test.mp4
