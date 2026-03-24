@@ -19,3 +19,4 @@ build/
 .env.*
 !.env.example
 playvision_ai/test.mp4
+playvision_ai/yolov8n.pt
