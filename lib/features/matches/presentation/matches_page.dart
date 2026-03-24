@@ -40,8 +40,9 @@ class _MatchesPageState extends State<MatchesPage> {
         SnackBar(content: Text('Error cargando datos: $e')),
       );
     } finally {
-      if (!mounted) return;
-      setState(() => isLoading = false);
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -77,7 +78,7 @@ class _MatchesPageState extends State<MatchesPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     DropdownButtonFormField<int>(
-                      value: selectedTeamId,
+                      initialValue: selectedTeamId,
                       dropdownColor: const Color(0xFF1A1A1A),
                       decoration: _inputDecoration('Equipo'),
                       items: teams.map((team) {
@@ -103,7 +104,7 @@ class _MatchesPageState extends State<MatchesPage> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: selectedSourceType,
+                      initialValue: selectedSourceType,
                       dropdownColor: const Color(0xFF1A1A1A),
                       decoration: _inputDecoration('Tipo de fuente'),
                       items: const [
@@ -197,7 +198,7 @@ class _MatchesPageState extends State<MatchesPage> {
                     Navigator.pop(context);
                     await loadData();
 
-                    if (!mounted) return;
+                    if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Partido guardado correctamente')),
                     );
@@ -322,7 +323,7 @@ class _MatchesPageState extends State<MatchesPage> {
 
 class _SectionLabel extends StatelessWidget {
   final String text;
-  const _SectionLabel(this.text, {super.key});
+  const _SectionLabel(this.text);
 
   @override
   Widget build(BuildContext context) {
@@ -434,7 +435,7 @@ class _MatchCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.15),
+              color: statusColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(

@@ -42,8 +42,9 @@ class _HomePageState extends State<HomePage> {
         SnackBar(content: Text('Error cargando equipos: $e')),
       );
     } finally {
-      if (!mounted) return;
-      setState(() => loadingTeams = false);
+      if (mounted) {
+        setState(() => loadingTeams = false);
+      }
     }
   }
 
