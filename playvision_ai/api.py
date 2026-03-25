@@ -21,8 +21,10 @@ model = YOLO("yolov8n.pt")
 PERSON_CLASS    = 0
 BALL_CLASS      = 32
 NUM_PLAYERS     = 10
-MIN_PRESENCE    = 0.20
+MIN_PRESENCE    = 0.05
 BALL_RADIUS     = 80
+FIELD_WIDTH_M   = 105.0   # campo estándar en metros
+FPS             = 30.0
 CONF_THRESHOLD  = 0.55
 FRAME_SKIP      = 5
 
@@ -126,14 +128,29 @@ async def analyze_video(file: UploadFile = File(...)):
             avg_y = sum(p[1] for p in data["positions"]) / len(data["positions"])
 
             team_total_dist += total_dist
+
+            # Conversión a unidades reales
+            scale       = FIELD_WIDTH_M / frame_width   # m/px
+            distance_m  = total_dist * scale
+            distance_km = round(distance_m / 1000, 2)
+            speed_ms    = round(avg_speed * scale * (FPS / FRAME_SKIP), 1)
+
+            positions_sample = [
+                {"x": round(p[0] / frame_width, 3), "y": round(p[1] / frame_height, 3)}
+                for p in data["positions"][::15]
+            ]
             players_out.append({
-                "rank":           rank,
-                "track_id":       pid,
-                "zone":           zone_label(avg_x, avg_y, frame_width, frame_height),
-                "presence_pct":   round(presence_pct, 1),
-                "total_distance": round(total_dist),
-                "avg_speed":      round(avg_speed, 1),
-                "possession_pct": round(poss_pct, 1),
+                "rank":             rank,
+                "track_id":         pid,
+                "zone":             zone_label(avg_x, avg_y, frame_width, frame_height),
+                "presence_pct":     round(presence_pct, 1),
+                "total_distance":   round(total_dist),
+                "distance_km":      distance_km,
+                "speed_ms":         speed_ms,
+                "possession_pct":   round(poss_pct, 1),
+                "avg_x_norm":       round(avg_x / frame_width, 3),
+                "avg_y_norm":       round(avg_y / frame_height, 3),
+                "positions_sample": positions_sample,
             })
 
         most_active  = max(players_out, key=lambda p: p["total_distance"], default=None)
@@ -141,17 +158,21 @@ async def analyze_video(file: UploadFile = File(...)):
         least_active = min(players_out, key=lambda p: p["total_distance"], default=None)
         team_poss    = sum(d["frames_with_ball"] for d in active.values()) / max(analyzed_frames, 1) * 100
 
+        scale = FIELD_WIDTH_M / frame_width
+        team_km = round(team_total_dist * scale / 1000, 2)
+
         return {
-            "frames_total":    frame_count,
-            "frames_analyzed": analyzed_frames,
+            "frames_total":     frame_count,
+            "frames_analyzed":  analyzed_frames,
             "players_detected": len(active),
             "team": {
-                "total_distance":  round(team_total_dist),
-                "avg_distance":    round(team_total_dist / max(len(active), 1)),
-                "possession_pct":  round(team_poss, 1),
-                "most_active":     most_active["rank"] if most_active else None,
-                "least_active":    least_active["rank"] if least_active else None,
-                "most_possession": most_poss["rank"] if most_poss else None,
+                "total_distance":    round(team_total_dist),
+                "total_distance_km": team_km,
+                "avg_distance_km":   round(team_km / max(len(active), 1), 2),
+                "possession_pct":    round(team_poss, 1),
+                "most_active":       most_active["rank"] if most_active else None,
+                "least_active":      least_active["rank"] if least_active else None,
+                "most_possession":   most_poss["rank"] if most_poss else None,
             },
             "players": players_out,
         }

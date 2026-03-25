@@ -31,6 +31,9 @@ dependencies:
   # HTTP cliente
   http: ^1.2.0
 
+  # Gráficas
+  fl_chart: ^0.69.0
+
   # Variables de entorno
   flutter_dotenv: ^5.2.1
 
