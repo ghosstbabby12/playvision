@@ -7,17 +7,31 @@
 build/
 .flutter-plugins
 .flutter-plugins-dependencies
-.flutter-plugins
 .metadata
 
-# Generated
+# Flutter generated / platform
+android/.gradle/
+android/app/debug/
+android/app/profile/
+android/app/release/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/ephemeral/
+ios/Pods/
+macos/Pods/
+linux/flutter/ephemeral/
+windows/flutter/ephemeral/
+
+# Generated lock files
 *.lock
 !pubspec.lock
+
 
 # =========================
 # PYTHON
 # =========================
 .venv/
+.venv-backend/
 venv/
 env/
 ENV/
@@ -28,6 +42,10 @@ __pycache__/
 .python-version
 .pytest_cache/
 .mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
 
 # =========================
 # YOLO / ULTRALYTICS
@@ -37,12 +55,14 @@ runs/
 *.onnx
 *.engine
 
+
 # =========================
 # ENV FILES
 # =========================
 .env
 .env.*
 !.env.example
+
 
 # =========================
 # IDE / EDITORS
@@ -51,11 +71,13 @@ runs/
 .vscode/
 *.iml
 
+
 # =========================
 # OS
 # =========================
 .DS_Store
 Thumbs.db
+
 
 # =========================
 # OPTIONAL LOGS
