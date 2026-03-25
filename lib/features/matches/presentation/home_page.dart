@@ -9,7 +9,8 @@ import '../../../core/supabase/supabase_service.dart';
 const String _apiBase = 'http://127.0.0.1:8000';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final void Function(int)? onTabChange;
+  const HomePage({super.key, this.onTabChange});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -180,11 +181,11 @@ class _HomePageState extends State<HomePage> {
                 const _SLabel('ACCESO RÁPIDO'),
                 const SizedBox(height: 12),
                 Row(children: [
-                  _QuickAction(icon: Icons.analytics_outlined, label: 'Análisis', onTap: () {}),
+                  _QuickAction(icon: Icons.analytics_outlined,     label: 'Análisis', onTap: () => widget.onTabChange?.call(1)),
                   const SizedBox(width: 10),
-                  _QuickAction(icon: Icons.sports_soccer_outlined, label: 'Partidos', onTap: () {}),
+                  _QuickAction(icon: Icons.sports_soccer_outlined, label: 'Partidos', onTap: () => widget.onTabChange?.call(2)),
                   const SizedBox(width: 10),
-                  _QuickAction(icon: Icons.fitness_center_outlined, label: 'Entreno', onTap: () {}),
+                  _QuickAction(icon: Icons.fitness_center_outlined, label: 'Entreno', onTap: () => widget.onTabChange?.call(3)),
                 ]),
 
                 // ── Último análisis ─────────────────────────────
@@ -240,7 +241,14 @@ class _HomePageState extends State<HomePage> {
                   const Expanded(child: _SLabel('MIS EQUIPOS')),
                   GestureDetector(
                     onTap: _loadTeams,
-                    child: const Text('Recargar', style: TextStyle(color: Color(0xFF4A5568), fontSize: 12)),
+                    child: const Padding(
+                      padding: EdgeInsets.only(right: 12),
+                      child: Icon(Icons.refresh_outlined, color: Color(0xFF4A5568), size: 16),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => _openTeamDialog(),
+                    child: const Icon(Icons.add, color: Color(0xFF7C9EBF), size: 18),
                   ),
                 ]),
                 const SizedBox(height: 12),
@@ -248,26 +256,27 @@ class _HomePageState extends State<HomePage> {
                 if (loading)
                   const Center(child: CircularProgressIndicator(color: Color(0xFF7C9EBF), strokeWidth: 1.5))
                 else if (teams.isEmpty)
-                  GestureDetector(
-                    onTap: _createDemo,
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF111827),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0x0FFFFFFF)),
-                      ),
-                      child: const Column(children: [
-                        Icon(Icons.groups_outlined, color: Color(0xFF2D4A6A), size: 36),
-                        SizedBox(height: 10),
-                        Text('Sin equipos', style: TextStyle(color: Color(0xFF4A5568), fontSize: 13)),
-                        SizedBox(height: 4),
-                        Text('Toca para crear un equipo demo', style: TextStyle(color: Color(0xFF7C9EBF), fontSize: 12)),
-                      ]),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF111827),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0x0FFFFFFF)),
                     ),
+                    child: const Column(children: [
+                      Icon(Icons.groups_outlined, color: Color(0xFF2D4A6A), size: 36),
+                      SizedBox(height: 10),
+                      Text('Sin equipos', style: TextStyle(color: Color(0xFF4A5568), fontSize: 13)),
+                      SizedBox(height: 4),
+                      Text('Toca + para crear un equipo', style: TextStyle(color: Color(0xFF7C9EBF), fontSize: 12)),
+                    ]),
                   )
                 else
-                  ...teams.map((t) => _TeamRow(team: t)),
+                  ...teams.map((t) => _TeamRow(
+                    team: t,
+                    onEdit: () => _openTeamDialog(team: t),
+                    onDelete: () => _deleteTeam(t),
+                  )),
 
                 const SizedBox(height: 32),
               ]),
@@ -278,11 +287,93 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<void> _createDemo() async {
-    try {
-      await _svc.createTeam(name: 'Club Deportivo Pasto', category: 'Juvenil', club: 'PlayVision FC');
+  Future<void> _openTeamDialog({Map<String, dynamic>? team}) async {
+    final nameCtrl     = TextEditingController(text: team?['name']     as String? ?? '');
+    final categoryCtrl = TextEditingController(text: team?['category'] as String? ?? '');
+    final clubCtrl     = TextEditingController(text: team?['club']     as String? ?? '');
+    final isEdit       = team != null;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF111827),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(isEdit ? 'Editar equipo' : 'Nuevo equipo',
+            style: const TextStyle(color: Color(0xFFE2E8F4), fontWeight: FontWeight.w700)),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          _DialogField(controller: nameCtrl,     label: 'Nombre'),
+          const SizedBox(height: 10),
+          _DialogField(controller: categoryCtrl, label: 'Categoría'),
+          const SizedBox(height: 10),
+          _DialogField(controller: clubCtrl,     label: 'Club'),
+        ]),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar', style: TextStyle(color: Color(0xFF4A5568))),
+          ),
+          GestureDetector(
+            onTap: () async {
+              if (nameCtrl.text.trim().isEmpty) return;
+              if (isEdit) {
+                await _svc.updateTeam(
+                  id: team['id'] as int,
+                  name: nameCtrl.text.trim(),
+                  category: categoryCtrl.text.trim().isEmpty ? null : categoryCtrl.text.trim(),
+                  club: clubCtrl.text.trim().isEmpty ? null : clubCtrl.text.trim(),
+                );
+              } else {
+                await _svc.createTeam(
+                  name: nameCtrl.text.trim(),
+                  category: categoryCtrl.text.trim().isEmpty ? null : categoryCtrl.text.trim(),
+                  club: clubCtrl.text.trim().isEmpty ? null : clubCtrl.text.trim(),
+                );
+              }
+              if (!ctx.mounted) return;
+              Navigator.pop(ctx);
+              await _loadTeams();
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1C2537),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0x1AFFFFFF)),
+              ),
+              child: Text(isEdit ? 'Guardar' : 'Crear',
+                  style: const TextStyle(color: Color(0xFFE2E8F4), fontWeight: FontWeight.w600)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteTeam(Map<String, dynamic> team) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF111827),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Eliminar equipo', style: TextStyle(color: Color(0xFFE2E8F4), fontWeight: FontWeight.w700)),
+        content: Text('¿Eliminar "${team['name']}"? Esta acción no se puede deshacer.',
+            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13, height: 1.5)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar', style: TextStyle(color: Color(0xFF4A5568))),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Eliminar', style: TextStyle(color: Color(0xFFE05C5C))),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await _svc.deleteTeam(team['id'] as int);
       await _loadTeams();
-    } catch (_) {}
+    }
   }
 }
 
@@ -339,29 +430,82 @@ class _MiniStat extends StatelessWidget {
 
 class _TeamRow extends StatelessWidget {
   final Map<String, dynamic> team;
-  const _TeamRow({required this.team});
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+  const _TeamRow({required this.team, required this.onEdit, required this.onDelete});
 
   @override
-  Widget build(BuildContext context) => Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: const Color(0xFF111827),
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: const Color(0x0FFFFFFF)),
-    ),
-    child: Row(children: [
-      Container(
-        width: 38, height: 38,
-        decoration: const BoxDecoration(color: Color(0x1A7C9EBF), shape: BoxShape.circle),
-        child: const Icon(Icons.groups_outlined, color: Color(0xFF7C9EBF), size: 18),
+  Widget build(BuildContext context) => Dismissible(
+    key: ValueKey(team['id']),
+    direction: DismissDirection.endToStart,
+    background: Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(right: 20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF3A1A1A),
+        borderRadius: BorderRadius.circular(12),
       ),
-      const SizedBox(width: 12),
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(team['name'] ?? '—', style: const TextStyle(color: Color(0xFFE2E8F4), fontSize: 14, fontWeight: FontWeight.w600)),
-        Text('${team['club'] ?? '—'} · ${team['category'] ?? '—'}',
-            style: const TextStyle(color: Color(0xFF4A5568), fontSize: 11)),
-      ])),
-    ]),
+      alignment: Alignment.centerRight,
+      child: const Icon(Icons.delete_outline, color: Color(0xFFE05C5C), size: 20),
+    ),
+    confirmDismiss: (_) async {
+      onDelete();
+      return false; // la eliminación la maneja onDelete con su propio diálogo
+    },
+    child: Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF111827),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0x0FFFFFFF)),
+      ),
+      child: Row(children: [
+        Container(
+          width: 38, height: 38,
+          decoration: const BoxDecoration(color: Color(0x1A7C9EBF), shape: BoxShape.circle),
+          child: const Icon(Icons.groups_outlined, color: Color(0xFF7C9EBF), size: 18),
+        ),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(team['name'] ?? '—', style: const TextStyle(color: Color(0xFFE2E8F4), fontSize: 14, fontWeight: FontWeight.w600)),
+          Text('${team['club'] ?? '—'} · ${team['category'] ?? '—'}',
+              style: const TextStyle(color: Color(0xFF4A5568), fontSize: 11)),
+        ])),
+        GestureDetector(
+          onTap: onEdit,
+          child: const Padding(
+            padding: EdgeInsets.all(6),
+            child: Icon(Icons.edit_outlined, color: Color(0xFF4A5568), size: 16),
+          ),
+        ),
+      ]),
+    ),
+  );
+}
+
+class _DialogField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  const _DialogField({required this.controller, required this.label});
+
+  @override
+  Widget build(BuildContext context) => TextField(
+    controller: controller,
+    style: const TextStyle(color: Color(0xFFE2E8F4), fontSize: 14),
+    decoration: InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Color(0xFF4A5568), fontSize: 13),
+      enabledBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Color(0x1AFFFFFF)),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Color(0xFF7C9EBF)),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      filled: true,
+      fillColor: const Color(0xFF1C2537),
+    ),
   );
 }

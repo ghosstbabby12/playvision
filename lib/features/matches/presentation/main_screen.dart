@@ -14,11 +14,11 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    HomePage(),
-    AnalysisPage(),
-    MatchesPage(),
-    TrainingPage(),
+  List<Widget> get _pages => [
+    HomePage(onTabChange: (i) => setState(() => _currentIndex = i)),
+    const AnalysisPage(),
+    const MatchesPage(),
+    const TrainingPage(),
   ];
 
   @override

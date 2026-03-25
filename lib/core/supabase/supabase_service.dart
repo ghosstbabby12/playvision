@@ -40,6 +40,23 @@ class SupabaseService {
     });
   }
 
+  Future<void> updateTeam({
+    required int id,
+    required String name,
+    String? category,
+    String? club,
+  }) async {
+    await client.from('teams').update({
+      'name': name,
+      'category': category,
+      'club': club,
+    }).eq('id', id);
+  }
+
+  Future<void> deleteTeam(int id) async {
+    await client.from('teams').delete().eq('id', id);
+  }
+
   // =========================
   // PLAYERS
   // =========================
