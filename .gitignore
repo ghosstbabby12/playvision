@@ -22,10 +22,8 @@ macos/Pods/
 linux/flutter/ephemeral/
 windows/flutter/ephemeral/
 
-# Generated lock files
-*.lock
+# Mantener versionado en app Flutter
 !pubspec.lock
-
 
 # =========================
 # PYTHON
@@ -46,7 +44,6 @@ __pycache__/
 .coverage
 htmlcov/
 
-
 # =========================
 # YOLO / ULTRALYTICS
 # =========================
@@ -55,6 +52,15 @@ runs/
 *.onnx
 *.engine
 
+# =========================
+# BACKEND / OUTPUTS / TEMP
+# =========================
+backend/output/
+temp_videos/
+*.mp4
+*.avi
+*.mov
+*.mkv
 
 # =========================
 # ENV FILES
@@ -63,7 +69,6 @@ runs/
 .env.*
 !.env.example
 
-
 # =========================
 # IDE / EDITORS
 # =========================
@@ -71,13 +76,11 @@ runs/
 .vscode/
 *.iml
 
-
 # =========================
 # OS
 # =========================
 .DS_Store
 Thumbs.db
-
 
 # =========================
 # OPTIONAL LOGS

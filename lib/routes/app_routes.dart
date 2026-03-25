@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+
 import '../features/matches/presentation/main_screen.dart';
+import '../features/matches/presentation/match_summary_page.dart';
 
 class AppRoutes {
-  static const home = "/";
+  AppRoutes._();
 
-  static final routes = <String, WidgetBuilder>{
+  static const String home = '/';
+  static const String matchSummary = '/match-summary';
+
+  static final Map<String, WidgetBuilder> routes = {
     home: (context) => const MainScreen(),
+    matchSummary: (context) => const MatchSummaryPage(),
   };
 }

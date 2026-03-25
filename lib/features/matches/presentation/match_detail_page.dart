@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import '../../../core/supabase/supabase_service.dart';
+import '../../../core/theme/app_colors.dart';
 
 class MatchDetailPage extends StatefulWidget {
   final int matchId;
@@ -110,13 +112,13 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
   Color statusColor(String? status) {
     switch (status) {
       case 'done':
-        return const Color(0xFF2ECC71);
+        return AppColors.success;
       case 'processing':
-        return const Color(0xFFFFAA00);
+        return AppColors.warning;
       case 'uploaded':
-        return const Color(0xFF4A90D9);
+        return AppColors.accent;
       default:
-        return const Color(0xFF888888);
+        return AppColors.textMuted;
     }
   }
 
@@ -133,19 +135,46 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
     }
   }
 
-  bool hasVideoUrl() {
-    final videoUrl = match?['video_url'];
-    return videoUrl != null && videoUrl.toString().trim().isNotEmpty;
+  String resolveMatchDate() {
+    final raw = match?['match_date'] ?? match?['matchdate'];
+    return raw?.toString() ?? '';
   }
+
+  String resolveSourceType() {
+    return (match?['source_type'] ?? match?['sourcetype'] ?? '').toString();
+  }
+
+  String resolveStatus() {
+    return (match?['status'] ?? '').toString();
+  }
+
+  String? resolveVideoUrl() {
+    final value = (match?['video_url'] ?? match?['videourl'])?.toString().trim();
+    if (value == null || value.isEmpty) return null;
+    return value;
+  }
+
+  String? resolveSourceUrl() {
+    final value =
+        (match?['source_url'] ?? match?['sourceurl'])?.toString().trim();
+    if (value == null || value.isEmpty) return null;
+    return value;
+  }
+
+  bool hasVideoUrl() => resolveVideoUrl() != null;
+
+  bool hasSourceUrl() => resolveSourceUrl() != null;
+
+  bool hasAnyAssociatedSource() => hasVideoUrl() || hasSourceUrl();
 
   Widget sectionTitle(String text) {
     return Text(
       text,
       style: const TextStyle(
-        color: Color(0xFF888888),
+        color: AppColors.textMuted,
         fontSize: 11,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 2,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 1.8,
       ),
     );
   }
@@ -157,15 +186,16 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
         Icon(
           icon,
           size: 15,
-          color: const Color(0xFF888888),
+          color: AppColors.textMuted,
         ),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             text,
             style: const TextStyle(
-              color: Color(0xFFDDDDDD),
+              color: AppColors.textSecondary,
               fontSize: 13,
+              height: 1.45,
             ),
           ),
         ),
@@ -177,27 +207,29 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
   Widget build(BuildContext context) {
     final team = match?['teams'];
     final teamName =
-        team is Map ? (team['name'] ?? 'Sin equipo') : 'Sin equipo';
+        team is Map ? (team['name'] ?? 'Sin equipo').toString() : 'Sin equipo';
+    final currentStatus = resolveStatus();
+    final currentStatusColor = statusColor(currentStatus);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF111111),
+        backgroundColor: AppColors.surface,
+        centerTitle: true,
         title: const Text(
           'DETALLE DEL PARTIDO',
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.textPrimary,
             fontWeight: FontWeight.w800,
-            letterSpacing: 1.5,
+            letterSpacing: 1.4,
             fontSize: 15,
           ),
         ),
-        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(
-              Icons.refresh,
-              color: Color(0xFFE84C1E),
+              Icons.refresh_rounded,
+              color: AppColors.accent,
             ),
             onPressed: loadMatchDetail,
           ),
@@ -206,351 +238,453 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
           preferredSize: const Size.fromHeight(3),
           child: Container(
             height: 3,
-            color: const Color(0xFFE84C1E),
+            decoration: const BoxDecoration(
+              gradient: AppColors.primaryGradient,
+            ),
           ),
         ),
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           : match == null
-              ? const Center(
-                  child: Text(
-                    'No se encontró el partido',
-                    style: TextStyle(color: Colors.white70),
+              ? Center(
+                  child: Container(
+                    margin: const EdgeInsets.all(18),
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: AppColors.card,
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: const Text(
+                      'No se encontró el partido',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 )
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      sectionTitle('RESUMEN'),
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1A1A1A),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF222222)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${match?['opponent'] ?? 'Sin rival'}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
+              : RefreshIndicator(
+                  color: AppColors.primary,
+                  backgroundColor: AppColors.card,
+                  onRefresh: loadMatchDetail,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        sectionTitle('RESUMEN'),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            gradient: AppColors.heroGradient,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: AppColors.border),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.10),
+                                blurRadius: 22,
+                                offset: const Offset(0, 10),
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            infoRow(
-                              Icons.groups_2_outlined,
-                              teamName,
-                            ),
-                            const SizedBox(height: 8),
-                            infoRow(
-                              Icons.calendar_today,
-                              formatMatchDate(match?['match_date']),
-                            ),
-                            const SizedBox(height: 8),
-                            infoRow(
-                              Icons.link,
-                              sourceLabel(match?['source_type']),
-                            ),
-                            const SizedBox(height: 12),
-                            Wrap(
-                              spacing: 10,
-                              runSpacing: 10,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: statusColor(match?['status'])
-                                        .withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    statusLabel(match?['status']),
-                                    style: TextStyle(
-                                      color: statusColor(match?['status']),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: hasVideoUrl()
-                                        ? const Color(0xFF2ECC71)
-                                            .withOpacity(0.15)
-                                        : const Color(0xFF888888)
-                                            .withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    hasVideoUrl()
-                                        ? 'Video asociado'
-                                        : 'Sin video asociado',
-                                    style: TextStyle(
-                                      color: hasVideoUrl()
-                                          ? const Color(0xFF2ECC71)
-                                          : const Color(0xFFAAAAAA),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: generatingFake ? null : generateFakeAnalysis,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFE84C1E),
-                          disabledBackgroundColor: const Color(0xFF333333),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
+                            ],
                           ),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          generatingFake
-                              ? 'GENERANDO ANÁLISIS...'
-                              : 'GENERAR ANÁLISIS FAKE',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      sectionTitle('VIDEO'),
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1A1A1A),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF222222)),
-                        ),
-                        child: hasVideoUrl()
-                            ? Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
                                 children: [
-                                  const Text(
-                                    'URL del video',
-                                    style: TextStyle(
+                                  Container(
+                                    width: 52,
+                                    height: 52,
+                                    decoration: BoxDecoration(
+                                      gradient: AppColors.primaryGradient,
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: const Icon(
+                                      Icons.sports_soccer_rounded,
                                       color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 14,
                                     ),
                                   ),
-                                  const SizedBox(height: 10),
-                                  SelectableText(
-                                    match!['video_url'].toString(),
-                                    style: const TextStyle(
-                                      color: Color(0xFFCCCCCC),
-                                      fontSize: 13,
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Text(
+                                      '${match?['opponent'] ?? 'Sin rival'}',
+                                      style: const TextStyle(
+                                        color: AppColors.textPrimary,
+                                        fontSize: 21,
+                                        fontWeight: FontWeight.w800,
+                                      ),
                                     ),
                                   ),
                                 ],
-                              )
-                            : const Text(
-                                'Todavía no hay una fuente de video asociada a este partido.',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 13,
-                                ),
                               ),
-                      ),
-                      const SizedBox(height: 20),
-                      sectionTitle('ESTADÍSTICAS'),
-                      const SizedBox(height: 12),
-                      if (playerStats.isEmpty)
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1A1A1A),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFF222222)),
+                              const SizedBox(height: 16),
+                              infoRow(Icons.groups_2_outlined, teamName),
+                              const SizedBox(height: 8),
+                              infoRow(
+                                Icons.calendar_today_rounded,
+                                formatMatchDate(resolveMatchDate()),
+                              ),
+                              const SizedBox(height: 8),
+                              infoRow(
+                                Icons.link_rounded,
+                                sourceLabel(resolveSourceType()),
+                              ),
+                              const SizedBox(height: 14),
+                              Wrap(
+                                spacing: 10,
+                                runSpacing: 10,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 7,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: currentStatusColor.withValues(
+                                        alpha: 0.14,
+                                      ),
+                                      borderRadius: BorderRadius.circular(999),
+                                      border: Border.all(
+                                        color: currentStatusColor.withValues(
+                                          alpha: 0.20,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      statusLabel(currentStatus),
+                                      style: TextStyle(
+                                        color: currentStatusColor,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 7,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: (hasAnyAssociatedSource()
+                                              ? AppColors.success
+                                              : AppColors.textMuted)
+                                          .withValues(alpha: 0.14),
+                                      borderRadius: BorderRadius.circular(999),
+                                      border: Border.all(
+                                        color: (hasAnyAssociatedSource()
+                                                ? AppColors.success
+                                                : AppColors.textMuted)
+                                            .withValues(alpha: 0.20),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      hasAnyAssociatedSource()
+                                          ? 'Fuente asociada'
+                                          : 'Sin fuente asociada',
+                                      style: TextStyle(
+                                        color: hasAnyAssociatedSource()
+                                            ? AppColors.success
+                                            : AppColors.textSecondary,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                          child: const Text(
-                            'Aún no hay estadísticas generadas para este partido.',
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                        )
-                      else
-                        ...playerStats.map((stat) {
-                          final player = stat['players'];
-                          final playerName = player is Map
-                              ? (player['name'] ?? 'Jugador').toString()
-                              : 'Jugador';
-                          final position = player is Map
-                              ? (player['position'] ?? 'Sin posición').toString()
-                              : 'Sin posición';
-                          final shirtNumber =
-                              player is Map ? player['shirt_number'] : null;
-
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1A1A1A),
-                              borderRadius: BorderRadius.circular(8),
-                              border:
-                                  Border.all(color: const Color(0xFF222222)),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  shirtNumber != null
-                                      ? '$playerName • #$shirtNumber'
-                                      : playerName,
-                                  style: const TextStyle(
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          onPressed: generatingFake ? null : generateFakeAnalysis,
+                          icon: generatingFake
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
                                     color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  position,
-                                  style: const TextStyle(
-                                    color: Color(0xFFAAAAAA),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: [
-                                    _StatChip(
-                                      label: 'Min',
-                                      value: '${stat['minutes'] ?? 0}',
-                                    ),
-                                    _StatChip(
-                                      label: 'Distancia',
-                                      value: '${stat['distance'] ?? 0}',
-                                    ),
-                                    _StatChip(
-                                      label: 'Pases OK',
-                                      value: '${stat['passes_ok'] ?? 0}',
-                                    ),
-                                    _StatChip(
-                                      label: 'Pases mal',
-                                      value: '${stat['passes_bad'] ?? 0}',
-                                    ),
-                                    _StatChip(
-                                      label: 'Pérdidas',
-                                      value: '${stat['losses'] ?? 0}',
-                                    ),
-                                    _StatChip(
-                                      label: 'Recuperaciones',
-                                      value: '${stat['recoveries'] ?? 0}',
-                                    ),
-                                    _StatChip(
-                                      label: 'Tiros',
-                                      value: '${stat['shots'] ?? 0}',
-                                    ),
-                                    _StatChip(
-                                      label: 'Al arco',
-                                      value: '${stat['shots_on_target'] ?? 0}',
-                                    ),
-                                    _StatChip(
-                                      label: 'Rating',
-                                      value: '${stat['rating'] ?? 0}',
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                )
+                              : const Icon(Icons.auto_awesome_rounded),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            disabledBackgroundColor: AppColors.border,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                          );
-                        }),
-                      const SizedBox(height: 20),
-                      sectionTitle('RECOMENDACIONES'),
-                      const SizedBox(height: 12),
-                      if (recommendations.isEmpty)
+                            elevation: 0,
+                          ),
+                          label: Text(
+                            generatingFake
+                                ? 'GENERANDO ANÁLISIS...'
+                                : 'GENERAR ANÁLISIS FAKE',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+                        sectionTitle('VIDEO'),
+                        const SizedBox(height: 12),
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(18),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1A1A1A),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFF222222)),
+                            color: AppColors.card,
+                            borderRadius: BorderRadius.circular(22),
+                            border: Border.all(color: AppColors.border),
                           ),
-                          child: const Text(
-                            'Todavía no hay recomendaciones para este partido.',
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                        )
-                      else
-                        ...recommendations.map((item) {
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1A1A1A),
-                              borderRadius: BorderRadius.circular(8),
-                              border:
-                                  Border.all(color: const Color(0xFF222222)),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  (item['title'] ?? 'Recomendación').toString(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 15,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (hasSourceUrl()) ...[
+                                const Text(
+                                  'Fuente registrada',
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
                                     fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  (item['description'] ?? '').toString(),
-                                  style: const TextStyle(
-                                    color: Color(0xFFCCCCCC),
-                                    fontSize: 13,
-                                    height: 1.4,
+                                    fontSize: 14,
                                   ),
                                 ),
                                 const SizedBox(height: 10),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: [
-                                    _MiniTag(
-                                      text: (item['scope'] ?? 'general')
-                                          .toString(),
-                                      color: const Color(0xFF4A90D9),
-                                    ),
-                                    _MiniTag(
-                                      text: (item['priority'] ?? 'media')
-                                          .toString(),
-                                      color: const Color(0xFFE84C1E),
-                                    ),
-                                  ],
+                                SelectableText(
+                                  resolveSourceUrl()!,
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13,
+                                    height: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+                              ],
+                              if (hasVideoUrl()) ...[
+                                const Text(
+                                  'URL del video',
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                SelectableText(
+                                  resolveVideoUrl()!,
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13,
+                                    height: 1.5,
+                                  ),
                                 ),
                               ],
+                              if (!hasSourceUrl() && !hasVideoUrl())
+                                const Text(
+                                  'Todavía no hay una fuente de video asociada a este partido.',
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13,
+                                    height: 1.5,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+                        sectionTitle('ESTADÍSTICAS'),
+                        const SizedBox(height: 12),
+                        if (playerStats.isEmpty)
+                          Container(
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              color: AppColors.card,
+                              borderRadius: BorderRadius.circular(22),
+                              border: Border.all(color: AppColors.border),
                             ),
-                          );
-                        }),
-                    ],
+                            child: const Text(
+                              'Aún no hay estadísticas generadas para este partido.',
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 13,
+                              ),
+                            ),
+                          )
+                        else
+                          ...playerStats.map((stat) {
+                            final player = stat['players'];
+                            final playerName = player is Map
+                                ? (player['name'] ?? 'Jugador').toString()
+                                : 'Jugador';
+                            final position = player is Map
+                                ? (player['position'] ?? 'Sin posición')
+                                    .toString()
+                                : 'Sin posición';
+                            final shirtNumber = player is Map
+                                ? (player['shirt_number'] ??
+                                        player['shirtnumber'])
+                                    ?.toString()
+                                : null;
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 14),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: AppColors.card,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: AppColors.border),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    shirtNumber != null &&
+                                            shirtNumber.trim().isNotEmpty
+                                        ? '$playerName • #$shirtNumber'
+                                        : playerName,
+                                    style: const TextStyle(
+                                      color: AppColors.textPrimary,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    position,
+                                    style: const TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: [
+                                      _StatChip(
+                                        label: 'Min',
+                                        value: '${stat['minutes'] ?? 0}',
+                                      ),
+                                      _StatChip(
+                                        label: 'Distancia',
+                                        value: '${stat['distance'] ?? 0}',
+                                      ),
+                                      _StatChip(
+                                        label: 'Pases OK',
+                                        value: '${stat['passes_ok'] ?? stat['passesok'] ?? 0}',
+                                      ),
+                                      _StatChip(
+                                        label: 'Pases mal',
+                                        value: '${stat['passes_bad'] ?? stat['passesbad'] ?? 0}',
+                                      ),
+                                      _StatChip(
+                                        label: 'Pérdidas',
+                                        value: '${stat['losses'] ?? 0}',
+                                      ),
+                                      _StatChip(
+                                        label: 'Recuperaciones',
+                                        value: '${stat['recoveries'] ?? 0}',
+                                      ),
+                                      _StatChip(
+                                        label: 'Tiros',
+                                        value: '${stat['shots'] ?? 0}',
+                                      ),
+                                      _StatChip(
+                                        label: 'Al arco',
+                                        value: '${stat['shots_on_target'] ?? stat['shotsontarget'] ?? 0}',
+                                      ),
+                                      _StatChip(
+                                        label: 'Rating',
+                                        value: '${stat['rating'] ?? 0}',
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        const SizedBox(height: 22),
+                        sectionTitle('RECOMENDACIONES'),
+                        const SizedBox(height: 12),
+                        if (recommendations.isEmpty)
+                          Container(
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              color: AppColors.card,
+                              borderRadius: BorderRadius.circular(22),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: const Text(
+                              'Todavía no hay recomendaciones para este partido.',
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 13,
+                              ),
+                            ),
+                          )
+                        else
+                          ...recommendations.map((item) {
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 14),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: AppColors.card,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: AppColors.border),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    (item['title'] ?? 'Recomendación')
+                                        .toString(),
+                                    style: const TextStyle(
+                                      color: AppColors.textPrimary,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    (item['description'] ?? '').toString(),
+                                    style: const TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 13,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: [
+                                      _MiniTag(
+                                        text: (item['scope'] ?? 'general')
+                                            .toString(),
+                                        color: AppColors.accent,
+                                      ),
+                                      _MiniTag(
+                                        text: (item['priority'] ?? 'media')
+                                            .toString(),
+                                        color: AppColors.primary,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        const SizedBox(height: 8),
+                      ],
+                    ),
                   ),
                 ),
     );
@@ -571,9 +705,9 @@ class _StatChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF111111),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: const Color(0xFF2A2A2A)),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
       ),
       child: RichText(
         text: TextSpan(
@@ -581,7 +715,7 @@ class _StatChip extends StatelessWidget {
             TextSpan(
               text: '$label: ',
               style: const TextStyle(
-                color: Color(0xFF888888),
+                color: AppColors.textMuted,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -589,9 +723,9 @@ class _StatChip extends StatelessWidget {
             TextSpan(
               text: value,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontSize: 12,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
               ),
             ),
           ],
@@ -613,17 +747,20 @@ class _MiniTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(5),
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: color.withValues(alpha: 0.20),
+        ),
       ),
       child: Text(
         text,
         style: TextStyle(
           color: color,
           fontSize: 11,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w800,
         ),
       ),
     );

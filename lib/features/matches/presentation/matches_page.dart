@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import '../../../core/supabase/supabase_service.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../routes/app_routes.dart';
 import 'match_detail_page.dart';
 
 class MatchesPage extends StatefulWidget {
@@ -60,6 +63,8 @@ class _MatchesPageState extends State<MatchesPage> {
     }
 
     final opponentController = TextEditingController();
+    final sourceUrlController = TextEditingController();
+
     DateTime selectedDate = DateTime.now();
     TimeOfDay selectedTime = TimeOfDay.now();
     int selectedTeamId = teams.first['id'] as int;
@@ -70,26 +75,59 @@ class _MatchesPageState extends State<MatchesPage> {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (dialogContext, setLocalState) {
+            final bool needsUrl =
+                selectedSourceType == 'youtube' ||
+                selectedSourceType == 'external';
+
             return AlertDialog(
-              backgroundColor: const Color(0xFF1A1A1A),
-              title: const Text(
-                'Nuevo partido',
-                style: TextStyle(color: Colors.white),
+              backgroundColor: AppColors.card,
+              surfaceTintColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(22),
+                side: const BorderSide(color: AppColors.border),
+              ),
+              titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              contentPadding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
+              actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'Nuevo partido',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Registra el partido y define la fuente inicial del video.',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
               ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     DropdownButtonFormField<int>(
-                      initialValue: selectedTeamId,
-                      dropdownColor: const Color(0xFF1A1A1A),
+                      value: selectedTeamId,
+                      dropdownColor: AppColors.surface,
+                      style: const TextStyle(color: AppColors.textPrimary),
+                      iconEnabledColor: AppColors.accent,
                       decoration: _inputDecoration('Equipo'),
                       items: teams.map((team) {
                         return DropdownMenuItem<int>(
                           value: team['id'] as int,
                           child: Text(
-                            team['name'] ?? 'Sin nombre',
-                            style: const TextStyle(color: Colors.white),
+                            (team['name'] ?? 'Sin nombre').toString(),
+                            style:
+                                const TextStyle(color: AppColors.textPrimary),
                           ),
                         );
                       }).toList(),
@@ -99,57 +137,93 @@ class _MatchesPageState extends State<MatchesPage> {
                         }
                       },
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     TextField(
                       controller: opponentController,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: AppColors.textPrimary),
                       decoration: _inputDecoration('Rival'),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     DropdownButtonFormField<String>(
-                      initialValue: selectedSourceType,
-                      dropdownColor: const Color(0xFF1A1A1A),
+                      value: selectedSourceType,
+                      dropdownColor: AppColors.surface,
+                      style: const TextStyle(color: AppColors.textPrimary),
+                      iconEnabledColor: AppColors.accent,
                       decoration: _inputDecoration('Tipo de fuente inicial'),
                       items: const [
                         DropdownMenuItem(
                           value: 'upload',
                           child: Text(
-                            'Upload',
-                            style: TextStyle(color: Colors.white),
+                            'Upload (recomendado)',
+                            style: TextStyle(color: AppColors.textPrimary),
                           ),
                         ),
                         DropdownMenuItem(
                           value: 'youtube',
                           child: Text(
-                            'YouTube',
-                            style: TextStyle(color: Colors.white),
+                            'YouTube (beta)',
+                            style: TextStyle(color: AppColors.textPrimary),
                           ),
                         ),
                         DropdownMenuItem(
                           value: 'external',
                           child: Text(
-                            'Link externo',
-                            style: TextStyle(color: Colors.white),
+                            'Link externo (beta)',
+                            style: TextStyle(color: AppColors.textPrimary),
                           ),
                         ),
                       ],
                       onChanged: (value) {
                         if (value != null) {
-                          setLocalState(() => selectedSourceType = value);
+                          setLocalState(() {
+                            selectedSourceType = value;
+                            if (selectedSourceType == 'upload') {
+                              sourceUrlController.clear();
+                            }
+                          });
                         }
                       },
                     ),
-                    const SizedBox(height: 12),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        'Fecha: ${DateFormat('dd/MM/yyyy').format(selectedDate)}',
-                        style: const TextStyle(color: Colors.white),
+                    const SizedBox(height: 10),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.border),
                       ),
-                      trailing: const Icon(
-                        Icons.calendar_today,
-                        color: Color(0xFFE84C1E),
+                      child: Text(
+                        selectedSourceType == 'upload'
+                            ? 'Recomendado para la versión final de la app.'
+                            : selectedSourceType == 'youtube'
+                                ? 'Modo beta: puede requerir configuración adicional del backend.'
+                                : 'Modo beta: usa una URL pública directa del video.',
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                          height: 1.45,
+                        ),
                       ),
+                    ),
+                    if (needsUrl) ...[
+                      const SizedBox(height: 14),
+                      TextField(
+                        controller: sourceUrlController,
+                        keyboardType: TextInputType.url,
+                        style: const TextStyle(color: AppColors.textPrimary),
+                        decoration: _inputDecoration(
+                          selectedSourceType == 'youtube'
+                              ? 'URL de YouTube'
+                              : 'URL externa',
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 14),
+                    _PickerTile(
+                      icon: Icons.calendar_today_rounded,
+                      title:
+                          'Fecha: ${DateFormat('dd/MM/yyyy').format(selectedDate)}',
                       onTap: () async {
                         final picked = await showDatePicker(
                           context: dialogContext,
@@ -163,16 +237,10 @@ class _MatchesPageState extends State<MatchesPage> {
                         }
                       },
                     ),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        'Hora: ${selectedTime.format(dialogContext)}',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      trailing: const Icon(
-                        Icons.access_time,
-                        color: Color(0xFFE84C1E),
-                      ),
+                    const SizedBox(height: 10),
+                    _PickerTile(
+                      icon: Icons.access_time_rounded,
+                      title: 'Hora: ${selectedTime.format(dialogContext)}',
                       onTap: () async {
                         final picked = await showTimePicker(
                           context: dialogContext,
@@ -190,15 +258,61 @@ class _MatchesPageState extends State<MatchesPage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Cancelar'),
+                  child: const Text(
+                    'Cancelar',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE84C1E),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                   onPressed: () async {
-                    if (opponentController.text.trim().isEmpty) return;
+                    if (opponentController.text.trim().isEmpty) {
+                      ScaffoldMessenger.of(dialogContext).showSnackBar(
+                        const SnackBar(
+                          content: Text('Debes ingresar el rival'),
+                        ),
+                      );
+                      return;
+                    }
+
+                    final bool needsUrl =
+                        selectedSourceType == 'youtube' ||
+                        selectedSourceType == 'external';
+
+                    final sourceUrl = sourceUrlController.text.trim();
+
+                    if (needsUrl && sourceUrl.isEmpty) {
+                      ScaffoldMessenger.of(dialogContext).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            selectedSourceType == 'youtube'
+                                ? 'Debes ingresar la URL de YouTube'
+                                : 'Debes ingresar la URL externa',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    if (needsUrl &&
+                        !(sourceUrl.startsWith('http://') ||
+                            sourceUrl.startsWith('https://'))) {
+                      ScaffoldMessenger.of(dialogContext).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'La URL debe comenzar con http:// o https://',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
 
                     final matchDateTime = DateTime(
                       selectedDate.year,
@@ -208,29 +322,42 @@ class _MatchesPageState extends State<MatchesPage> {
                       selectedTime.minute,
                     );
 
-                    await supabaseService.createMatch(
-                      teamId: selectedTeamId,
-                      opponent: opponentController.text.trim(),
-                      matchDate: matchDateTime,
-                      sourceType: selectedSourceType,
-                      videoUrl: null,
-                      latitude: null,
-                      longitude: null,
-                    );
+                    try {
+                      await supabaseService.createMatch(
+                        teamId: selectedTeamId,
+                        opponent: opponentController.text.trim(),
+                        matchDate: matchDateTime,
+                        sourceType: selectedSourceType,
+                        videoUrl: null,
+                        sourceUrl: needsUrl ? sourceUrl : null,
+                        latitude: null,
+                        longitude: null,
+                      );
 
-                    if (!dialogContext.mounted) return;
-                    Navigator.of(dialogContext).pop();
+                      if (!dialogContext.mounted) return;
+                      Navigator.of(dialogContext).pop();
 
-                    await loadData();
+                      await loadData();
 
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Partido guardado correctamente'),
-                      ),
-                    );
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Partido guardado correctamente'),
+                        ),
+                      );
+                    } catch (e) {
+                      if (!dialogContext.mounted) return;
+                      ScaffoldMessenger.of(dialogContext).showSnackBar(
+                        SnackBar(
+                          content: Text('Error guardando partido: $e'),
+                        ),
+                      );
+                    }
                   },
-                  child: const Text('Guardar'),
+                  child: const Text(
+                    'Guardar',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
               ],
             );
@@ -238,19 +365,32 @@ class _MatchesPageState extends State<MatchesPage> {
         );
       },
     );
+
+    opponentController.dispose();
+    sourceUrlController.dispose();
   }
 
   InputDecoration _inputDecoration(String label) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: Colors.white70),
+      labelStyle: const TextStyle(color: AppColors.textSecondary),
+      filled: true,
+      fillColor: AppColors.surface,
       enabledBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Color(0xFF333333)),
-        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: AppColors.border),
+        borderRadius: BorderRadius.circular(14),
       ),
       focusedBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Color(0xFFE84C1E)),
-        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: AppColors.danger),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: AppColors.danger, width: 1.4),
+        borderRadius: BorderRadius.circular(14),
       ),
     );
   }
@@ -260,15 +400,20 @@ class _MatchesPageState extends State<MatchesPage> {
     return DateFormat('dd MMM yyyy • HH:mm').format(date);
   }
 
+  String resolveMatchDate(Map<String, dynamic> match) {
+    final raw = match['match_date'] ?? match['matchdate'];
+    return (raw ?? DateTime.now().toIso8601String()).toString();
+  }
+
   Color statusColor(String? status) {
     switch (status) {
       case 'done':
-        return const Color(0xFF2ECC71);
+        return AppColors.success;
       case 'processing':
-        return const Color(0xFFFFAA00);
+        return AppColors.warning;
       case 'uploaded':
       default:
-        return const Color(0xFF4A90D9);
+        return AppColors.accent;
     }
   }
 
@@ -297,86 +442,238 @@ class _MatchesPageState extends State<MatchesPage> {
     }
   }
 
-  bool hasVideo(Map<String, dynamic> match) {
-    final videoUrl = match['video_url'];
-    return videoUrl != null && videoUrl.toString().trim().isNotEmpty;
+  bool hasAssociatedSource(Map<String, dynamic> match) {
+    final videoUrl =
+        (match['video_url'] ?? match['videourl'] ?? '').toString().trim();
+    final sourceUrl =
+        (match['source_url'] ?? match['sourceurl'] ?? '').toString().trim();
+    return videoUrl.isNotEmpty || sourceUrl.isNotEmpty;
+  }
+
+  String associatedSourceLabel(Map<String, dynamic> match) {
+    final videoUrl =
+        (match['video_url'] ?? match['videourl'] ?? '').toString().trim();
+    final sourceUrl =
+        (match['source_url'] ?? match['sourceurl'] ?? '').toString().trim();
+
+    if (sourceUrl.isNotEmpty) return 'Fuente asociada';
+    if (videoUrl.isNotEmpty) return 'Video asociado';
+    return 'Sin fuente asociada';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF111111),
+        backgroundColor: AppColors.surface,
+        centerTitle: true,
         title: const Text(
           'PARTIDOS',
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.textPrimary,
             fontWeight: FontWeight.w800,
-            letterSpacing: 2,
+            letterSpacing: 1.6,
             fontSize: 16,
           ),
         ),
-        centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Color(0xFFE84C1E)),
+            icon: const Icon(
+              Icons.analytics_outlined,
+              color: AppColors.accent,
+            ),
+            tooltip: 'Ver resumen del análisis',
+            onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.matchSummary);
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: AppColors.accent),
             onPressed: loadData,
           ),
           IconButton(
-            icon: const Icon(Icons.add, color: Color(0xFFE84C1E)),
+            icon: const Icon(Icons.add_rounded, color: AppColors.primary),
             onPressed: openCreateMatchDialog,
           ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
-          child: Container(height: 3, color: const Color(0xFFE84C1E)),
+          child: Container(
+            height: 3,
+            decoration: const BoxDecoration(
+              gradient: AppColors.primaryGradient,
+            ),
+          ),
         ),
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : matches.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No hay partidos guardados todavía',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                )
-              : ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    const _SectionLabel('PARTIDOS REGISTRADOS'),
-                    const SizedBox(height: 12),
-                    ...matches.map((match) {
-                      final team = match['teams'];
-                      final teamName = team is Map
-                          ? (team['name'] ?? 'Sin equipo')
-                          : 'Sin equipo';
-
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => MatchDetailPage(
-                                matchId: match['id'] as int,
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
+          : RefreshIndicator(
+              color: AppColors.primary,
+              backgroundColor: AppColors.card,
+              onRefresh: loadData,
+              child: matches.isEmpty
+                  ? ListView(
+                      padding: const EdgeInsets.all(18),
+                      children: [
+                        _AnalysisSummaryButton(
+                          onPressed: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.matchSummary,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 18),
+                        Container(
+                          padding: const EdgeInsets.all(22),
+                          decoration: BoxDecoration(
+                            color: AppColors.card,
+                            borderRadius: BorderRadius.circular(22),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: const Column(
+                            children: [
+                              Icon(
+                                Icons.sports_soccer_rounded,
+                                color: AppColors.textMuted,
+                                size: 42,
                               ),
+                              SizedBox(height: 14),
+                              Text(
+                                'No hay partidos guardados todavía',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Crea el primero para comenzar a cargar fuentes de video y análisis.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 13,
+                                  height: 1.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  : ListView(
+                      padding: const EdgeInsets.all(18),
+                      children: [
+                        _AnalysisSummaryButton(
+                          onPressed: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.matchSummary,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        const _SectionLabel('PARTIDOS REGISTRADOS'),
+                        const SizedBox(height: 12),
+                        ...matches.map((match) {
+                          final team = match['teams'];
+                          final teamName = team is Map
+                              ? (team['name'] ?? 'Sin equipo').toString()
+                              : 'Sin equipo';
+
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => MatchDetailPage(
+                                    matchId: match['id'] as int,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: _MatchCard(
+                              rival: (match['opponent'] ?? 'Sin rival')
+                                  .toString(),
+                              date: formatMatchDate(resolveMatchDate(match)),
+                              teamName: teamName,
+                              sourceText: sourceLabel(
+                                (match['source_type'] ?? match['sourcetype'])
+                                    ?.toString(),
+                              ),
+                              statusText:
+                                  statusLabel(match['status']?.toString()),
+                              statusColor:
+                                  statusColor(match['status']?.toString()),
+                              hasSource: hasAssociatedSource(match),
+                              sourceAssociationText:
+                                  associatedSourceLabel(match),
                             ),
                           );
-                        },
-                        child: _MatchCard(
-                          rival: match['opponent'] ?? 'Sin rival',
-                          date: formatMatchDate(match['match_date']),
-                          teamName: teamName,
-                          sourceText: sourceLabel(match['source_type']),
-                          statusText: statusLabel(match['status']),
-                          statusColor: statusColor(match['status']),
-                          hasVideo: hasVideo(match),
-                        ),
-                      );
-                    }),
-                  ],
+                        }),
+                        const SizedBox(height: 10),
+                      ],
+                    ),
+            ),
+    );
+  }
+}
+
+class _AnalysisSummaryButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _AnalysisSummaryButton({
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.18),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onPressed,
+          child: const Padding(
+            padding: EdgeInsets.all(18),
+            child: Row(
+              children: [
+                Icon(Icons.analytics_rounded, color: Colors.white, size: 24),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Ver resumen del análisis IA',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                 ),
+                Icon(Icons.arrow_forward_ios_rounded,
+                    color: Colors.white, size: 16),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -391,10 +688,66 @@ class _SectionLabel extends StatelessWidget {
     return Text(
       text,
       style: const TextStyle(
-        color: Color(0xFF888888),
+        color: AppColors.textMuted,
         fontSize: 11,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 2,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 1.8,
+      ),
+    );
+  }
+}
+
+class _PickerTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  const _PickerTile({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: Ink(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: AppColors.primary, size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.textMuted,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -407,7 +760,8 @@ class _MatchCard extends StatelessWidget {
   final String sourceText;
   final String statusText;
   final Color statusColor;
-  final bool hasVideo;
+  final bool hasSource;
+  final String sourceAssociationText;
 
   const _MatchCard({
     required this.rival,
@@ -416,25 +770,46 @@ class _MatchCard extends StatelessWidget {
     required this.sourceText,
     required this.statusText,
     required this.statusColor,
-    required this.hasVideo,
+    required this.hasSource,
+    required this.sourceAssociationText,
   });
 
   @override
   Widget build(BuildContext context) {
-    final videoColor =
-        hasVideo ? const Color(0xFF2ECC71) : const Color(0xFF888888);
+    final sourceColor =
+        hasSource ? AppColors.success : AppColors.textMuted;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFF222222)),
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accent.withOpacity(0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(
+              Icons.sports_soccer_rounded,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -442,84 +817,45 @@ class _MatchCard extends StatelessWidget {
                 Text(
                   rival,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 17,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.calendar_today,
-                      size: 13,
-                      color: Color(0xFF888888),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        date,
-                        style: const TextStyle(
-                          color: Color(0xFFAAAAAA),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 10),
+                _InfoRow(
+                  icon: Icons.calendar_today_rounded,
+                  text: date,
                 ),
                 const SizedBox(height: 6),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.groups_2_outlined,
-                      size: 13,
-                      color: Color(0xFF888888),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        teamName,
-                        style: const TextStyle(
-                          color: Color(0xFFAAAAAA),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
+                _InfoRow(
+                  icon: Icons.groups_2_outlined,
+                  text: teamName,
                 ),
                 const SizedBox(height: 6),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.link,
-                      size: 13,
-                      color: Color(0xFF888888),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      sourceText,
-                      style: const TextStyle(
-                        color: Color(0xFFAAAAAA),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+                _InfoRow(
+                  icon: Icons.link_rounded,
+                  text: sourceText,
                 ),
                 const SizedBox(height: 6),
                 Row(
                   children: [
                     Icon(
-                      hasVideo ? Icons.check_circle : Icons.cancel_outlined,
-                      size: 14,
-                      color: videoColor,
+                      hasSource
+                          ? Icons.check_circle_rounded
+                          : Icons.cancel_outlined,
+                      size: 15,
+                      color: sourceColor,
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      hasVideo ? 'Video asociado' : 'Sin video asociado',
-                      style: TextStyle(
-                        color: videoColor,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                    Expanded(
+                      child: Text(
+                        sourceAssociationText,
+                        style: TextStyle(
+                          color: sourceColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ],
@@ -527,24 +863,60 @@ class _MatchCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(5),
+              color: statusColor.withOpacity(0.14),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: statusColor.withOpacity(0.24),
+              ),
             ),
             child: Text(
               statusText,
               style: TextStyle(
                 color: statusColor,
                 fontSize: 11,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _InfoRow({
+    required this.icon,
+    required this.text,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 14,
+          color: AppColors.textMuted,
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

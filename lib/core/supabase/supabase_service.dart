@@ -3,7 +3,37 @@ import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseService {
+  SupabaseService();
+
   final SupabaseClient client = Supabase.instance.client;
+
+  static const String _teamsTable = 'teams';
+  static const String _playersTable = 'players';
+  static const String _matchesTable = 'matches';
+  static const String _playerMatchStatsTable = 'player_match_stats';
+  static const String _recommendationsTable = 'recommendations';
+  static const String _predictionsTable = 'predictions';
+  static const String _matchVideosBucket = 'match-videos';
+
+  static const String statusUploaded = 'uploaded';
+  static const String statusProcessing = 'processing';
+  static const String statusDone = 'done';
+
+  List<Map<String, dynamic>> _asMapList(dynamic response) {
+    return List<Map<String, dynamic>>.from(response as List);
+  }
+
+  Map<String, dynamic>? _firstOrNull(List<Map<String, dynamic>> rows) {
+    if (rows.isEmpty) return null;
+    return rows.first;
+  }
+
+  String _sanitizeFileName(String value) {
+    return value
+        .trim()
+        .replaceAll(RegExp(r'\s+'), '_')
+        .replaceAll(RegExp(r'[^a-zA-Z0-9._-]'), '');
+  }
 
   // =========================
   // TEAMS
@@ -11,23 +41,22 @@ class SupabaseService {
 
   Future<List<Map<String, dynamic>>> getTeams() async {
     final response = await client
-        .from('teams')
+        .from(_teamsTable)
         .select()
         .order('created_at', ascending: false);
 
-    return List<Map<String, dynamic>>.from(response);
+    return _asMapList(response);
   }
 
   Future<Map<String, dynamic>?> getTeamById(int teamId) async {
     final response = await client
-        .from('teams')
+        .from(_teamsTable)
         .select()
         .eq('id', teamId)
         .limit(1);
 
-    final list = List<Map<String, dynamic>>.from(response);
-    if (list.isEmpty) return null;
-    return list.first;
+    final rows = _asMapList(response);
+    return _firstOrNull(rows);
   }
 
   Future<void> createTeam({
@@ -35,7 +64,7 @@ class SupabaseService {
     String? category,
     String? club,
   }) async {
-    await client.from('teams').insert({
+    await client.from(_teamsTable).insert({
       'name': name,
       'category': category,
       'club': club,
@@ -48,21 +77,21 @@ class SupabaseService {
 
   Future<List<Map<String, dynamic>>> getPlayers() async {
     final response = await client
-        .from('players')
+        .from(_playersTable)
         .select('*, teams(name)')
         .order('created_at', ascending: false);
 
-    return List<Map<String, dynamic>>.from(response);
+    return _asMapList(response);
   }
 
   Future<List<Map<String, dynamic>>> getPlayersByTeam(int teamId) async {
     final response = await client
-        .from('players')
+        .from(_playersTable)
         .select()
         .eq('team_id', teamId)
         .order('created_at', ascending: false);
 
-    return List<Map<String, dynamic>>.from(response);
+    return _asMapList(response);
   }
 
   Future<void> createPlayer({
@@ -73,7 +102,7 @@ class SupabaseService {
     String? status,
     String? birthDate,
   }) async {
-    await client.from('players').insert({
+    await client.from(_playersTable).insert({
       'team_id': teamId,
       'name': name,
       'position': position,
@@ -89,59 +118,58 @@ class SupabaseService {
 
   Future<List<Map<String, dynamic>>> getMatches() async {
     final response = await client
-        .from('matches')
+        .from(_matchesTable)
         .select('*, teams(name)')
         .order('created_at', ascending: false);
 
-    return List<Map<String, dynamic>>.from(response);
+    return _asMapList(response);
   }
 
   Future<List<Map<String, dynamic>>> getMatchesByTeam(int teamId) async {
     final response = await client
-        .from('matches')
+        .from(_matchesTable)
         .select('*, teams(name)')
         .eq('team_id', teamId)
         .order('created_at', ascending: false);
 
-    return List<Map<String, dynamic>>.from(response);
+    return _asMapList(response);
   }
 
   Future<List<Map<String, dynamic>>> getMatchesWithoutVideo() async {
     final response = await client
-        .from('matches')
+        .from(_matchesTable)
         .select('*, teams(name)')
         .order('created_at', ascending: false);
 
-    final list = List<Map<String, dynamic>>.from(response);
+    final rows = _asMapList(response);
 
-    return list.where((match) {
-      final videoUrl = match['video_url'];
-      return videoUrl == null || videoUrl.toString().trim().isEmpty;
+    return rows.where((match) {
+      final videoUrl = (match['video_url'] ?? '').toString().trim();
+      final sourceUrl = (match['source_url'] ?? '').toString().trim();
+      return videoUrl.isEmpty && sourceUrl.isEmpty;
     }).toList();
   }
 
   Future<Map<String, dynamic>?> getMatchById(int matchId) async {
     final response = await client
-        .from('matches')
+        .from(_matchesTable)
         .select('*, teams(name)')
         .eq('id', matchId)
         .limit(1);
 
-    final list = List<Map<String, dynamic>>.from(response);
-    if (list.isEmpty) return null;
-    return list.first;
+    final rows = _asMapList(response);
+    return _firstOrNull(rows);
   }
 
   Future<Map<String, dynamic>?> getLatestMatch() async {
     final response = await client
-        .from('matches')
+        .from(_matchesTable)
         .select('*, teams(name)')
         .order('created_at', ascending: false)
         .limit(1);
 
-    final list = List<Map<String, dynamic>>.from(response);
-    if (list.isEmpty) return null;
-    return list.first;
+    final rows = _asMapList(response);
+    return _firstOrNull(rows);
   }
 
   Future<void> createMatch({
@@ -150,16 +178,18 @@ class SupabaseService {
     required DateTime matchDate,
     required String sourceType,
     String? videoUrl,
+    String? sourceUrl,
     double? latitude,
     double? longitude,
-    String status = 'uploaded',
+    String status = statusUploaded,
   }) async {
-    await client.from('matches').insert({
+    await client.from(_matchesTable).insert({
       'team_id': teamId,
       'opponent': opponent,
       'match_date': matchDate.toIso8601String(),
       'source_type': sourceType,
       'video_url': videoUrl,
+      'source_url': sourceUrl,
       'latitude': latitude,
       'longitude': longitude,
       'status': status,
@@ -170,29 +200,40 @@ class SupabaseService {
     required int matchId,
     required String status,
   }) async {
-    await client.from('matches').update({
+    await client.from(_matchesTable).update({
       'status': status,
     }).eq('id', matchId);
   }
 
   Future<void> updateMatchVideoUrl({
     required int matchId,
-    required String videoUrl,
+    String? videoUrl,
   }) async {
-    await client.from('matches').update({
+    await client.from(_matchesTable).update({
       'video_url': videoUrl,
+    }).eq('id', matchId);
+  }
+
+  Future<void> updateMatchSourceUrl({
+    required int matchId,
+    String? sourceUrl,
+  }) async {
+    await client.from(_matchesTable).update({
+      'source_url': sourceUrl,
     }).eq('id', matchId);
   }
 
   Future<void> updateMatchVideoSource({
     required int matchId,
     required String sourceType,
-    required String videoUrl,
-    String status = 'processing',
+    String? videoUrl,
+    String? sourceUrl,
+    String status = statusProcessing,
   }) async {
-    await client.from('matches').update({
+    await client.from(_matchesTable).update({
       'source_type': sourceType,
       'video_url': videoUrl,
+      'source_url': sourceUrl,
       'status': status,
     }).eq('id', matchId);
   }
@@ -202,25 +243,27 @@ class SupabaseService {
     required Uint8List bytes,
     required String originalFileName,
   }) async {
-    final cleanName = originalFileName.replaceAll(' ', '_');
+    final safeName = _sanitizeFileName(originalFileName);
     final filePath =
-        'matches/match_${matchId}_${DateTime.now().millisecondsSinceEpoch}_$cleanName';
+        'matches/match_${matchId}_${DateTime.now().millisecondsSinceEpoch}_$safeName';
 
-    await client.storage.from('match-videos').uploadBinary(
-          filePath,
-          bytes,
-          fileOptions: const FileOptions(
-            upsert: false,
-            contentType: 'video/mp4',
-          ),
-        );
+    await client.storage.from(_matchVideosBucket).uploadBinary(
+      filePath,
+      bytes,
+      fileOptions: const FileOptions(
+        upsert: false,
+        contentType: 'video/mp4',
+      ),
+    );
 
-    final publicUrl = client.storage.from('match-videos').getPublicUrl(filePath);
+    final publicUrl =
+        client.storage.from(_matchVideosBucket).getPublicUrl(filePath);
 
-    await client.from('matches').update({
+    await client.from(_matchesTable).update({
       'source_type': 'upload',
       'video_url': publicUrl,
-      'status': 'processing',
+      'source_url': null,
+      'status': statusProcessing,
     }).eq('id', matchId);
 
     return publicUrl;
@@ -232,12 +275,12 @@ class SupabaseService {
 
   Future<List<Map<String, dynamic>>> getPlayerMatchStats(int matchId) async {
     final response = await client
-        .from('player_match_stats')
+        .from(_playerMatchStatsTable)
         .select('*, players(name, position, shirt_number)')
         .eq('match_id', matchId)
         .order('created_at', ascending: false);
 
-    return List<Map<String, dynamic>>.from(response);
+    return _asMapList(response);
   }
 
   Future<void> createPlayerMatchStat({
@@ -253,7 +296,7 @@ class SupabaseService {
     int shotsOnTarget = 0,
     double rating = 0,
   }) async {
-    await client.from('player_match_stats').insert({
+    await client.from(_playerMatchStatsTable).insert({
       'match_id': matchId,
       'player_id': playerId,
       'minutes': minutes,
@@ -276,12 +319,12 @@ class SupabaseService {
     int matchId,
   ) async {
     final response = await client
-        .from('recommendations')
+        .from(_recommendationsTable)
         .select()
         .eq('match_id', matchId)
         .order('created_at', ascending: false);
 
-    return List<Map<String, dynamic>>.from(response);
+    return _asMapList(response);
   }
 
   Future<void> createRecommendation({
@@ -292,7 +335,7 @@ class SupabaseService {
     required String description,
     String priority = 'media',
   }) async {
-    await client.from('recommendations').insert({
+    await client.from(_recommendationsTable).insert({
       'match_id': matchId,
       'player_id': playerId,
       'scope': scope,
@@ -310,12 +353,12 @@ class SupabaseService {
     int playerId,
   ) async {
     final response = await client
-        .from('predictions')
+        .from(_predictionsTable)
         .select()
         .eq('player_id', playerId)
         .order('created_at', ascending: false);
 
-    return List<Map<String, dynamic>>.from(response);
+    return _asMapList(response);
   }
 
   Future<void> createPrediction({
@@ -325,7 +368,7 @@ class SupabaseService {
     String? trend,
     String? nextMatchNotes,
   }) async {
-    await client.from('predictions').insert({
+    await client.from(_predictionsTable).insert({
       'player_id': playerId,
       'based_on_matches': basedOnMatches,
       'predicted_rating': predictedRating,
@@ -341,43 +384,45 @@ class SupabaseService {
   Future<void> insertFakeAnalysisForMatch(int matchId) async {
     await updateMatchStatus(
       matchId: matchId,
-      status: 'processing',
+      status: statusProcessing,
     );
 
     final matchResponse = await client
-        .from('matches')
+        .from(_matchesTable)
         .select()
         .eq('id', matchId)
         .limit(1);
 
-    final matchList = List<Map<String, dynamic>>.from(matchResponse);
+    final matchRows = _asMapList(matchResponse);
 
-    if (matchList.isEmpty) {
+    if (matchRows.isEmpty) {
       throw Exception('No se encontró el partido');
     }
 
-    final match = matchList.first;
-    final teamId = match['team_id'];
+    final currentMatch = matchRows.first;
+    final teamId = currentMatch['team_id'];
 
     if (teamId == null) {
       throw Exception('El partido no tiene team_id');
     }
 
-    final existingStats = await client
-        .from('player_match_stats')
+    final existingStatsResponse = await client
+        .from(_playerMatchStatsTable)
         .select()
         .eq('match_id', matchId);
 
-    final existingRecommendations = await client
-        .from('recommendations')
+    final existingRecommendationsResponse = await client
+        .from(_recommendationsTable)
         .select()
         .eq('match_id', matchId);
 
-    if ((existingStats as List).isNotEmpty ||
-        (existingRecommendations as List).isNotEmpty) {
+    final existingStats = _asMapList(existingStatsResponse);
+    final existingRecommendations = _asMapList(existingRecommendationsResponse);
+
+    if (existingStats.isNotEmpty || existingRecommendations.isNotEmpty) {
       await updateMatchStatus(
         matchId: matchId,
-        status: 'done',
+        status: statusDone,
       );
       throw Exception(
         'Ese partido ya tiene estadísticas o recomendaciones guardadas',
@@ -385,23 +430,22 @@ class SupabaseService {
     }
 
     final playersResponse = await client
-        .from('players')
+        .from(_playersTable)
         .select()
         .eq('team_id', teamId)
         .order('created_at', ascending: true);
 
-    final players = List<Map<String, dynamic>>.from(playersResponse);
+    final players = _asMapList(playersResponse);
 
     if (players.isEmpty) {
       await updateMatchStatus(
         matchId: matchId,
-        status: 'uploaded',
+        status: statusUploaded,
       );
       throw Exception('No hay jugadores para el equipo de este partido');
     }
 
     final selectedPlayers = players.take(3).toList();
-
     final List<Map<String, dynamic>> statsRows = [];
 
     if (selectedPlayers.isNotEmpty) {
@@ -453,7 +497,7 @@ class SupabaseService {
     }
 
     if (statsRows.isNotEmpty) {
-      await client.from('player_match_stats').insert(statsRows);
+      await client.from(_playerMatchStatsTable).insert(statsRows);
     }
 
     final List<Map<String, dynamic>> recommendationRows = [
@@ -487,11 +531,11 @@ class SupabaseService {
       },
     ];
 
-    await client.from('recommendations').insert(recommendationRows);
+    await client.from(_recommendationsTable).insert(recommendationRows);
 
     await updateMatchStatus(
       matchId: matchId,
-      status: 'done',
+      status: statusDone,
     );
   }
 }

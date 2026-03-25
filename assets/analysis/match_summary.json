@@ -1,0 +1,7013 @@
+{
+  "source": {
+    "player_summary_csv": "runs\\playvision_color\\player_summary.csv",
+    "team_counts_csv": "runs\\playvision_color\\team_counts_by_frame.csv",
+    "team_summary_csv": "runs\\playvision_color\\team_summary.csv"
+  },
+  "stats": {
+    "total_players_detected": 23,
+    "stable_players_detected": 19,
+    "unstable_players_detected": 4,
+    "green_team_stable_players": 7,
+    "red_team_stable_players": 12,
+    "unknown_stable_players": 0,
+    "frames_with_counts": 877,
+    "max_green_visible": 5,
+    "max_red_visible": 6,
+    "max_unknown_visible": 0,
+    "max_total_visible": 9,
+    "avg_green_visible": 2.63,
+    "avg_red_visible": 3.3,
+    "avg_unknown_visible": 0.0
+  },
+  "teams": {
+    "green_team": [
+      {
+        "track_id": 1,
+        "first_frame": 1,
+        "last_frame": 877,
+        "frames_detected": 876,
+        "max_frames_seen": 876,
+        "avg_conf": 0.8623,
+        "avg_color_score": 0.1603,
+        "green_votes": 876,
+        "red_votes": 0,
+        "unknown_votes": 0,
+        "final_team_player": "green_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 521,
+          "y1": 226,
+          "x2": 558,
+          "y2": 326
+        }
+      },
+      {
+        "track_id": 4,
+        "first_frame": 1,
+        "last_frame": 326,
+        "frames_detected": 307,
+        "max_frames_seen": 307,
+        "avg_conf": 0.7468,
+        "avg_color_score": 0.5556,
+        "green_votes": 307,
+        "red_votes": 0,
+        "unknown_votes": 0,
+        "final_team_player": "green_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 285,
+          "y1": 187,
+          "x2": 314,
+          "y2": 268
+        }
+      },
+      {
+        "track_id": 8,
+        "first_frame": 227,
+        "last_frame": 876,
+        "frames_detected": 545,
+        "max_frames_seen": 545,
+        "avg_conf": 0.7087,
+        "avg_color_score": 0.5384,
+        "green_votes": 545,
+        "red_votes": 0,
+        "unknown_votes": 0,
+        "final_team_player": "green_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 176,
+          "y1": 176,
+          "x2": 204,
+          "y2": 253
+        }
+      },
+      {
+        "track_id": 11,
+        "first_frame": 397,
+        "last_frame": 442,
+        "frames_detected": 43,
+        "max_frames_seen": 43,
+        "avg_conf": 0.6712,
+        "avg_color_score": 0.7542,
+        "green_votes": 43,
+        "red_votes": 0,
+        "unknown_votes": 0,
+        "final_team_player": "green_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 538,
+          "y1": 155,
+          "x2": 571,
+          "y2": 217
+        }
+      },
+      {
+        "track_id": 16,
+        "first_frame": 596,
+        "last_frame": 877,
+        "frames_detected": 261,
+        "max_frames_seen": 261,
+        "avg_conf": 0.7349,
+        "avg_color_score": 0.6323,
+        "green_votes": 261,
+        "red_votes": 0,
+        "unknown_votes": 0,
+        "final_team_player": "green_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 379,
+          "y1": 193,
+          "x2": 413,
+          "y2": 276
+        }
+      },
+      {
+        "track_id": 17,
+        "first_frame": 607,
+        "last_frame": 791,
+        "frames_detected": 95,
+        "max_frames_seen": 95,
+        "avg_conf": 0.6115,
+        "avg_color_score": 0.5926,
+        "green_votes": 95,
+        "red_votes": 0,
+        "unknown_votes": 0,
+        "final_team_player": "green_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 158,
+          "y1": 147,
+          "x2": 186,
+          "y2": 215
+        }
+      },
+      {
+        "track_id": 19,
+        "first_frame": 681,
+        "last_frame": 877,
+        "frames_detected": 182,
+        "max_frames_seen": 182,
+        "avg_conf": 0.7481,
+        "avg_color_score": 0.6009,
+        "green_votes": 138,
+        "red_votes": 44,
+        "unknown_votes": 0,
+        "final_team_player": "green_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 438,
+          "y1": 194,
+          "x2": 475,
+          "y2": 278
+        }
+      }
+    ],
+    "red_team": [
+      {
+        "track_id": 2,
+        "first_frame": 1,
+        "last_frame": 544,
+        "frames_detected": 480,
+        "max_frames_seen": 480,
+        "avg_conf": 0.7391,
+        "avg_color_score": 0.6677,
+        "green_votes": 0,
+        "red_votes": 480,
+        "unknown_votes": 0,
+        "final_team_player": "red_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 272,
+          "y1": 182,
+          "x2": 301,
+          "y2": 264
+        }
+      },
+      {
+        "track_id": 3,
+        "first_frame": 1,
+        "last_frame": 736,
+        "frames_detected": 686,
+        "max_frames_seen": 686,
+        "avg_conf": 0.7261,
+        "avg_color_score": 0.6563,
+        "green_votes": 0,
+        "red_votes": 686,
+        "unknown_votes": 0,
+        "final_team_player": "red_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 164,
+          "y1": 192,
+          "x2": 193,
+          "y2": 272
+        }
+      },
+      {
+        "track_id": 5,
+        "first_frame": 1,
+        "last_frame": 232,
+        "frames_detected": 189,
+        "max_frames_seen": 189,
+        "avg_conf": 0.6688,
+        "avg_color_score": 0.5574,
+        "green_votes": 0,
+        "red_votes": 189,
+        "unknown_votes": 0,
+        "final_team_player": "red_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 397,
+          "y1": 173,
+          "x2": 431,
+          "y2": 247
+        }
+      },
+      {
+        "track_id": 6,
+        "first_frame": 1,
+        "last_frame": 70,
+        "frames_detected": 63,
+        "max_frames_seen": 63,
+        "avg_conf": 0.6835,
+        "avg_color_score": 0.7438,
+        "green_votes": 0,
+        "red_votes": 63,
+        "unknown_votes": 0,
+        "final_team_player": "red_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 123,
+          "y1": 191,
+          "x2": 154,
+          "y2": 276
+        }
+      },
+      {
+        "track_id": 7,
+        "first_frame": 65,
+        "last_frame": 608,
+        "frames_detected": 517,
+        "max_frames_seen": 517,
+        "avg_conf": 0.7633,
+        "avg_color_score": 0.6877,
+        "green_votes": 0,
+        "red_votes": 517,
+        "unknown_votes": 0,
+        "final_team_player": "red_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 213,
+          "y1": 195,
+          "x2": 245,
+          "y2": 274
+        }
+      },
+      {
+        "track_id": 9,
+        "first_frame": 240,
+        "last_frame": 359,
+        "frames_detected": 87,
+        "max_frames_seen": 87,
+        "avg_conf": 0.6826,
+        "avg_color_score": 0.7137,
+        "green_votes": 0,
+        "red_votes": 87,
+        "unknown_votes": 0,
+        "final_team_player": "red_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 462,
+          "y1": 139,
+          "x2": 489,
+          "y2": 202
+        }
+      },
+      {
+        "track_id": 10,
+        "first_frame": 381,
+        "last_frame": 679,
+        "frames_detected": 171,
+        "max_frames_seen": 171,
+        "avg_conf": 0.6513,
+        "avg_color_score": 0.6839,
+        "green_votes": 0,
+        "red_votes": 171,
+        "unknown_votes": 0,
+        "final_team_player": "red_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 195,
+          "y1": 143,
+          "x2": 221,
+          "y2": 205
+        }
+      },
+      {
+        "track_id": 12,
+        "first_frame": 451,
+        "last_frame": 557,
+        "frames_detected": 104,
+        "max_frames_seen": 104,
+        "avg_conf": 0.6844,
+        "avg_color_score": 0.7316,
+        "green_votes": 0,
+        "red_votes": 104,
+        "unknown_votes": 0,
+        "final_team_player": "red_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 110,
+          "y1": 148,
+          "x2": 135,
+          "y2": 210
+        }
+      },
+      {
+        "track_id": 13,
+        "first_frame": 466,
+        "last_frame": 863,
+        "frames_detected": 381,
+        "max_frames_seen": 381,
+        "avg_conf": 0.7656,
+        "avg_color_score": 0.6868,
+        "green_votes": 14,
+        "red_votes": 367,
+        "unknown_votes": 0,
+        "final_team_player": "red_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 357,
+          "y1": 191,
+          "x2": 391,
+          "y2": 275
+        }
+      },
+      {
+        "track_id": 14,
+        "first_frame": 574,
+        "last_frame": 658,
+        "frames_detected": 71,
+        "max_frames_seen": 71,
+        "avg_conf": 0.6523,
+        "avg_color_score": 0.7828,
+        "green_votes": 0,
+        "red_votes": 71,
+        "unknown_votes": 0,
+        "final_team_player": "red_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 91,
+          "y1": 143,
+          "x2": 118,
+          "y2": 209
+        }
+      },
+      {
+        "track_id": 15,
+        "first_frame": 586,
+        "last_frame": 877,
+        "frames_detected": 86,
+        "max_frames_seen": 86,
+        "avg_conf": 0.5845,
+        "avg_color_score": 0.708,
+        "green_votes": 0,
+        "red_votes": 86,
+        "unknown_votes": 0,
+        "final_team_player": "red_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 336,
+          "y1": 147,
+          "x2": 363,
+          "y2": 205
+        }
+      },
+      {
+        "track_id": 21,
+        "first_frame": 817,
+        "last_frame": 847,
+        "frames_detected": 28,
+        "max_frames_seen": 28,
+        "avg_conf": 0.6329,
+        "avg_color_score": 0.565,
+        "green_votes": 2,
+        "red_votes": 26,
+        "unknown_votes": 0,
+        "final_team_player": "red_team",
+        "stable_player": true,
+        "avg_box": {
+          "x1": 557,
+          "y1": 152,
+          "x2": 588,
+          "y2": 209
+        }
+      }
+    ],
+    "unknown": []
+  },
+  "all_players": [
+    {
+      "track_id": 1,
+      "first_frame": 1,
+      "last_frame": 877,
+      "frames_detected": 876,
+      "max_frames_seen": 876,
+      "avg_conf": 0.8623,
+      "avg_color_score": 0.1603,
+      "green_votes": 876,
+      "red_votes": 0,
+      "unknown_votes": 0,
+      "final_team_player": "green_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 521,
+        "y1": 226,
+        "x2": 558,
+        "y2": 326
+      }
+    },
+    {
+      "track_id": 2,
+      "first_frame": 1,
+      "last_frame": 544,
+      "frames_detected": 480,
+      "max_frames_seen": 480,
+      "avg_conf": 0.7391,
+      "avg_color_score": 0.6677,
+      "green_votes": 0,
+      "red_votes": 480,
+      "unknown_votes": 0,
+      "final_team_player": "red_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 272,
+        "y1": 182,
+        "x2": 301,
+        "y2": 264
+      }
+    },
+    {
+      "track_id": 3,
+      "first_frame": 1,
+      "last_frame": 736,
+      "frames_detected": 686,
+      "max_frames_seen": 686,
+      "avg_conf": 0.7261,
+      "avg_color_score": 0.6563,
+      "green_votes": 0,
+      "red_votes": 686,
+      "unknown_votes": 0,
+      "final_team_player": "red_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 164,
+        "y1": 192,
+        "x2": 193,
+        "y2": 272
+      }
+    },
+    {
+      "track_id": 4,
+      "first_frame": 1,
+      "last_frame": 326,
+      "frames_detected": 307,
+      "max_frames_seen": 307,
+      "avg_conf": 0.7468,
+      "avg_color_score": 0.5556,
+      "green_votes": 307,
+      "red_votes": 0,
+      "unknown_votes": 0,
+      "final_team_player": "green_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 285,
+        "y1": 187,
+        "x2": 314,
+        "y2": 268
+      }
+    },
+    {
+      "track_id": 5,
+      "first_frame": 1,
+      "last_frame": 232,
+      "frames_detected": 189,
+      "max_frames_seen": 189,
+      "avg_conf": 0.6688,
+      "avg_color_score": 0.5574,
+      "green_votes": 0,
+      "red_votes": 189,
+      "unknown_votes": 0,
+      "final_team_player": "red_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 397,
+        "y1": 173,
+        "x2": 431,
+        "y2": 247
+      }
+    },
+    {
+      "track_id": 6,
+      "first_frame": 1,
+      "last_frame": 70,
+      "frames_detected": 63,
+      "max_frames_seen": 63,
+      "avg_conf": 0.6835,
+      "avg_color_score": 0.7438,
+      "green_votes": 0,
+      "red_votes": 63,
+      "unknown_votes": 0,
+      "final_team_player": "red_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 123,
+        "y1": 191,
+        "x2": 154,
+        "y2": 276
+      }
+    },
+    {
+      "track_id": 7,
+      "first_frame": 65,
+      "last_frame": 608,
+      "frames_detected": 517,
+      "max_frames_seen": 517,
+      "avg_conf": 0.7633,
+      "avg_color_score": 0.6877,
+      "green_votes": 0,
+      "red_votes": 517,
+      "unknown_votes": 0,
+      "final_team_player": "red_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 213,
+        "y1": 195,
+        "x2": 245,
+        "y2": 274
+      }
+    },
+    {
+      "track_id": 8,
+      "first_frame": 227,
+      "last_frame": 876,
+      "frames_detected": 545,
+      "max_frames_seen": 545,
+      "avg_conf": 0.7087,
+      "avg_color_score": 0.5384,
+      "green_votes": 545,
+      "red_votes": 0,
+      "unknown_votes": 0,
+      "final_team_player": "green_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 176,
+        "y1": 176,
+        "x2": 204,
+        "y2": 253
+      }
+    },
+    {
+      "track_id": 9,
+      "first_frame": 240,
+      "last_frame": 359,
+      "frames_detected": 87,
+      "max_frames_seen": 87,
+      "avg_conf": 0.6826,
+      "avg_color_score": 0.7137,
+      "green_votes": 0,
+      "red_votes": 87,
+      "unknown_votes": 0,
+      "final_team_player": "red_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 462,
+        "y1": 139,
+        "x2": 489,
+        "y2": 202
+      }
+    },
+    {
+      "track_id": 10,
+      "first_frame": 381,
+      "last_frame": 679,
+      "frames_detected": 171,
+      "max_frames_seen": 171,
+      "avg_conf": 0.6513,
+      "avg_color_score": 0.6839,
+      "green_votes": 0,
+      "red_votes": 171,
+      "unknown_votes": 0,
+      "final_team_player": "red_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 195,
+        "y1": 143,
+        "x2": 221,
+        "y2": 205
+      }
+    },
+    {
+      "track_id": 11,
+      "first_frame": 397,
+      "last_frame": 442,
+      "frames_detected": 43,
+      "max_frames_seen": 43,
+      "avg_conf": 0.6712,
+      "avg_color_score": 0.7542,
+      "green_votes": 43,
+      "red_votes": 0,
+      "unknown_votes": 0,
+      "final_team_player": "green_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 538,
+        "y1": 155,
+        "x2": 571,
+        "y2": 217
+      }
+    },
+    {
+      "track_id": 12,
+      "first_frame": 451,
+      "last_frame": 557,
+      "frames_detected": 104,
+      "max_frames_seen": 104,
+      "avg_conf": 0.6844,
+      "avg_color_score": 0.7316,
+      "green_votes": 0,
+      "red_votes": 104,
+      "unknown_votes": 0,
+      "final_team_player": "red_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 110,
+        "y1": 148,
+        "x2": 135,
+        "y2": 210
+      }
+    },
+    {
+      "track_id": 13,
+      "first_frame": 466,
+      "last_frame": 863,
+      "frames_detected": 381,
+      "max_frames_seen": 381,
+      "avg_conf": 0.7656,
+      "avg_color_score": 0.6868,
+      "green_votes": 14,
+      "red_votes": 367,
+      "unknown_votes": 0,
+      "final_team_player": "red_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 357,
+        "y1": 191,
+        "x2": 391,
+        "y2": 275
+      }
+    },
+    {
+      "track_id": 14,
+      "first_frame": 574,
+      "last_frame": 658,
+      "frames_detected": 71,
+      "max_frames_seen": 71,
+      "avg_conf": 0.6523,
+      "avg_color_score": 0.7828,
+      "green_votes": 0,
+      "red_votes": 71,
+      "unknown_votes": 0,
+      "final_team_player": "red_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 91,
+        "y1": 143,
+        "x2": 118,
+        "y2": 209
+      }
+    },
+    {
+      "track_id": 15,
+      "first_frame": 586,
+      "last_frame": 877,
+      "frames_detected": 86,
+      "max_frames_seen": 86,
+      "avg_conf": 0.5845,
+      "avg_color_score": 0.708,
+      "green_votes": 0,
+      "red_votes": 86,
+      "unknown_votes": 0,
+      "final_team_player": "red_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 336,
+        "y1": 147,
+        "x2": 363,
+        "y2": 205
+      }
+    },
+    {
+      "track_id": 16,
+      "first_frame": 596,
+      "last_frame": 877,
+      "frames_detected": 261,
+      "max_frames_seen": 261,
+      "avg_conf": 0.7349,
+      "avg_color_score": 0.6323,
+      "green_votes": 261,
+      "red_votes": 0,
+      "unknown_votes": 0,
+      "final_team_player": "green_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 379,
+        "y1": 193,
+        "x2": 413,
+        "y2": 276
+      }
+    },
+    {
+      "track_id": 17,
+      "first_frame": 607,
+      "last_frame": 791,
+      "frames_detected": 95,
+      "max_frames_seen": 95,
+      "avg_conf": 0.6115,
+      "avg_color_score": 0.5926,
+      "green_votes": 95,
+      "red_votes": 0,
+      "unknown_votes": 0,
+      "final_team_player": "green_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 158,
+        "y1": 147,
+        "x2": 186,
+        "y2": 215
+      }
+    },
+    {
+      "track_id": 18,
+      "first_frame": 630,
+      "last_frame": 674,
+      "frames_detected": 7,
+      "max_frames_seen": 7,
+      "avg_conf": 0.6007,
+      "avg_color_score": 0.5904,
+      "green_votes": 7,
+      "red_votes": 0,
+      "unknown_votes": 0,
+      "final_team_player": "green_team",
+      "stable_player": false,
+      "avg_box": {
+        "x1": 355,
+        "y1": 149,
+        "x2": 383,
+        "y2": 215
+      }
+    },
+    {
+      "track_id": 19,
+      "first_frame": 681,
+      "last_frame": 877,
+      "frames_detected": 182,
+      "max_frames_seen": 182,
+      "avg_conf": 0.7481,
+      "avg_color_score": 0.6009,
+      "green_votes": 138,
+      "red_votes": 44,
+      "unknown_votes": 0,
+      "final_team_player": "green_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 438,
+        "y1": 194,
+        "x2": 475,
+        "y2": 278
+      }
+    },
+    {
+      "track_id": 20,
+      "first_frame": 742,
+      "last_frame": 748,
+      "frames_detected": 7,
+      "max_frames_seen": 7,
+      "avg_conf": 0.6512,
+      "avg_color_score": 0.5908,
+      "green_votes": 7,
+      "red_votes": 0,
+      "unknown_votes": 0,
+      "final_team_player": "green_team",
+      "stable_player": false,
+      "avg_box": {
+        "x1": 613,
+        "y1": 145,
+        "x2": 638,
+        "y2": 201
+      }
+    },
+    {
+      "track_id": 21,
+      "first_frame": 817,
+      "last_frame": 847,
+      "frames_detected": 28,
+      "max_frames_seen": 28,
+      "avg_conf": 0.6329,
+      "avg_color_score": 0.565,
+      "green_votes": 2,
+      "red_votes": 26,
+      "unknown_votes": 0,
+      "final_team_player": "red_team",
+      "stable_player": true,
+      "avg_box": {
+        "x1": 557,
+        "y1": 152,
+        "x2": 588,
+        "y2": 209
+      }
+    },
+    {
+      "track_id": 22,
+      "first_frame": 850,
+      "last_frame": 861,
+      "frames_detected": 4,
+      "max_frames_seen": 4,
+      "avg_conf": 0.6129,
+      "avg_color_score": 0.8315,
+      "green_votes": 4,
+      "red_votes": 0,
+      "unknown_votes": 0,
+      "final_team_player": "green_team",
+      "stable_player": false,
+      "avg_box": {
+        "x1": 416,
+        "y1": 140,
+        "x2": 448,
+        "y2": 203
+      }
+    },
+    {
+      "track_id": 23,
+      "first_frame": 872,
+      "last_frame": 877,
+      "frames_detected": 6,
+      "max_frames_seen": 6,
+      "avg_conf": 0.7703,
+      "avg_color_score": 0.5212,
+      "green_votes": 6,
+      "red_votes": 0,
+      "unknown_votes": 0,
+      "final_team_player": "green_team",
+      "stable_player": false,
+      "avg_box": {
+        "x1": 610,
+        "y1": 174,
+        "x2": 638,
+        "y2": 240
+      }
+    }
+  ],
+  "frame_counts": [
+    {
+      "frame": 1,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 2,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 3,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 4,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 5,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 6,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 7,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 8,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 9,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 10,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 11,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 12,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 13,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 14,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 15,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 16,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 17,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 18,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 19,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 20,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 21,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 22,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 23,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 24,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 25,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 26,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 27,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 28,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 29,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 30,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 31,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 32,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 33,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 34,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 35,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 36,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 37,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 38,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 39,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 40,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 41,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 42,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 43,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 44,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 45,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 46,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 47,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 48,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 49,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 50,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 51,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 52,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 53,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 54,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 55,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 56,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 57,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 58,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 59,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 60,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 61,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 62,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 63,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 64,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 65,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 66,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 67,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 68,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 69,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 70,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 71,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 72,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 73,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 74,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 75,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 76,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 77,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 78,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 79,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 80,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 81,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 82,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 83,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 84,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 85,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 86,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 87,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 88,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 89,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 90,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 91,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 92,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 93,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 94,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 95,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 96,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 97,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 98,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 99,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 100,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 101,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 102,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 103,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 104,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 105,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 106,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 107,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 108,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 109,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 110,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 111,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 112,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 113,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 114,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 115,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 116,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 117,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 118,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 119,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 120,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 121,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 122,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 123,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 124,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 125,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 126,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 127,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 128,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 129,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 130,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 131,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 132,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 133,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 134,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 135,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 136,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 137,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 138,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 139,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 140,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 141,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 142,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 143,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 144,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 145,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 146,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 147,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 148,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 149,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 150,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 151,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 152,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 153,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 154,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 155,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 156,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 157,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 158,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 159,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 160,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 161,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 162,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 163,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 164,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 165,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 166,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 167,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 168,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 169,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 170,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 171,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 172,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 173,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 174,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 175,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 176,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 177,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 178,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 179,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 180,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 181,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 182,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 183,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 184,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 185,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 186,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 187,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 188,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 189,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 190,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 191,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 192,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 193,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 194,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 195,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 196,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 197,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 198,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 199,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 200,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 201,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 202,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 203,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 204,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 205,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 206,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 207,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 208,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 209,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 210,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 211,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 212,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 213,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 214,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 215,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 216,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 217,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 218,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 219,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 220,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 221,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 222,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 223,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 224,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 225,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 226,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 227,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 228,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 229,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 230,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 231,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 232,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 233,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 234,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 235,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 236,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 237,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 238,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 239,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 240,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 241,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 242,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 243,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 244,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 245,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 246,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 247,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 248,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 249,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 250,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 251,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 252,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 253,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 254,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 255,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 256,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 257,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 258,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 259,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 260,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 261,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 262,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 263,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 264,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 265,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 266,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 267,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 268,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 269,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 270,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 271,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 272,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 273,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 274,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 275,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 276,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 277,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 278,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 279,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 280,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 281,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 282,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 283,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 284,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 285,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 286,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 287,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 288,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 289,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 290,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 291,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 292,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 293,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 294,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 295,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 296,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 297,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 298,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 299,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 300,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 301,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 302,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 303,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 304,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 305,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 306,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 307,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 308,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 309,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 310,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 311,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 312,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 313,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 314,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 315,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 316,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 317,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 318,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 319,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 320,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 321,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 322,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 323,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 324,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 325,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 326,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 327,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 328,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 329,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 330,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 331,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 332,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 333,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 334,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 335,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 336,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 337,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 338,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 339,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 340,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 341,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 342,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 343,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 344,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 345,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 346,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 347,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 348,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 349,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 350,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 351,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 352,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 353,
+      "green_visible": 1,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 354,
+      "green_visible": 1,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 355,
+      "green_visible": 1,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 356,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 357,
+      "green_visible": 1,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 358,
+      "green_visible": 1,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 359,
+      "green_visible": 1,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 360,
+      "green_visible": 1,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 361,
+      "green_visible": 1,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 362,
+      "green_visible": 1,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 363,
+      "green_visible": 1,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 364,
+      "green_visible": 1,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 3
+    },
+    {
+      "frame": 365,
+      "green_visible": 1,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 3
+    },
+    {
+      "frame": 366,
+      "green_visible": 1,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 367,
+      "green_visible": 1,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 368,
+      "green_visible": 1,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 3
+    },
+    {
+      "frame": 369,
+      "green_visible": 1,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 3
+    },
+    {
+      "frame": 370,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 371,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 372,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 373,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 374,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 375,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 376,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 377,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 378,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 379,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 380,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 381,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 382,
+      "green_visible": 1,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 383,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 384,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 385,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 386,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 387,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 388,
+      "green_visible": 1,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 389,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 390,
+      "green_visible": 1,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 391,
+      "green_visible": 1,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 392,
+      "green_visible": 1,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 393,
+      "green_visible": 1,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 394,
+      "green_visible": 1,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 395,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 396,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 397,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 398,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 399,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 400,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 401,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 402,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 403,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 404,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 405,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 406,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 407,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 408,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 409,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 410,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 411,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 412,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 413,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 414,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 415,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 416,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 417,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 418,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 419,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 420,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 421,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 422,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 423,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 424,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 425,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 426,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 427,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 428,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 429,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 430,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 431,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 432,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 433,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 434,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 435,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 436,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 437,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 438,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 439,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 440,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 441,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 442,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 443,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 444,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 445,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 446,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 447,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 448,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 449,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 450,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 451,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 452,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 453,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 454,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 455,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 456,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 457,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 458,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 459,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 460,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 461,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 462,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 463,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 464,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 465,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 466,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 467,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 468,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 469,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 470,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 471,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 472,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 473,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 474,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 475,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 476,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 477,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 478,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 479,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 480,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 481,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 482,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 483,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 484,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 485,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 486,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 487,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 488,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 489,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 490,
+      "green_visible": 1,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 491,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 492,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 493,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 494,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 495,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 496,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 497,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 498,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 499,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 500,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 501,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 502,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 503,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 504,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 505,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 506,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 507,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 508,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 509,
+      "green_visible": 1,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 510,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 511,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 512,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 513,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 514,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 515,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 516,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 517,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 518,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 519,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 520,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 521,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 522,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 523,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 524,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 525,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 526,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 527,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 528,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 529,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 530,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 531,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 532,
+      "green_visible": 2,
+      "red_visible": 6,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 533,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 534,
+      "green_visible": 2,
+      "red_visible": 6,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 535,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 536,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 537,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 538,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 539,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 540,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 541,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 542,
+      "green_visible": 2,
+      "red_visible": 6,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 543,
+      "green_visible": 2,
+      "red_visible": 6,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 544,
+      "green_visible": 2,
+      "red_visible": 6,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 545,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 546,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 547,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 548,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 549,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 550,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 551,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 552,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 553,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 554,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 555,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 556,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 557,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 558,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 559,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 560,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 561,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 562,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 563,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 564,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 565,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 566,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 567,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 568,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 569,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 570,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 571,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 572,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 573,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 574,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 575,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 576,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 577,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 578,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 579,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 580,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 581,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 582,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 583,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 584,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 585,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 586,
+      "green_visible": 2,
+      "red_visible": 6,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 587,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 588,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 589,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 590,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 591,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 592,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 593,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 594,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 595,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 596,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 597,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 598,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 599,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 600,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 601,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 602,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 603,
+      "green_visible": 3,
+      "red_visible": 6,
+      "unknown_visible": 0,
+      "total_visible": 9
+    },
+    {
+      "frame": 604,
+      "green_visible": 3,
+      "red_visible": 6,
+      "unknown_visible": 0,
+      "total_visible": 9
+    },
+    {
+      "frame": 605,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 606,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 607,
+      "green_visible": 4,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 9
+    },
+    {
+      "frame": 608,
+      "green_visible": 4,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 9
+    },
+    {
+      "frame": 609,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 610,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 611,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 612,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 613,
+      "green_visible": 4,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 9
+    },
+    {
+      "frame": 614,
+      "green_visible": 4,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 9
+    },
+    {
+      "frame": 615,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 616,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 617,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 618,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 619,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 620,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 621,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 622,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 623,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 624,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 625,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 626,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 627,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 628,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 629,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 630,
+      "green_visible": 4,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 9
+    },
+    {
+      "frame": 631,
+      "green_visible": 4,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 632,
+      "green_visible": 4,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 633,
+      "green_visible": 4,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 634,
+      "green_visible": 4,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 635,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 636,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 637,
+      "green_visible": 4,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 638,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 639,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 640,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 641,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 642,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 643,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 644,
+      "green_visible": 3,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 645,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 646,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 647,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 648,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 649,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 650,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 651,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 652,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 653,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 654,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 655,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 656,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 657,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 658,
+      "green_visible": 2,
+      "red_visible": 5,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 659,
+      "green_visible": 2,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 660,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 661,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 662,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 663,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 664,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 665,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 666,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 667,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 668,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 669,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 670,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 671,
+      "green_visible": 4,
+      "red_visible": 0,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 672,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 673,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 674,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 675,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 676,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 677,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 678,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 679,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 680,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 681,
+      "green_visible": 5,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 682,
+      "green_visible": 5,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 683,
+      "green_visible": 5,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 684,
+      "green_visible": 5,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 685,
+      "green_visible": 5,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 686,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 687,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 688,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 689,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 690,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 691,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 692,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 693,
+      "green_visible": 4,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 694,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 695,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 696,
+      "green_visible": 5,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 697,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 698,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 699,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 700,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 701,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 702,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 703,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 704,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 705,
+      "green_visible": 4,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 706,
+      "green_visible": 4,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 707,
+      "green_visible": 4,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 708,
+      "green_visible": 5,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 709,
+      "green_visible": 5,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 710,
+      "green_visible": 5,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 711,
+      "green_visible": 5,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 712,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 713,
+      "green_visible": 5,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 714,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 715,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 716,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 717,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 718,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 719,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 720,
+      "green_visible": 5,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 721,
+      "green_visible": 4,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 722,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 723,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 724,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 725,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 726,
+      "green_visible": 5,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 727,
+      "green_visible": 5,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 728,
+      "green_visible": 5,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 729,
+      "green_visible": 5,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 730,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 731,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 732,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 733,
+      "green_visible": 5,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 734,
+      "green_visible": 5,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 735,
+      "green_visible": 5,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 736,
+      "green_visible": 5,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 8
+    },
+    {
+      "frame": 737,
+      "green_visible": 5,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 738,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 739,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 740,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 741,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 742,
+      "green_visible": 5,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 743,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 744,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 745,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 746,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 747,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 748,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 749,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 750,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 751,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 752,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 753,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 754,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 755,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 756,
+      "green_visible": 2,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 3
+    },
+    {
+      "frame": 757,
+      "green_visible": 2,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 3
+    },
+    {
+      "frame": 758,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 759,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 760,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 761,
+      "green_visible": 5,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 762,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 763,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 764,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 765,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 766,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 767,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 768,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 769,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 770,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 771,
+      "green_visible": 5,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 772,
+      "green_visible": 5,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 773,
+      "green_visible": 5,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 774,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 775,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 776,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 777,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 778,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 779,
+      "green_visible": 5,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 780,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 781,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 782,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 783,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 784,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 785,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 786,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 787,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 788,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 789,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 790,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 791,
+      "green_visible": 5,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 792,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 793,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 794,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 795,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 796,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 797,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 798,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 799,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 800,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 801,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 802,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 803,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 804,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 805,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 806,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 807,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 808,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 809,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 810,
+      "green_visible": 4,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 811,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 812,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 813,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 814,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 815,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 816,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 817,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 818,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 819,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 820,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 821,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 822,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 823,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 824,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 825,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 826,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 827,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 828,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 829,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 830,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 831,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 832,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 833,
+      "green_visible": 4,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 834,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 835,
+      "green_visible": 3,
+      "red_visible": 4,
+      "unknown_visible": 0,
+      "total_visible": 7
+    },
+    {
+      "frame": 836,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 837,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 838,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 839,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 840,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 841,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 842,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 843,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 844,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 845,
+      "green_visible": 2,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 846,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 847,
+      "green_visible": 3,
+      "red_visible": 3,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 848,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 849,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 850,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 851,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 852,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 853,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 854,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 855,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 856,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 857,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 858,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 859,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 860,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 861,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 862,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 863,
+      "green_visible": 2,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 864,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 865,
+      "green_visible": 2,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 3
+    },
+    {
+      "frame": 866,
+      "green_visible": 2,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 3
+    },
+    {
+      "frame": 867,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 868,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 869,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 870,
+      "green_visible": 3,
+      "red_visible": 1,
+      "unknown_visible": 0,
+      "total_visible": 4
+    },
+    {
+      "frame": 871,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    },
+    {
+      "frame": 872,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 873,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 874,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 875,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 876,
+      "green_visible": 4,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 6
+    },
+    {
+      "frame": 877,
+      "green_visible": 3,
+      "red_visible": 2,
+      "unknown_visible": 0,
+      "total_visible": 5
+    }
+  ]
+}
