@@ -5,6 +5,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:video_player/video_player.dart';
 import '../../../core/store/analysis_store.dart';
 
 const String _apiBase = 'http://127.0.0.1:8000';
@@ -43,7 +44,7 @@ class _AnalysisPageState extends State<AnalysisPage>
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 3, vsync: this);
+    _tabs = TabController(length: 4, vsync: this);
     result = AnalysisStore.instance.lastResult;
   }
 
@@ -154,7 +155,7 @@ class _AnalysisPageState extends State<AnalysisPage>
                     unselectedLabelColor: _C.dim,
                     labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11, letterSpacing: 1.5),
                     dividerColor: Colors.transparent,
-                    tabs: const [Tab(text: 'RESUMEN'), Tab(text: 'CAMPO'), Tab(text: 'JUGADORES')],
+                    tabs: const [Tab(text: 'RESUMEN'), Tab(text: 'CAMPO'), Tab(text: 'JUGADORES'), Tab(text: 'VIDEO')],
                   ),
                 ),
               )
@@ -167,6 +168,7 @@ class _AnalysisPageState extends State<AnalysisPage>
                       _ResumenTab(data: result!),
                       _CampoTab(players: result!['players'] as List),
                       _JugadoresTab(players: result!['players'] as List),
+                      _VideoTab(videoUrl: result!['video_url'] as String?),
                     ])
                   : _UploadView(
                       videoFile: videoFile,
@@ -798,4 +800,123 @@ class _SLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(text,
       style: const TextStyle(color: _C.dim, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 2));
+}
+
+// ─── Video Tab ─────────────────────────────────────────────────
+
+class _VideoTab extends StatefulWidget {
+  final String? videoUrl;
+  const _VideoTab({required this.videoUrl});
+
+  @override
+  State<_VideoTab> createState() => _VideoTabState();
+}
+
+class _VideoTabState extends State<_VideoTab> {
+  VideoPlayerController? _ctrl;
+  bool _initialized = false;
+  bool _error = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.videoUrl != null) {
+      _ctrl = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!))
+        ..initialize().then((_) {
+          if (mounted) setState(() => _initialized = true);
+        }).catchError((_) {
+          if (mounted) setState(() => _error = true);
+        });
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.videoUrl == null || _error) {
+      return const Center(
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Icon(Icons.videocam_off_outlined, color: _C.lo, size: 40),
+          SizedBox(height: 12),
+          Text('Video no disponible', style: TextStyle(color: _C.muted, fontSize: 14)),
+        ]),
+      );
+    }
+
+    if (!_initialized) {
+      return const Center(child: CircularProgressIndicator(color: _C.accent, strokeWidth: 2));
+    }
+
+    return Column(children: [
+      // Player
+      Expanded(
+        child: Container(
+          color: Colors.black,
+          child: Center(
+            child: AspectRatio(
+              aspectRatio: _ctrl!.value.aspectRatio,
+              child: VideoPlayer(_ctrl!),
+            ),
+          ),
+        ),
+      ),
+
+      // Controles
+      Container(
+        color: _C.s1,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        child: Column(children: [
+          // Barra de progreso
+          VideoProgressIndicator(
+            _ctrl!,
+            allowScrubbing: true,
+            colors: const VideoProgressColors(
+              playedColor: _C.accent,
+              bufferedColor: _C.s2,
+              backgroundColor: _C.lo,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            // Retroceder 10s
+            IconButton(
+              icon: const Icon(Icons.replay_10_rounded, color: _C.muted),
+              onPressed: () {
+                final pos = _ctrl!.value.position - const Duration(seconds: 10);
+                _ctrl!.seekTo(pos < Duration.zero ? Duration.zero : pos);
+              },
+            ),
+            // Play / Pause
+            GestureDetector(
+              onTap: () => setState(() {
+                _ctrl!.value.isPlaying ? _ctrl!.pause() : _ctrl!.play();
+              }),
+              child: Container(
+                width: 52, height: 52,
+                decoration: const BoxDecoration(color: _C.accent, shape: BoxShape.circle),
+                child: Icon(
+                  _ctrl!.value.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  color: _C.bg, size: 28,
+                ),
+              ),
+            ),
+            // Adelantar 10s
+            IconButton(
+              icon: const Icon(Icons.forward_10_rounded, color: _C.muted),
+              onPressed: () {
+                final pos  = _ctrl!.value.position + const Duration(seconds: 10);
+                final max  = _ctrl!.value.duration;
+                _ctrl!.seekTo(pos > max ? max : pos);
+              },
+            ),
+          ]),
+        ]),
+      ),
+    ]);
+  }
 }

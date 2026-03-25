@@ -13,7 +13,7 @@ CONF_THRESHOLD = 0.45     # más bajo para detectar más jugadores
 
 model = YOLO("yolov8n.pt")
 
-cap = cv2.VideoCapture("entreno3.mp4")
+cap = cv2.VideoCapture("entreno2.mp4")
 frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 

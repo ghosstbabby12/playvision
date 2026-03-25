@@ -1,10 +1,12 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from ultralytics import YOLO
 import cv2
 import math
 import shutil
 import os
+import uuid
 from collections import defaultdict
 
 app = FastAPI(title="PlayVision AI")
@@ -15,6 +17,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+VIDEOS_DIR = "annotated_videos"
+os.makedirs(VIDEOS_DIR, exist_ok=True)
+app.mount("/videos", StaticFiles(directory=VIDEOS_DIR), name="videos")
 
 model = YOLO("yolov8n.pt")
 
@@ -49,6 +55,18 @@ async def analyze_video(file: UploadFile = File(...)):
 
         frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        src_fps      = cap.get(cv2.CAP_PROP_FPS) or 30.0
+
+        # Preparar writer para video anotado (se escribe 1 de cada FRAME_SKIP frames)
+        video_id  = uuid.uuid4().hex[:8]
+        out_path  = os.path.join(VIDEOS_DIR, f"annotated_{video_id}.mp4")
+        out_fps   = src_fps / FRAME_SKIP
+        fourcc    = cv2.VideoWriter_fourcc(*"avc1")
+        writer    = cv2.VideoWriter(out_path, fourcc, out_fps, (frame_width, frame_height))
+        if not writer.isOpened():
+            # fallback codec
+            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            writer = cv2.VideoWriter(out_path, fourcc, out_fps, (frame_width, frame_height))
 
         player_data = defaultdict(lambda: {
             "positions": [], "distances": [], "frames_seen": 0, "frames_with_ball": 0
@@ -104,7 +122,12 @@ async def analyze_video(file: UploadFile = File(...)):
                 if ball_center and math.dist(pos, ball_center) < BALL_RADIUS:
                     data["frames_with_ball"] += 1
 
+            # Guardar frame anotado
+            annotated = results[0].plot(labels=True, conf=False, line_width=2)
+            writer.write(annotated)
+
         cap.release()
+        writer.release()
 
         # Filtrar jugadores reales
         min_frames = max(10, int(analyzed_frames * MIN_PRESENCE))
@@ -165,6 +188,7 @@ async def analyze_video(file: UploadFile = File(...)):
             "frames_total":     frame_count,
             "frames_analyzed":  analyzed_frames,
             "players_detected": len(active),
+            "video_url":        f"http://127.0.0.1:8000/videos/annotated_{video_id}.mp4",
             "team": {
                 "total_distance":    round(team_total_dist),
                 "total_distance_km": team_km,

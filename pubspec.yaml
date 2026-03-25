@@ -34,6 +34,9 @@ dependencies:
   # Gráficas
   fl_chart: ^0.69.0
 
+  # Reproductor de video
+  video_player: ^2.9.2
+
   # Variables de entorno
   flutter_dotenv: ^5.2.1
 
