@@ -7,13 +7,13 @@ from datetime import datetime
 PERSON_CLASS = 0
 BALL_CLASS = 32
 NUM_PLAYERS = 10          # ← cambia este número según los jugadores reales del video
-MIN_PRESENCE = 0.20       # un jugador real debe aparecer al menos el 20% del partido
+MIN_PRESENCE = 0.05       # 5% — útil para videos cortos (YouTube Shorts, clips)
 BALL_RADIUS = 80          # px de proximidad para considerar posesión
-CONF_THRESHOLD = 0.55     # solo detecciones de alta confianza
+CONF_THRESHOLD = 0.45     # más bajo para detectar más jugadores
 
 model = YOLO("yolov8n.pt")
 
-cap = cv2.VideoCapture("test.mp4")
+cap = cv2.VideoCapture("entreno3.mp4")
 frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
@@ -80,7 +80,7 @@ try:
             if ball_center and math.dist(pos, ball_center) < BALL_RADIUS:
                 data['frames_with_ball'] += 1
 
-        annotated = results[0].plot()
+        annotated = results[0].plot(labels=True, conf=True, line_width=2)
         cv2.imshow("PlayVision AI", annotated)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
