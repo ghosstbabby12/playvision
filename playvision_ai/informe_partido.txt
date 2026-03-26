@@ -1,78 +1,99 @@
 ============================================================
    INFORME DE ANÁLISIS — PlayVision AI
-   20/03/2026  16:53
+   25/03/2026  15:53
 ============================================================
 
-Frames totales          : 3990
-Frames analizados       : 798
-Tracks detectados total : 152
-Jugadores válidos       : 7  (mín. 159 frames de presencia)
+Frames totales          : 814
+Frames analizados       : 162
+Tracks detectados total : 68
+Jugadores válidos       : 10  (mín. 10 frames de presencia)
 
 ------------------------------------------------------------
 ANÁLISIS POR JUGADOR
 ------------------------------------------------------------
 
-  Jugador  1  (track #4)
-    Zona predominante  : Medio-Centro
-    Presencia en campo : 40%  (318 frames)
-    Distancia recorrida: 3,190 px
-    Velocidad media    : 10.1 px/frame
+  Jugador  1  (track #18)
+    Zona predominante  : Ataque-Centro
+    Presencia en campo : 72%  (117 frames)
+    Distancia recorrida: 1,730 px
+    Velocidad media    : 14.9 px/frame
     Posesión del balón : 0.0%
 
-  Jugador  2  (track #9)
-    Zona predominante  : Medio-Der
-    Presencia en campo : 39%  (313 frames)
-    Distancia recorrida: 2,754 px
-    Velocidad media    : 8.8 px/frame
-    Posesión del balón : 0.0%
+  Jugador  2  (track #2)
+    Zona predominante  : Ataque-Der
+    Presencia en campo : 59%  (96 frames)
+    Distancia recorrida: 1,481 px
+    Velocidad media    : 15.6 px/frame
+    Posesión del balón : 11.5%
 
-  Jugador  3  (track #8)
-    Zona predominante  : Medio-Centro
-    Presencia en campo : 39%  (311 frames)
-    Distancia recorrida: 3,268 px
+  Jugador  3  (track #6)
+    Zona predominante  : Medio-Izq
+    Presencia en campo : 44%  (71 frames)
+    Distancia recorrida: 735 px
     Velocidad media    : 10.5 px/frame
+    Posesión del balón : 2.8%
+
+  Jugador  4  (track #10)
+    Zona predominante  : Ataque-Izq
+    Presencia en campo : 42%  (68 frames)
+    Distancia recorrida: 922 px
+    Velocidad media    : 13.8 px/frame
+    Posesión del balón : 2.9%
+
+  Jugador  5  (track #109)
+    Zona predominante  : Medio-Izq
+    Presencia en campo : 35%  (57 frames)
+    Distancia recorrida: 561 px
+    Velocidad media    : 10.0 px/frame
     Posesión del balón : 0.0%
 
-  Jugador  4  (track #7)
+  Jugador  6  (track #7)
+    Zona predominante  : Ataque-Centro
+    Presencia en campo : 33%  (54 frames)
+    Distancia recorrida: 267 px
+    Velocidad media    : 5.0 px/frame
+    Posesión del balón : 0.0%
+
+  Jugador  7  (track #11)
+    Zona predominante  : Ataque-Der
+    Presencia en campo : 33%  (54 frames)
+    Distancia recorrida: 417 px
+    Velocidad media    : 7.9 px/frame
+    Posesión del balón : 7.4%
+
+  Jugador  8  (track #43)
     Zona predominante  : Medio-Centro
-    Presencia en campo : 31%  (245 frames)
-    Distancia recorrida: 2,454 px
-    Velocidad media    : 10.1 px/frame
+    Presencia en campo : 33%  (53 frames)
+    Distancia recorrida: 1,509 px
+    Velocidad media    : 29.0 px/frame
     Posesión del balón : 0.0%
 
-  Jugador  5  (track #62)
+  Jugador  9  (track #17)
     Zona predominante  : Medio-Izq
-    Presencia en campo : 23%  (183 frames)
-    Distancia recorrida: 1,769 px
-    Velocidad media    : 9.7 px/frame
+    Presencia en campo : 31%  (50 frames)
+    Distancia recorrida: 807 px
+    Velocidad media    : 16.5 px/frame
     Posesión del balón : 0.0%
 
-  Jugador  6  (track #59)
-    Zona predominante  : Medio-Izq
-    Presencia en campo : 21%  (164 frames)
-    Distancia recorrida: 1,225 px
-    Velocidad media    : 7.5 px/frame
-    Posesión del balón : 0.0%
-
-  Jugador  7  (track #58)
+  Jugador 10  (track #12)
     Zona predominante  : Medio-Der
-    Presencia en campo : 20%  (162 frames)
-    Distancia recorrida: 889 px
-    Velocidad media    : 5.5 px/frame
-    Posesión del balón : 0.0%
+    Presencia en campo : 25%  (41 frames)
+    Distancia recorrida: 479 px
+    Velocidad media    : 12.0 px/frame
+    Posesión del balón : 2.4%
 
 ============================================================
 ANÁLISIS DEL EQUIPO
 ============================================================
 
-  Jugadores en informe   : 7
-  Distancia total equipo : 15,548 px
-  Distancia media/jugador: 2,221 px
-  Posesión equipo        : 0.0%
-  Zonas del campo cubiert: 5 / 9
-  Jugador más activo     : Jugador 3  (track #8)
-  Jugador menos activo   : Jugador 7  (track #58)
-  Mayor posesión         : Jugador 1  (track #4, 0.0%)
-  Más tiempo en campo    : Jugador 1  (track #4, 40%)
+  Jugadores en informe   : 10
+  Distancia total equipo : 8,907 px
+  Distancia media/jugador: 891 px
+  Posesión equipo        : 12.3%
+  Zonas del campo cubiert: 6 / 9
+  Jugador más activo     : Jugador 1  (track #18)
+  Jugador menos activo   : Jugador 6  (track #7)
+  Mayor posesión         : Jugador 2  (track #2, 11.5%)
+  Más tiempo en campo    : Jugador 1  (track #18, 72%)
 
 ============================================================
