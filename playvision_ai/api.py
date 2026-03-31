@@ -2,12 +2,15 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from ultralytics import YOLO
+from dotenv import load_dotenv
 import cv2
 import math
 import shutil
 import os
 import uuid
 from collections import defaultdict
+
+load_dotenv()
 
 app = FastAPI(title="PlayVision AI")
 
@@ -26,13 +29,13 @@ model = YOLO("yolov8n.pt")
 
 PERSON_CLASS    = 0
 BALL_CLASS      = 32
-NUM_PLAYERS     = 10
-MIN_PRESENCE    = 0.05
-BALL_RADIUS     = 80
-FIELD_WIDTH_M   = 105.0   # campo estándar en metros
-FPS             = 30.0
-CONF_THRESHOLD  = 0.55
-FRAME_SKIP      = 5
+NUM_PLAYERS     = int(os.getenv("NUM_PLAYERS", "10"))
+MIN_PRESENCE    = float(os.getenv("MIN_PRESENCE", "0.05"))
+BALL_RADIUS     = int(os.getenv("BALL_RADIUS", "80"))
+FIELD_WIDTH_M   = float(os.getenv("FIELD_WIDTH_M", "105.0"))
+FPS             = float(os.getenv("FPS", "30.0"))
+CONF_THRESHOLD  = float(os.getenv("CONF_THRESHOLD", "0.55"))
+FRAME_SKIP      = int(os.getenv("FRAME_SKIP", "5"))
 
 
 def zone_label(x, y, w, h):
@@ -188,7 +191,7 @@ async def analyze_video(file: UploadFile = File(...)):
             "frames_total":     frame_count,
             "frames_analyzed":  analyzed_frames,
             "players_detected": len(active),
-            "video_url":        f"http://127.0.0.1:8000/videos/annotated_{video_id}.mp4",
+            "video_url":        f"{os.getenv('API_HOST', 'http://127.0.0.1')}:{os.getenv('API_PORT', '8000')}/videos/annotated_{video_id}.mp4",
             "team": {
                 "total_distance":    round(team_total_dist),
                 "total_distance_km": team_km,

@@ -11,11 +11,11 @@ Future<void> main() async {
   final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'];
 
   if (supabaseUrl == null || supabaseUrl.isEmpty) {
-    throw Exception('Falta SUPABASE_URL en el archivo .env');
+    throw Exception('SUPABASE_URL is missing from the .env file');
   }
 
   if (supabaseAnonKey == null || supabaseAnonKey.isEmpty) {
-    throw Exception('Falta SUPABASE_ANON_KEY en el archivo .env');
+    throw Exception('SUPABASE_ANON_KEY is missing from the .env file');
   }
 
   await Supabase.initialize(

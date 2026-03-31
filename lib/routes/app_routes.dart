@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../features/matches/presentation/main_screen.dart';
+import '../app/main_screen.dart';
 
 class AppRoutes {
   static const home = "/";
