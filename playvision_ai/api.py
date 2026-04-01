@@ -1,8 +1,11 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from ultralytics import YOLO
 from dotenv import load_dotenv
+from supabase import create_client
+from datetime import datetime
+from pathlib import Path
 import cv2
 import math
 import shutil
@@ -10,7 +13,22 @@ import os
 import uuid
 from collections import defaultdict
 
-load_dotenv()
+# --- CORRECCIÓN DE VARIABLES DE ENTORNO ---
+# Obtenemos la ruta absoluta de la carpeta donde está este archivo (api.py)
+BASE_DIR = Path(__file__).resolve().parent
+env_path = BASE_DIR / ".env"
+
+# Forzamos a que dotenv lea exactamente esa ruta y sobreescriba variables
+load_dotenv(dotenv_path=env_path, override=True)
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY")  # Usa service_role para bypass RLS
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise RuntimeError(f"Faltan credenciales de Supabase. Buscando en: {env_path}")
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+# ------------------------------------------
 
 app = FastAPI(title="PlayVision AI")
 
@@ -37,15 +55,64 @@ FPS             = float(os.getenv("FPS", "30.0"))
 CONF_THRESHOLD  = float(os.getenv("CONF_THRESHOLD", "0.55"))
 FRAME_SKIP      = int(os.getenv("FRAME_SKIP", "5"))
 
-
 def zone_label(x, y, w, h):
     col = "Izq"    if x < w / 3 else ("Der"     if x > 2 * w / 3 else "Centro")
     row = "Ataque" if y < h / 3 else ("Defensa" if y > 2 * h / 3 else "Medio")
     return f"{row}-{col}"
 
+def create_or_update_match(team_id: int, match_id: int | None, opponent: str, source_type: str, video_url: str):
+    data = {
+        "team_id": team_id,
+        "opponent": opponent,
+        "source_type": source_type,
+        "video_url": video_url,
+        "status": "uploaded",
+        "updated_at": datetime.utcnow().isoformat(),
+    }
 
+    if match_id:
+        result = supabase.table("matches").update(data).eq("id", match_id).execute()
+        return match_id
+
+    data["match_date"] = datetime.utcnow().isoformat()
+    data["created_at"] = datetime.utcnow().isoformat()
+    result = supabase.table("matches").insert(data).execute()
+    return result.data[0]["id"] if result.data and len(result.data) > 0 else None
+
+def create_player_stat(match_id: int, track_id: int, stats: dict):
+    insert_data = {
+        "match_id": match_id,
+        "player_id": None, # Queda nulo por ahora hasta que asignes un jugador real
+        "distance": stats.get("distance_km"),
+        "velocity": stats.get("speed_ms"),
+        "possession": stats.get("possession_pct"),
+        "presence": stats.get("presence_pct"), 
+        "zone": stats.get("zone"),
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat(),
+    }
+    
+    # Ejecutamos la inserción con los nombres correctos de tus columnas
+    supabase.table("player_match_stats").insert(insert_data).execute()
+def save_match_report(match_id: int, team_id: int, payload: dict):
+    report = {
+        "match_id": match_id,
+        # Guardamos todo el resultado completo del análisis en la columna JSON de tu base de datos
+        "summary_json": payload,
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat(),
+    }
+    
+    # Ejecutamos la inserción
+    supabase.table("match_reports").insert(report).execute()
 @app.post("/analyze")
-async def analyze_video(file: UploadFile = File(...)):
+async def analyze_video(
+    team_id: int = Form(...),
+    match_id: int | None = Form(None),
+    opponent: str = Form(""),
+    source_type: str = Form("upload"),
+    file: UploadFile = File(...),
+):
     video_path = f"uploaded_{file.filename}"
 
     try:
@@ -66,6 +133,7 @@ async def analyze_video(file: UploadFile = File(...)):
         out_fps   = src_fps / FRAME_SKIP
         fourcc    = cv2.VideoWriter_fourcc(*"avc1")
         writer    = cv2.VideoWriter(out_path, fourcc, out_fps, (frame_width, frame_height))
+        
         if not writer.isOpened():
             # fallback codec
             fourcc = cv2.VideoWriter_fourcc(*"mp4v")
@@ -187,11 +255,13 @@ async def analyze_video(file: UploadFile = File(...)):
         scale = FIELD_WIDTH_M / frame_width
         team_km = round(team_total_dist * scale / 1000, 2)
 
-        return {
+        video_url = f"{os.getenv('API_HOST', 'http://127.0.0.1')}:{os.getenv('API_PORT', '8000')}/videos/annotated_{video_id}.mp4"
+
+        result_payload = {
             "frames_total":     frame_count,
             "frames_analyzed":  analyzed_frames,
             "players_detected": len(active),
-            "video_url":        f"{os.getenv('API_HOST', 'http://127.0.0.1')}:{os.getenv('API_PORT', '8000')}/videos/annotated_{video_id}.mp4",
+            "video_url":        video_url,
             "team": {
                 "total_distance":    round(team_total_dist),
                 "total_distance_km": team_km,
@@ -203,6 +273,22 @@ async def analyze_video(file: UploadFile = File(...)):
             },
             "players": players_out,
         }
+
+        persisted_match_id = create_or_update_match(
+            team_id=team_id,
+            match_id=match_id,
+            opponent=opponent,
+            source_type=source_type,
+            video_url=video_url,
+        )
+
+        if persisted_match_id is not None:
+            for p in players_out:
+                create_player_stat(persisted_match_id, p["track_id"], p)
+
+            save_match_report(persisted_match_id, team_id, result_payload)
+
+        return result_payload
 
     finally:
         if os.path.exists(video_path):

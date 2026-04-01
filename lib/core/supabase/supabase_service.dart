@@ -35,11 +35,13 @@ class SupabaseService {
     required String name,
     String? category,
     String? club,
+    String? userId,
   }) async {
     await client.from('teams').insert({
       'name': name,
       'category': category,
       'club': club,
+      if (userId != null) 'user_id': userId, 
     });
   }
 

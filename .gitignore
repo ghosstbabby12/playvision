@@ -21,3 +21,6 @@ build/
 playvision_ai/*.mp4
 playvision_ai/*.pt
 playvision_ai/__pycache__/
+
+playvision_ai/annotated_videos/
+yolov8n.pt

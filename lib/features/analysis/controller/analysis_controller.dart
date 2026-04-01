@@ -39,6 +39,8 @@ class AnalysisController extends ChangeNotifier {
         'POST',
         Uri.parse('${AppConstants.apiBase}/analyze'),
       );
+      request.fields['team_id'] = '1'; 
+
       request.files.add(
         http.MultipartFile.fromBytes('file', bytes, filename: videoFile!.name),
       );
@@ -49,7 +51,7 @@ class AnalysisController extends ChangeNotifier {
         result = jsonDecode(body) as Map<String, dynamic>;
         AnalysisStore.instance.save(result!);
       } else {
-        errorMessage = 'Server error: ${streamed.statusCode}';
+        errorMessage = 'Server error: ${streamed.statusCode} - $body';
       }
     } catch (e) {
       errorMessage = 'No backend connection.\n$e';
