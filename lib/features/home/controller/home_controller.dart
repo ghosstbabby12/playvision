@@ -13,12 +13,43 @@ class HomeController extends ChangeNotifier {
   final ImagePicker _picker = ImagePicker();
 
   List<Map<String, dynamic>> teams = [];
+  List<Map<String, dynamic>> recentMatches = [];
+  Map<int, List<Map<String, dynamic>>> teamMatches = {};
+  final Set<int> _loadingMatches = {};
   bool isLoading = false;
+  bool isLoadingMatches = false;
   bool isAnalyzing = false;
   String? errorMessage;
   String? successMessage;
 
   Map<String, dynamic>? get lastResult => AnalysisStore.instance.lastResult;
+  bool isLoadingMatchesForTeam(int teamId) => _loadingMatches.contains(teamId);
+
+  Future<void> loadRecentMatches() async {
+    isLoadingMatches = true;
+    notifyListeners();
+    try {
+      recentMatches = await _service.getMatches();
+    } catch (e) {
+      errorMessage = 'Failed to load matches: $e';
+    } finally {
+      isLoadingMatches = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadMatchesForTeam(int teamId) async {
+    _loadingMatches.add(teamId);
+    notifyListeners();
+    try {
+      teamMatches[teamId] = await _service.getMatchesByTeam(teamId);
+    } catch (e) {
+      errorMessage = 'Failed to load matches: $e';
+    } finally {
+      _loadingMatches.remove(teamId);
+      notifyListeners();
+    }
+  }
 
   Future<void> loadTeams() async {
     isLoading = true;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/theme/app_colors.dart';
 import '../features/home/presentation/home_page.dart';
 import '../features/analysis/presentation/analysis_page.dart';
 import '../features/matches/presentation/matches_page.dart';
@@ -24,12 +25,12 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1120),
+      backgroundColor: AppColors.bg,
       body: _pages[_currentIndex],
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
-          color: Color(0xFF111827),
-          border: Border(top: BorderSide(color: Color(0x14FFFFFF))),
+          color: AppColors.surface,
+          border: Border(top: BorderSide(color: AppColors.border)),
         ),
         child: SafeArea(
           child: Padding(
@@ -77,7 +78,7 @@ class _NavBarItem extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
-          color: active ? const Color(0x1A7C9EBF) : Colors.transparent,
+          color: active ? AppColors.accentLo : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -85,14 +86,14 @@ class _NavBarItem extends StatelessWidget {
           children: [
             Icon(
               active ? activeIcon : icon,
-              color: active ? const Color(0xFF7C9EBF) : const Color(0xFF4A5568),
+              color: active ? AppColors.accent : AppColors.dim,
               size: 22,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: active ? const Color(0xFF7C9EBF) : const Color(0xFF4A5568),
+                color: active ? AppColors.accent : AppColors.dim,
                 fontSize: 10,
                 fontWeight: active ? FontWeight.w600 : FontWeight.w400,
               ),

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/form_text_field.dart';
 import '../../../shared/widgets/section_label.dart';
 import '../controller/home_controller.dart';
-import 'widgets/mini_stat_card.dart';
-import 'widgets/quick_action_button.dart';
-import 'widgets/team_list_item.dart';
+import 'widgets/settings_drawer.dart';
+import 'widgets/team_analysis_card.dart';
 
 class HomePage extends StatefulWidget {
   final void Function(int)? onTabChange;
@@ -24,6 +25,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _controller = HomeController();
     _controller.loadTeams();
+    _controller.loadRecentMatches();
   }
 
   @override
@@ -54,218 +56,96 @@ class _HomePageState extends State<HomePage> {
       listenable: _controller,
       builder: (context, _) {
         _handleMessages();
-        final result    = _controller.lastResult;
-        final team      = result?['team'] as Map<String, dynamic>?;
-        final players   = result?['players'] as List?;
-        final topPlayer = players != null && players.isNotEmpty
-            ? players.reduce((a, b) =>
-                ((a['distance_km'] as num?) ?? 0) > ((b['distance_km'] as num?) ?? 0) ? a : b)
-            : null;
-
         return Scaffold(
           backgroundColor: AppColors.bg,
-          body: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // ── Hero ──────────────────────────────────────────
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF0F1E35), AppColors.bg],
-                    ),
-                  ),
-                  padding: const EdgeInsets.fromLTRB(24, 64, 24, 36),
+          endDrawer: const SettingsDrawer(),
+          appBar: _buildAppBar(context),
+          body: Column(
+            children: [
+              // ── Teams section ──────────────────────────────
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(children: [
-                        Icon(Icons.sports_soccer_outlined, color: AppColors.accent, size: 18),
-                        SizedBox(width: 8),
-                        Text('PLAYVISION',
-                            style: TextStyle(color: AppColors.accent, fontSize: 12,
-                                fontWeight: FontWeight.w700, letterSpacing: 3)),
+                      Row(children: [
+                        const Expanded(child: SectionLabel('SELECT A TEAM TO START ANALYSIS')),
+                        GestureDetector(
+                          onTap: () {
+                            _controller.loadTeams();
+                            _controller.loadRecentMatches();
+                          },
+                          child: const Padding(
+                            padding: EdgeInsets.only(right: 12),
+                            child: Icon(Icons.refresh_outlined, color: AppColors.dim, size: 16),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => _openTeamDialog(),
+                          child: const Icon(Icons.add, color: AppColors.accent, size: 20),
+                        ),
                       ]),
-                      const SizedBox(height: 32),
-                      const Text('Intelligent\nfootball\nanalysis',
-                          style: TextStyle(color: AppColors.text, fontSize: 34,
-                              fontWeight: FontWeight.w800, height: 1.2, letterSpacing: -0.5)),
-                      const SizedBox(height: 12),
-                      const Text('AI that detects, tracks and analyses\nevery player in real time.',
-                          style: TextStyle(color: AppColors.dim, fontSize: 14, height: 1.6)),
+                      const SizedBox(height: 14),
+
+                      if (_controller.isLoading)
+                        const Center(child: Padding(
+                          padding: EdgeInsets.all(32),
+                          child: CircularProgressIndicator(color: AppColors.accent, strokeWidth: 1.5),
+                        ))
+                      else if (_controller.teams.isEmpty)
+                        _EmptyTeamsCard(onCreateTap: () => _openTeamDialog())
+                      else
+                        ..._controller.teams.map((t) => TeamAnalysisCard(
+                          team: t,
+                          controller: _controller,
+                          onEdit: () => _openTeamDialog(team: t),
+                          onDelete: () => _deleteTeam(t),
+                        )),
+
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
+              ),
 
-                // ── Upload card ────────────────────────────────────
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                  child: Transform.translate(
-                    offset: const Offset(0, -20),
-                    child: GestureDetector(
-                      onTap: _controller.isAnalyzing ? null : _controller.pickAndAnalyze,
-                      child: Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: AppColors.border2),
-                          boxShadow: [BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.3),
-                            blurRadius: 20, offset: const Offset(0, 8),
-                          )],
-                        ),
-                        child: _controller.isAnalyzing
-                            ? const Column(children: [
-                                CircularProgressIndicator(color: AppColors.accent, strokeWidth: 1.5),
-                                SizedBox(height: 16),
-                                Text('Analysing with AI...',
-                                    style: TextStyle(color: AppColors.accent, fontSize: 14, fontWeight: FontWeight.w500)),
-                                SizedBox(height: 4),
-                                Text('This may take a few minutes',
-                                    style: TextStyle(color: AppColors.dim, fontSize: 12)),
-                              ])
-                            : const Row(children: [
-                                _UploadIcon(),
-                                SizedBox(width: 16),
-                                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                  Text('Analyse match',
-                                      style: TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.w700)),
-                                  SizedBox(height: 4),
-                                  Text('Upload a video and get stats in seconds',
-                                      style: TextStyle(color: AppColors.dim, fontSize: 12)),
-                                ])),
-                                Icon(Icons.arrow_forward_ios_rounded, color: AppColors.accentLo, size: 16),
-                              ]),
-                      ),
-                    ),
-                  ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-
-                    // ── Quick access ──────────────────────────────
-                    const SectionLabel('QUICK ACCESS'),
-                    const SizedBox(height: 12),
-                    Row(children: [
-                      QuickActionButton(icon: Icons.analytics_outlined,     label: 'Analysis', onTap: () => widget.onTabChange?.call(1)),
-                      const SizedBox(width: 10),
-                      QuickActionButton(icon: Icons.sports_soccer_outlined, label: 'Matches',  onTap: () => widget.onTabChange?.call(2)),
-                      const SizedBox(width: 10),
-                      QuickActionButton(icon: Icons.fitness_center_outlined, label: 'Training', onTap: () => widget.onTabChange?.call(3)),
-                    ]),
-
-                    // ── Last analysis ─────────────────────────────
-                    if (result != null) ...[
-                      const SizedBox(height: 28),
-                      const SectionLabel('LAST ANALYSIS'),
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(18),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Row(children: [
-                            const Icon(Icons.auto_awesome_outlined, color: AppColors.accent, size: 16),
-                            const SizedBox(width: 8),
-                            const Text('Match summary',
-                                style: TextStyle(color: AppColors.text, fontSize: 14, fontWeight: FontWeight.w700)),
-                            const Spacer(),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: const Color(0x1A7C9EBF),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Text('Completed',
-                                  style: TextStyle(color: AppColors.accent, fontSize: 10, fontWeight: FontWeight.w600)),
-                            ),
-                          ]),
-                          const SizedBox(height: 16),
-                          Row(children: [
-                            MiniStatCard('${result['players_detected']}', 'Players'),
-                            MiniStatCard('${team?['total_distance_km'] ?? '—'} km', 'Distance'),
-                            MiniStatCard('${team?['possession_pct'] ?? 0}%', 'Possession'),
-                          ]),
-                          if (topPlayer != null) ...[
-                            const SizedBox(height: 14),
-                            const Divider(color: AppColors.border, height: 1),
-                            const SizedBox(height: 14),
-                            Row(children: [
-                              const Icon(Icons.bolt_outlined, color: AppColors.accent, size: 16),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Player ${topPlayer['rank']} most active — '
-                                '${(topPlayer['distance_km'] as num?)?.toStringAsFixed(2)} km',
-                                style: const TextStyle(color: AppColors.muted, fontSize: 12),
-                              ),
-                            ]),
-                          ],
-                        ]),
-                      ),
-                    ],
-
-                    // ── Teams ─────────────────────────────────────
-                    const SizedBox(height: 28),
-                    Row(children: [
-                      const Expanded(child: SectionLabel('MY TEAMS')),
-                      GestureDetector(
-                        onTap: _controller.loadTeams,
-                        child: const Padding(
-                          padding: EdgeInsets.only(right: 12),
-                          child: Icon(Icons.refresh_outlined, color: AppColors.dim, size: 16),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => _openTeamDialog(),
-                        child: const Icon(Icons.add, color: AppColors.accent, size: 18),
-                      ),
-                    ]),
-                    const SizedBox(height: 12),
-
-                    if (_controller.isLoading)
-                      const Center(child: CircularProgressIndicator(color: AppColors.accent, strokeWidth: 1.5))
-                    else if (_controller.teams.isEmpty)
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: const Column(children: [
-                          Icon(Icons.groups_outlined, color: AppColors.accentLo, size: 36),
-                          SizedBox(height: 10),
-                          Text('No teams yet', style: TextStyle(color: AppColors.dim, fontSize: 13)),
-                          SizedBox(height: 4),
-                          Text('Tap + to create a team',
-                              style: TextStyle(color: AppColors.accent, fontSize: 12)),
-                        ]),
-                      )
-                    else
-                      ..._controller.teams.map((t) => TeamListItem(
-                        team: t,
-                        onEdit: () => _openTeamDialog(team: t),
-                        onDelete: () => _deleteTeam(t),
-                      )),
-
-                    const SizedBox(height: 32),
-                  ]),
-                ),
-              ],
-            ),
+              // ── Bottom tabs: Resultados | Noticias ──────────
+              _BottomTabSection(
+                controller: _controller,
+                onTabChange: widget.onTabChange,
+              ),
+            ],
           ),
         );
       },
     );
   }
+
+  PreferredSizeWidget _buildAppBar(BuildContext context) => AppBar(
+    backgroundColor: AppColors.elevated,
+    elevation: 0,
+    titleSpacing: 20,
+    title: Row(children: [
+      const Icon(Icons.sports_soccer_outlined, color: AppColors.accent, size: 18),
+      const SizedBox(width: 8),
+      const Text('PlayVision',
+          style: TextStyle(color: AppColors.text, fontSize: 18,
+              fontWeight: FontWeight.w800, letterSpacing: -0.3)),
+    ]),
+    actions: [
+      IconButton(
+        icon: const Icon(Icons.search_rounded, color: AppColors.dim, size: 22),
+        onPressed: () {},
+      ),
+      Builder(
+        builder: (ctx) => IconButton(
+          icon: const Icon(Icons.settings_outlined, color: AppColors.dim, size: 22),
+          onPressed: () => Scaffold.of(ctx).openEndDrawer(),
+        ),
+      ),
+      const SizedBox(width: 4),
+    ],
+  );
 
   Future<void> _openTeamDialog({Map<String, dynamic>? team}) async {
     final nameCtrl     = TextEditingController(text: team?['name']     as String? ?? '');
@@ -345,7 +225,7 @@ class _HomePageState extends State<HomePage> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: Color(0xFFE05C5C))),
+            child: const Text('Delete', style: TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
@@ -356,16 +236,183 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _UploadIcon extends StatelessWidget {
-  const _UploadIcon();
+// ── Empty state ──────────────────────────────────────────────
+class _EmptyTeamsCard extends StatelessWidget {
+  final VoidCallback onCreateTap;
+  const _EmptyTeamsCard({required this.onCreateTap});
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: 56, height: 56,
-    decoration: BoxDecoration(
-      color: const Color(0x1A7C9EBF),
-      borderRadius: BorderRadius.circular(14),
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onCreateTap,
+    child: Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(children: [
+        Container(
+          width: 60, height: 60,
+          decoration: const BoxDecoration(
+            color: AppColors.accentLo,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.groups_outlined, color: AppColors.accent, size: 28),
+        ),
+        const SizedBox(height: 14),
+        const Text('Create a team',
+            style: TextStyle(color: AppColors.text, fontSize: 15, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 6),
+        const Text('Tap here to add your first team\nand start analysing matches',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.dim, fontSize: 12, height: 1.6)),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.elevated,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.border2),
+          ),
+          child: const Row(mainAxisSize: MainAxisSize.min, children: [
+            Icon(Icons.add, color: AppColors.accent, size: 16),
+            SizedBox(width: 6),
+            Text('New team', style: TextStyle(color: AppColors.accent, fontSize: 13, fontWeight: FontWeight.w600)),
+          ]),
+        ),
+      ]),
     ),
-    child: const Icon(Icons.videocam_outlined, color: AppColors.accent, size: 28),
+  );
+}
+
+// ── Bottom tab section ───────────────────────────────────────
+class _BottomTabSection extends StatelessWidget {
+  final HomeController controller;
+  final void Function(int)? onTabChange;
+  const _BottomTabSection({required this.controller, this.onTabChange});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 300,
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.border)),
+      ),
+      child: DefaultTabController(
+        length: 2,
+        child: Column(
+          children: [
+            TabBar(
+              labelColor: AppColors.accent,
+              unselectedLabelColor: AppColors.dim,
+              indicatorColor: AppColors.accent,
+              indicatorSize: TabBarIndicatorSize.label,
+              labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              tabs: const [
+                Tab(text: 'Resultados'),
+                Tab(text: 'Noticias'),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  _ResultadosTab(controller: controller),
+                  const _NoticiasTab(),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Resultados tab ───────────────────────────────────────────
+class _ResultadosTab extends StatelessWidget {
+  final HomeController controller;
+  const _ResultadosTab({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    if (controller.isLoadingMatches) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.accent, strokeWidth: 1.5));
+    }
+    if (controller.recentMatches.isEmpty) {
+      return const Center(
+        child: Text('No results yet', style: TextStyle(color: AppColors.dim, fontSize: 13)),
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: controller.recentMatches.length,
+      itemBuilder: (_, i) => _ResultRow(match: controller.recentMatches[i]),
+    );
+  }
+}
+
+class _ResultRow extends StatelessWidget {
+  final Map<String, dynamic> match;
+  const _ResultRow({required this.match});
+
+  @override
+  Widget build(BuildContext context) {
+    final status   = match['status'] as String? ?? AppConstants.statusUploaded;
+    final opponent = match['opponent'] as String? ?? '—';
+    final teamName = (match['teams'] as Map?)?['name'] as String? ?? '—';
+    final rawDate  = match['match_date'] as String?;
+    String dateLabel = '—';
+    if (rawDate != null) {
+      try {
+        dateLabel = DateFormat(AppConstants.dateFormat).format(DateTime.parse(rawDate));
+      } catch (_) {}
+    }
+
+    final (Color chipColor, Color chipText, String chipLabel) = switch (status) {
+      AppConstants.statusDone       => (AppColors.successBg, AppColors.success, AppConstants.labelAnalysed),
+      AppConstants.statusProcessing => (AppColors.warningBg, AppColors.warning, AppConstants.labelProcessing),
+      _                             => (AppColors.border, AppColors.dim, AppConstants.labelUploaded),
+    };
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.bg,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(children: [
+        const Icon(Icons.sports_soccer_outlined, color: AppColors.accentLo, size: 14),
+        const SizedBox(width: 10),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('$teamName vs $opponent',
+              style: const TextStyle(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.w600)),
+          Text(dateLabel, style: const TextStyle(color: AppColors.dim, fontSize: 11)),
+        ])),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(color: chipColor, borderRadius: BorderRadius.circular(6)),
+          child: Text(chipLabel,
+              style: TextStyle(color: chipText, fontSize: 10, fontWeight: FontWeight.w600)),
+        ),
+      ]),
+    );
+  }
+}
+
+// ── Noticias tab ─────────────────────────────────────────────
+class _NoticiasTab extends StatelessWidget {
+  const _NoticiasTab();
+
+  @override
+  Widget build(BuildContext context) => const Center(
+    child: Column(mainAxisSize: MainAxisSize.min, children: [
+      Icon(Icons.newspaper_outlined, color: AppColors.accentLo, size: 32),
+      SizedBox(height: 10),
+      Text('News coming soon', style: TextStyle(color: AppColors.dim, fontSize: 13)),
+    ]),
   );
 }
