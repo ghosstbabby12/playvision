@@ -35,7 +35,7 @@ class VideoUploadView extends StatelessWidget {
             child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Container(
                 width: 64, height: 64,
-                decoration: const BoxDecoration(color: Color(0x1A7C9EBF), shape: BoxShape.circle),
+                decoration: const BoxDecoration(color: AppColors.accentLo, shape: BoxShape.circle),
                 child: Icon(
                   hasFile ? Icons.check_circle_outline_rounded : Icons.videocam_outlined,
                   color: AppColors.accent, size: 30,
@@ -120,7 +120,7 @@ class _HowItWorksCard extends StatelessWidget {
     child: Row(children: [
       Container(
         width: 32, height: 32,
-        decoration: const BoxDecoration(color: Color(0x1A7C9EBF), shape: BoxShape.circle),
+        decoration: const BoxDecoration(color: AppColors.accentLo, shape: BoxShape.circle),
         alignment: Alignment.center,
         child: Text(n, style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.w800, fontSize: 14)),
       ),

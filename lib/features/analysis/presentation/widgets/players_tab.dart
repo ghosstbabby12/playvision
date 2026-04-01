@@ -51,7 +51,7 @@ class PlayerCard extends StatelessWidget {
               Container(
                 width: 42, height: 42,
                 decoration: BoxDecoration(
-                  color: const Color(0x1A7C9EBF),
+                  color: AppColors.accentLo,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 alignment: Alignment.center,
@@ -124,7 +124,7 @@ class PlayerCard extends StatelessWidget {
             Container(
               width: 48, height: 48,
               decoration: BoxDecoration(
-                color: const Color(0x1A7C9EBF),
+                color: AppColors.accentLo,
                 borderRadius: BorderRadius.circular(12),
               ),
               alignment: Alignment.center,
@@ -149,9 +149,9 @@ class PlayerCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0x0A7C9EBF),
+              color: AppColors.accentLo,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0x1A7C9EBF)),
+              border: Border.all(color: AppColors.accentLo),
             ),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Icon(Icons.auto_awesome_outlined, color: AppColors.accent, size: 16),

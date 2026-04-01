@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../features/home/presentation/home_page.dart';
@@ -26,79 +27,71 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bg,
+      extendBody: true,
       body: _pages[_currentIndex],
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: Border(top: BorderSide(color: AppColors.border)),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _NavBarItem(icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Inicio', index: 0, current: _currentIndex, onTap: (i) => setState(() => _currentIndex = i)),
-                _NavBarItem(icon: Icons.analytics_outlined, activeIcon: Icons.analytics_rounded, label: 'Análisis', index: 1, current: _currentIndex, onTap: (i) => setState(() => _currentIndex = i)),
-                _NavBarItem(icon: Icons.sports_soccer_outlined, activeIcon: Icons.sports_soccer, label: 'Partidos', index: 2, current: _currentIndex, onTap: (i) => setState(() => _currentIndex = i)),
-                _NavBarItem(icon: Icons.fitness_center_outlined, activeIcon: Icons.fitness_center, label: 'Entreno', index: 3, current: _currentIndex, onTap: (i) => setState(() => _currentIndex = i)),
-              ],
-            ),
-          ),
-        ),
+      bottomNavigationBar: _GlassNavBar(
+        currentIndex: _currentIndex,
+        onTap: (i) => setState(() => _currentIndex = i),
       ),
     );
   }
 }
 
-class _NavBarItem extends StatelessWidget {
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-  final int index;
-  final int current;
+class _GlassNavBar extends StatelessWidget {
+  final int currentIndex;
   final void Function(int) onTap;
 
-  const _NavBarItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-    required this.index,
-    required this.current,
-    required this.onTap,
-  });
+  const _GlassNavBar({required this.currentIndex, required this.onTap});
+
+  static const _items = [
+    (icon: Icons.home_outlined,          activeIcon: Icons.home_rounded,         label: 'Inicio'),
+    (icon: Icons.check_circle_outline,   activeIcon: Icons.check_circle_rounded, label: 'Análisis'),
+    (icon: Icons.calendar_month_outlined, activeIcon: Icons.calendar_month,      label: 'Partidos'),
+    (icon: Icons.track_changes_outlined,  activeIcon: Icons.track_changes,       label: 'Entreno'),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final active = index == current;
-    return GestureDetector(
-      onTap: () => onTap(index),
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        decoration: BoxDecoration(
-          color: active ? AppColors.accentLo : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              active ? activeIcon : icon,
-              color: active ? AppColors.accent : AppColors.dim,
-              size: 22,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(36),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+          child: Container(
+            height: 70,
+            decoration: BoxDecoration(
+              color: AppColors.navBg,
+              borderRadius: BorderRadius.circular(36),
+              border: Border.all(color: AppColors.navBorder),
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                color: active ? AppColors.accent : AppColors.dim,
-                fontSize: 10,
-                fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: List.generate(_items.length, (i) {
+                final item    = _items[i];
+                final active  = i == currentIndex;
+                return GestureDetector(
+                  onTap: () => onTap(i),
+                  behavior: HitTestBehavior.opaque,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: active ? AppColors.navActive : Colors.transparent,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Icon(
+                      active ? item.activeIcon : item.icon,
+                      color: active ? AppColors.textHi : AppColors.muted,
+                      size: 24,
+                    ),
+                  ),
+                );
+              }),
             ),
-          ],
+          ),
         ),
       ),
     );

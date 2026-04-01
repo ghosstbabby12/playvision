@@ -32,7 +32,7 @@ class PlayerPlanCard extends StatelessWidget {
           leading: Container(
             width: 38, height: 38,
             decoration: BoxDecoration(
-              color: const Color(0x1A7C9EBF),
+              color: AppColors.accentLo,
               borderRadius: BorderRadius.circular(10),
             ),
             alignment: Alignment.center,

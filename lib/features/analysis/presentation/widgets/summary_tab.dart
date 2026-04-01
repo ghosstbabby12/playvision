@@ -126,9 +126,9 @@ class AiInsightCard extends StatelessWidget {
     margin: const EdgeInsets.only(bottom: 8),
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: const Color(0x0A7C9EBF),
+      color: AppColors.accentLo,
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: const Color(0x1A7C9EBF)),
+      border: Border.all(color: AppColors.accentLo),
     ),
     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const Icon(Icons.auto_awesome_outlined, color: AppColors.accent, size: 16),

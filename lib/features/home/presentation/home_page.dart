@@ -4,10 +4,8 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/form_text_field.dart';
-import '../../../shared/widgets/section_label.dart';
 import '../controller/home_controller.dart';
 import 'widgets/settings_drawer.dart';
-import 'widgets/team_analysis_card.dart';
 
 class HomePage extends StatefulWidget {
   final void Function(int)? onTabChange;
@@ -43,8 +41,9 @@ class _HomePageState extends State<HomePage> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(error ?? success!),
-          backgroundColor: AppColors.elevated,
+          backgroundColor: error != null ? AppColors.danger : AppColors.accentMid,
           behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ));
       });
     }
@@ -56,96 +55,56 @@ class _HomePageState extends State<HomePage> {
       listenable: _controller,
       builder: (context, _) {
         _handleMessages();
+        final hasTeam = _controller.selectedTeam != null;
+
         return Scaffold(
           backgroundColor: AppColors.bg,
           endDrawer: const SettingsDrawer(),
-          appBar: _buildAppBar(context),
-          body: Column(
-            children: [
-              // ── Teams section ──────────────────────────────
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(children: [
-                        const Expanded(child: SectionLabel('SELECT A TEAM TO START ANALYSIS')),
-                        GestureDetector(
-                          onTap: () {
-                            _controller.loadTeams();
-                            _controller.loadRecentMatches();
-                          },
-                          child: const Padding(
-                            padding: EdgeInsets.only(right: 12),
-                            child: Icon(Icons.refresh_outlined, color: AppColors.dim, size: 16),
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => _openTeamDialog(),
-                          child: const Icon(Icons.add, color: AppColors.accent, size: 20),
-                        ),
-                      ]),
-                      const SizedBox(height: 14),
+          body: CustomScrollView(
+            slivers: [
+              // ── Hero ──────────────────────────────────────
+              SliverToBoxAdapter(child: _HeroSection(controller: _controller)),
 
-                      if (_controller.isLoading)
-                        const Center(child: Padding(
-                          padding: EdgeInsets.all(32),
-                          child: CircularProgressIndicator(color: AppColors.accent, strokeWidth: 1.5),
-                        ))
-                      else if (_controller.teams.isEmpty)
-                        _EmptyTeamsCard(onCreateTap: () => _openTeamDialog())
-                      else
-                        ..._controller.teams.map((t) => TeamAnalysisCard(
-                          team: t,
-                          controller: _controller,
-                          onEdit: () => _openTeamDialog(team: t),
-                          onDelete: () => _deleteTeam(t),
-                        )),
+              // ── FLOW: no team selected ─────────────────────
+              if (!hasTeam) ...[
+                SliverToBoxAdapter(child: _TeamSelectorSection(
+                  controller: _controller,
+                  onAdd: () => _openTeamDialog(),
+                )),
+              ],
 
-                      const SizedBox(height: 20),
-                    ],
-                  ),
-                ),
-              ),
+              // ── FLOW: team selected ────────────────────────
+              if (hasTeam) ...[
+                // Selected team header
+                SliverToBoxAdapter(child: _SelectedTeamHeader(
+                  controller: _controller,
+                  onEdit: () => _openTeamDialog(team: _controller.selectedTeam),
+                  onDelete: () => _deleteTeam(_controller.selectedTeam!),
+                )),
 
-              // ── Bottom tabs: Resultados | Noticias ──────────
-              _BottomTabSection(
-                controller: _controller,
-                onTabChange: widget.onTabChange,
-              ),
+                // Analyse video button
+                SliverToBoxAdapter(child: _AnalyseButton(controller: _controller)),
+
+                // If analysis result exists → Ver Análisis button
+                if (_controller.hasResult)
+                  SliverToBoxAdapter(child: _ViewAnalysisButton(
+                    onTap: () => widget.onTabChange?.call(1),
+                  )),
+
+                // Previous analyses
+                SliverToBoxAdapter(child: _PreviousAnalysesSection(
+                  controller: _controller,
+                  onTabChange: widget.onTabChange,
+                )),
+              ],
+
+              const SliverToBoxAdapter(child: SizedBox(height: 120)),
             ],
           ),
         );
       },
     );
   }
-
-  PreferredSizeWidget _buildAppBar(BuildContext context) => AppBar(
-    backgroundColor: AppColors.elevated,
-    elevation: 0,
-    titleSpacing: 20,
-    title: Row(children: [
-      const Icon(Icons.sports_soccer_outlined, color: AppColors.accent, size: 18),
-      const SizedBox(width: 8),
-      const Text('PlayVision',
-          style: TextStyle(color: AppColors.text, fontSize: 18,
-              fontWeight: FontWeight.w800, letterSpacing: -0.3)),
-    ]),
-    actions: [
-      IconButton(
-        icon: const Icon(Icons.search_rounded, color: AppColors.dim, size: 22),
-        onPressed: () {},
-      ),
-      Builder(
-        builder: (ctx) => IconButton(
-          icon: const Icon(Icons.settings_outlined, color: AppColors.dim, size: 22),
-          onPressed: () => Scaffold.of(ctx).openEndDrawer(),
-        ),
-      ),
-      const SizedBox(width: 4),
-    ],
-  );
 
   Future<void> _openTeamDialog({Map<String, dynamic>? team}) async {
     final nameCtrl     = TextEditingController(text: team?['name']     as String? ?? '');
@@ -157,7 +116,7 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(isEdit ? 'Edit team' : 'New team',
             style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.w700)),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -168,18 +127,15 @@ class _HomePageState extends State<HomePage> {
           FormTextField(controller: clubCtrl,     label: 'Club'),
         ]),
         actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel', style: TextStyle(color: AppColors.muted))),
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.dim)),
-          ),
-          GestureDetector(
-            onTap: () async {
+            onPressed: () async {
               if (nameCtrl.text.trim().isEmpty) return;
               if (isEdit) {
                 await _controller.updateTeam(
-                  id: team['id'] as int,
-                  name: nameCtrl.text.trim(),
-                  category: categoryCtrl.text.trim().isEmpty ? null : categoryCtrl.text.trim(),
+                  id: team['id'] as int, name: nameCtrl.text.trim(),
+                  category: nameCtrl.text.trim().isEmpty ? null : categoryCtrl.text.trim(),
                   club: clubCtrl.text.trim().isEmpty ? null : clubCtrl.text.trim(),
                 );
               } else {
@@ -192,16 +148,8 @@ class _HomePageState extends State<HomePage> {
               if (!ctx.mounted) return;
               Navigator.pop(ctx);
             },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.elevated,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.border2),
-              ),
-              child: Text(isEdit ? 'Save' : 'Create',
-                  style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.w600)),
-            ),
+            child: Text(isEdit ? 'Save' : 'Create',
+                style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -213,206 +161,508 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Delete team',
             style: TextStyle(color: AppColors.text, fontWeight: FontWeight.w700)),
-        content: Text('Delete "${team['name']}"? This action cannot be undone.',
+        content: Text('Delete "${team['name']}"? This cannot be undone.',
             style: const TextStyle(color: AppColors.muted, fontSize: 13, height: 1.5)),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.dim)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: AppColors.danger)),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel', style: TextStyle(color: AppColors.muted))),
+          TextButton(onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Delete', style: TextStyle(color: AppColors.danger))),
         ],
       ),
     );
-    if (confirm == true) {
-      await _controller.deleteTeam(team['id'] as int);
-    }
+    if (confirm == true) await _controller.deleteTeam(team['id'] as int);
   }
 }
 
-// ── Empty state ──────────────────────────────────────────────
-class _EmptyTeamsCard extends StatelessWidget {
-  final VoidCallback onCreateTap;
-  const _EmptyTeamsCard({required this.onCreateTap});
+// ─────────────────────────────────────────────────────────────
+// Hero
+// ─────────────────────────────────────────────────────────────
+class _HeroSection extends StatelessWidget {
+  final HomeController controller;
+  const _HeroSection({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final total = controller.recentMatches.length;
+    final done  = controller.recentMatches
+        .where((m) => m['status'] == AppConstants.statusDone).length;
+
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft, end: Alignment.bottomRight,
+          colors: [AppColors.heroTop, AppColors.heroBottom],
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            // Top bar
+            Row(children: [
+              const Icon(Icons.sports_soccer_outlined, color: AppColors.accent, size: 20),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text('PlayVision', style: TextStyle(
+                    color: AppColors.text, fontSize: 18, fontWeight: FontWeight.w800)),
+              ),
+              GestureDetector(onTap: () {},
+                  child: const Icon(Icons.search_rounded, color: AppColors.muted, size: 22)),
+              const SizedBox(width: 8),
+              Builder(builder: (ctx) => GestureDetector(
+                onTap: () => Scaffold.of(ctx).openEndDrawer(),
+                child: const Icon(Icons.settings_outlined, color: AppColors.muted, size: 22),
+              )),
+            ]),
+
+            const SizedBox(height: 24),
+
+            // Stats
+            Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Text('Total matches', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                const SizedBox(height: 4),
+                Text('$total', style: const TextStyle(
+                    color: AppColors.textHi, fontSize: 52,
+                    fontWeight: FontWeight.w800, letterSpacing: -2, height: 1)),
+                const SizedBox(height: 6),
+                Row(children: [
+                  const Icon(Icons.check_circle_rounded, color: AppColors.accent, size: 14),
+                  const SizedBox(width: 4),
+                  Text('$done analysed', style: const TextStyle(
+                      color: AppColors.accent, fontSize: 12, fontWeight: FontWeight.w600)),
+                ]),
+              ])),
+              _SparkLine(values: const [0.4, 0.6, 0.3, 0.8, 0.5, 0.9, 0.7]),
+            ]),
+
+            const SizedBox(height: 8),
+            Text(DateFormat('EEE d MMMM').format(DateTime.now()),
+                style: const TextStyle(color: AppColors.dim, fontSize: 11)),
+          ]),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// STATE 1: Team selector (no team selected)
+// ─────────────────────────────────────────────────────────────
+class _TeamSelectorSection extends StatelessWidget {
+  final HomeController controller;
+  final VoidCallback onAdd;
+  const _TeamSelectorSection({required this.controller, required this.onAdd});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // Label
+        const Text('Select or create a team',
+            style: TextStyle(color: AppColors.text, fontSize: 18, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 4),
+        const Text('Choose a team to start a new analysis',
+            style: TextStyle(color: AppColors.muted, fontSize: 13)),
+        const SizedBox(height: 20),
+
+        if (controller.isLoading)
+          const Center(child: CircularProgressIndicator(color: AppColors.accent, strokeWidth: 1.5))
+        else if (controller.teams.isEmpty)
+          // Empty state — create team card
+          GestureDetector(
+            onTap: onAdd,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(28),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.borderGreen),
+              ),
+              child: Column(children: [
+                Container(
+                  width: 64, height: 64,
+                  decoration: const BoxDecoration(color: AppColors.accentLo, shape: BoxShape.circle),
+                  child: const Icon(Icons.groups_outlined, color: AppColors.accent, size: 30),
+                ),
+                const SizedBox(height: 14),
+                const Text('Create a team', style: TextStyle(
+                    color: AppColors.text, fontSize: 16, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 6),
+                const Text('Tap here to add your first team',
+                    style: TextStyle(color: AppColors.muted, fontSize: 12)),
+              ]),
+            ),
+          )
+        else ...[
+          // Horizontal team list
+          SizedBox(
+            height: 100,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                _TeamCircleItem(label: 'New', initial: '+', isAdd: true, onTap: onAdd),
+                const SizedBox(width: 14),
+                ...controller.teams.map((t) => Padding(
+                  padding: const EdgeInsets.only(right: 14),
+                  child: _TeamCircleItem(
+                    label: t['name'] as String? ?? '—',
+                    initial: _initial(t['name'] as String?),
+                    isAdd: false,
+                    onTap: () => controller.selectTeam(t),
+                  ),
+                )),
+              ],
+            ),
+          ),
+        ],
+      ]),
+    );
+  }
+
+  String _initial(String? name) =>
+      (name?.isNotEmpty == true) ? name![0].toUpperCase() : '?';
+}
+
+class _TeamCircleItem extends StatelessWidget {
+  final String label;
+  final String initial;
+  final bool isAdd;
+  final VoidCallback onTap;
+  const _TeamCircleItem({required this.label, required this.initial,
+      required this.isAdd, required this.onTap});
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-    onTap: onCreateTap,
-    child: Container(
-      padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+    onTap: onTap,
+    child: Column(mainAxisSize: MainAxisSize.min, children: [
+      Container(
+        width: 60, height: 60,
+        decoration: BoxDecoration(
+          color: isAdd ? AppColors.accentLo : AppColors.elevated,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isAdd ? AppColors.borderGreen : AppColors.border, width: 1.5),
+        ),
+        child: Center(child: Text(initial, style: TextStyle(
+            color: isAdd ? AppColors.accent : AppColors.text,
+            fontSize: 22, fontWeight: FontWeight.w700))),
       ),
-      child: Column(children: [
-        Container(
-          width: 60, height: 60,
-          decoration: const BoxDecoration(
-            color: AppColors.accentLo,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.groups_outlined, color: AppColors.accent, size: 28),
+      const SizedBox(height: 6),
+      SizedBox(width: 64, child: Text(label,
+          maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,
+          style: const TextStyle(color: AppColors.muted, fontSize: 11))),
+    ]),
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// STATE 2: Selected team header
+// ─────────────────────────────────────────────────────────────
+class _SelectedTeamHeader extends StatelessWidget {
+  final HomeController controller;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+  const _SelectedTeamHeader({required this.controller, required this.onEdit, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    final team    = controller.selectedTeam!;
+    final initial = (team['name'] as String?)?.isNotEmpty == true
+        ? (team['name'] as String)[0].toUpperCase() : '?';
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.borderGreen),
         ),
-        const SizedBox(height: 14),
-        const Text('Create a team',
-            style: TextStyle(color: AppColors.text, fontSize: 15, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 6),
-        const Text('Tap here to add your first team\nand start analysing matches',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.dim, fontSize: 12, height: 1.6)),
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          decoration: BoxDecoration(
-            color: AppColors.elevated,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.border2),
+        child: Row(children: [
+          // Avatar
+          Container(
+            width: 52, height: 52,
+            decoration: const BoxDecoration(color: AppColors.accentLo, shape: BoxShape.circle),
+            child: Center(child: Text(initial, style: const TextStyle(
+                color: AppColors.accent, fontSize: 22, fontWeight: FontWeight.w700))),
           ),
-          child: const Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.add, color: AppColors.accent, size: 16),
-            SizedBox(width: 6),
-            Text('New team', style: TextStyle(color: AppColors.accent, fontSize: 13, fontWeight: FontWeight.w600)),
-          ]),
+          const SizedBox(width: 14),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(team['name'] ?? '—',
+                style: const TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.w700)),
+            Text('${team['club'] ?? '—'} · ${team['category'] ?? '—'}',
+                style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+          ])),
+          // Change team button
+          GestureDetector(
+            onTap: controller.clearTeamSelection,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.accentLo,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Text('Change', style: TextStyle(
+                  color: AppColors.accent, fontSize: 12, fontWeight: FontWeight.w600)),
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(onTap: onEdit,
+              child: const Icon(Icons.edit_outlined, color: AppColors.muted, size: 18)),
+          const SizedBox(width: 8),
+          GestureDetector(onTap: onDelete,
+              child: const Icon(Icons.delete_outline, color: AppColors.danger, size: 18)),
+        ]),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Analyse video button
+// ─────────────────────────────────────────────────────────────
+class _AnalyseButton extends StatelessWidget {
+  final HomeController controller;
+  const _AnalyseButton({required this.controller});
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+    child: GestureDetector(
+      onTap: controller.isAnalyzing ? null : () => controller.pickAndAnalyze(),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [AppColors.accentMid, AppColors.accentLo],
+            begin: Alignment.topLeft, end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.borderGreen),
         ),
-      ]),
+        child: controller.isAnalyzing
+            ? const Column(children: [
+                CircularProgressIndicator(color: AppColors.accent, strokeWidth: 1.5),
+                SizedBox(height: 12),
+                Text('Analysing with AI...', style: TextStyle(
+                    color: AppColors.accent, fontSize: 14, fontWeight: FontWeight.w600)),
+                SizedBox(height: 4),
+                Text('This may take a few minutes',
+                    style: TextStyle(color: AppColors.muted, fontSize: 12)),
+              ])
+            : Row(children: [
+                Container(
+                  width: 52, height: 52,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(Icons.videocam_outlined, color: AppColors.accent, size: 26),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('Analyse video', style: TextStyle(
+                      color: AppColors.textHi, fontSize: 17, fontWeight: FontWeight.w700)),
+                  SizedBox(height: 4),
+                  Text('Upload a match video and get AI stats',
+                      style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                ])),
+                const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.accent, size: 16),
+              ]),
+      ),
     ),
   );
 }
 
-// ── Bottom tab section ───────────────────────────────────────
-class _BottomTabSection extends StatelessWidget {
+// ─────────────────────────────────────────────────────────────
+// Ver análisis button (only after analysis)
+// ─────────────────────────────────────────────────────────────
+class _ViewAnalysisButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _ViewAnalysisButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+    child: GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: AppColors.accent,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Icon(Icons.analytics_outlined, color: AppColors.bg, size: 20),
+          SizedBox(width: 8),
+          Text('View analysis', style: TextStyle(
+              color: AppColors.bg, fontSize: 15, fontWeight: FontWeight.w700)),
+        ]),
+      ),
+    ),
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Previous analyses section
+// ─────────────────────────────────────────────────────────────
+class _PreviousAnalysesSection extends StatelessWidget {
   final HomeController controller;
   final void Function(int)? onTabChange;
-  const _BottomTabSection({required this.controller, this.onTabChange});
+  const _PreviousAnalysesSection({required this.controller, this.onTabChange});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 300,
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border)),
+    final teamId  = controller.selectedTeam?['id'] as int?;
+    final loading = teamId != null && controller.isLoadingMatchesForTeam(teamId);
+    final matches = controller.selectedTeamMatches;
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(20, 28, 20, 14),
+        child: Row(children: [
+          const Expanded(child: Text('Previous analyses', style: TextStyle(
+              color: AppColors.text, fontSize: 16, fontWeight: FontWeight.w700))),
+          GestureDetector(
+            onTap: () => onTabChange?.call(2),
+            child: const Text('View all', style: TextStyle(
+                color: AppColors.accent, fontSize: 13, fontWeight: FontWeight.w600)),
+          ),
+        ]),
       ),
-      child: DefaultTabController(
-        length: 2,
-        child: Column(
-          children: [
-            TabBar(
-              labelColor: AppColors.accent,
-              unselectedLabelColor: AppColors.dim,
-              indicatorColor: AppColors.accent,
-              indicatorSize: TabBarIndicatorSize.label,
-              labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-              tabs: const [
-                Tab(text: 'Resultados'),
-                Tab(text: 'Noticias'),
-              ],
+      if (loading)
+        const Center(child: Padding(
+          padding: EdgeInsets.all(20),
+          child: CircularProgressIndicator(color: AppColors.accent, strokeWidth: 1.5),
+        ))
+      else if (matches.isEmpty)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
             ),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  _ResultadosTab(controller: controller),
-                  const _NoticiasTab(),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+            child: const Column(children: [
+              Icon(Icons.history_rounded, color: AppColors.dim, size: 28),
+              SizedBox(height: 8),
+              Text('No analyses yet for this team',
+                  style: TextStyle(color: AppColors.muted, fontSize: 13)),
+              SizedBox(height: 4),
+              Text('Tap "Analyse video" to start',
+                  style: TextStyle(color: AppColors.accent, fontSize: 12)),
+            ]),
+          ),
+        )
+      else
+        ...matches.take(6).map((m) => _MatchRow(match: m)),
+    ]);
   }
 }
 
-// ── Resultados tab ───────────────────────────────────────────
-class _ResultadosTab extends StatelessWidget {
-  final HomeController controller;
-  const _ResultadosTab({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    if (controller.isLoadingMatches) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.accent, strokeWidth: 1.5));
-    }
-    if (controller.recentMatches.isEmpty) {
-      return const Center(
-        child: Text('No results yet', style: TextStyle(color: AppColors.dim, fontSize: 13)),
-      );
-    }
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: controller.recentMatches.length,
-      itemBuilder: (_, i) => _ResultRow(match: controller.recentMatches[i]),
-    );
-  }
-}
-
-class _ResultRow extends StatelessWidget {
+// ─────────────────────────────────────────────────────────────
+// Match row
+// ─────────────────────────────────────────────────────────────
+class _MatchRow extends StatelessWidget {
   final Map<String, dynamic> match;
-  const _ResultRow({required this.match});
+  const _MatchRow({required this.match});
 
   @override
   Widget build(BuildContext context) {
     final status   = match['status'] as String? ?? AppConstants.statusUploaded;
     final opponent = match['opponent'] as String? ?? '—';
-    final teamName = (match['teams'] as Map?)?['name'] as String? ?? '—';
     final rawDate  = match['match_date'] as String?;
     String dateLabel = '—';
     if (rawDate != null) {
-      try {
-        dateLabel = DateFormat(AppConstants.dateFormat).format(DateTime.parse(rawDate));
-      } catch (_) {}
+      try { dateLabel = DateFormat('d MMM').format(DateTime.parse(rawDate)); } catch (_) {}
     }
 
-    final (Color chipColor, Color chipText, String chipLabel) = switch (status) {
-      AppConstants.statusDone       => (AppColors.successBg, AppColors.success, AppConstants.labelAnalysed),
-      AppConstants.statusProcessing => (AppColors.warningBg, AppColors.warning, AppConstants.labelProcessing),
-      _                             => (AppColors.border, AppColors.dim, AppConstants.labelUploaded),
+    final (Color col, String lbl) = switch (status) {
+      AppConstants.statusDone       => (AppColors.positive, AppConstants.labelAnalysed),
+      AppConstants.statusProcessing => (AppColors.warning,  AppConstants.labelProcessing),
+      _                             => (AppColors.muted,    AppConstants.labelUploaded),
     };
 
+    final initial = opponent.isNotEmpty ? opponent[0].toUpperCase() : '?';
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.bg,
-        borderRadius: BorderRadius.circular(10),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
       ),
       child: Row(children: [
-        const Icon(Icons.sports_soccer_outlined, color: AppColors.accentLo, size: 14),
-        const SizedBox(width: 10),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('$teamName vs $opponent',
-              style: const TextStyle(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.w600)),
-          Text(dateLabel, style: const TextStyle(color: AppColors.dim, fontSize: 11)),
-        ])),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-          decoration: BoxDecoration(color: chipColor, borderRadius: BorderRadius.circular(6)),
-          child: Text(chipLabel,
-              style: TextStyle(color: chipText, fontSize: 10, fontWeight: FontWeight.w600)),
+          width: 44, height: 44,
+          decoration: BoxDecoration(
+              color: AppColors.accentLo, borderRadius: BorderRadius.circular(12)),
+          child: Center(child: Text(initial, style: const TextStyle(
+              color: AppColors.accent, fontSize: 18, fontWeight: FontWeight.w700))),
         ),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('vs $opponent', style: const TextStyle(
+              color: AppColors.text, fontSize: 14, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 2),
+          Text(dateLabel, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+        ])),
+        Text(lbl, style: TextStyle(color: col, fontSize: 12, fontWeight: FontWeight.w700)),
       ]),
     );
   }
 }
 
-// ── Noticias tab ─────────────────────────────────────────────
-class _NoticiasTab extends StatelessWidget {
-  const _NoticiasTab();
+// ─────────────────────────────────────────────────────────────
+// Spark line decoration
+// ─────────────────────────────────────────────────────────────
+class _SparkLine extends StatelessWidget {
+  final List<double> values;
+  const _SparkLine({required this.values});
 
   @override
-  Widget build(BuildContext context) => const Center(
-    child: Column(mainAxisSize: MainAxisSize.min, children: [
-      Icon(Icons.newspaper_outlined, color: AppColors.accentLo, size: 32),
-      SizedBox(height: 10),
-      Text('News coming soon', style: TextStyle(color: AppColors.dim, fontSize: 13)),
-    ]),
+  Widget build(BuildContext context) => SizedBox(
+    width: 80, height: 36,
+    child: CustomPaint(painter: _SparkPainter(values)),
   );
+}
+
+class _SparkPainter extends CustomPainter {
+  final List<double> values;
+  const _SparkPainter(this.values);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppColors.accent.withValues(alpha: 0.8)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final path = Path();
+    for (int i = 0; i < values.length; i++) {
+      final x = size.width * i / (values.length - 1);
+      final y = size.height * (1 - values[i]);
+      i == 0 ? path.moveTo(x, y) : path.lineTo(x, y);
+    }
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_) => false;
 }

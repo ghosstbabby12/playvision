@@ -21,11 +21,11 @@ class TeamListItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.only(right: 20),
       decoration: BoxDecoration(
-        color: const Color(0xFF3A1A1A),
+        color: AppColors.dangerBg,
         borderRadius: BorderRadius.circular(12),
       ),
       alignment: Alignment.centerRight,
-      child: const Icon(Icons.delete_outline, color: Color(0xFFE05C5C), size: 20),
+      child: const Icon(Icons.delete_outline, color: AppColors.danger, size: 20),
     ),
     confirmDismiss: (_) async {
       onDelete();
@@ -43,7 +43,7 @@ class TeamListItem extends StatelessWidget {
         Container(
           width: 38, height: 38,
           decoration: const BoxDecoration(
-            color: Color(0x1A7C9EBF),
+            color: AppColors.accentLo,
             shape: BoxShape.circle,
           ),
           child: const Icon(Icons.groups_outlined, color: AppColors.accent, size: 18),
