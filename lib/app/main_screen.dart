@@ -44,33 +44,33 @@ class _GlassNavBar extends StatelessWidget {
   const _GlassNavBar({required this.currentIndex, required this.onTap});
 
   static const _items = [
-    (icon: Icons.home_outlined,          activeIcon: Icons.home_rounded,         label: 'Inicio'),
-    (icon: Icons.check_circle_outline,   activeIcon: Icons.check_circle_rounded, label: 'Análisis'),
-    (icon: Icons.calendar_month_outlined, activeIcon: Icons.calendar_month,      label: 'Partidos'),
-    (icon: Icons.track_changes_outlined,  activeIcon: Icons.track_changes,       label: 'Entreno'),
+    (icon: Icons.home_outlined,            activeIcon: Icons.home_rounded),
+    (icon: Icons.analytics_outlined,       activeIcon: Icons.analytics_rounded),
+    (icon: Icons.sports_soccer_outlined,   activeIcon: Icons.sports_soccer),
+    (icon: Icons.fitness_center_outlined,  activeIcon: Icons.fitness_center),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
+      padding: const EdgeInsets.fromLTRB(32, 0, 32, 28),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(36),
+        borderRadius: BorderRadius.circular(40),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
-            height: 70,
+            height: 68,
             decoration: BoxDecoration(
               color: AppColors.navBg,
-              borderRadius: BorderRadius.circular(36),
+              borderRadius: BorderRadius.circular(40),
               border: Border.all(color: AppColors.navBorder),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: List.generate(_items.length, (i) {
-                final item    = _items[i];
-                final active  = i == currentIndex;
+                final active = i == currentIndex;
+                final item   = _items[i];
                 return GestureDetector(
                   onTap: () => onTap(i),
                   behavior: HitTestBehavior.opaque,
@@ -84,8 +84,8 @@ class _GlassNavBar extends StatelessWidget {
                     ),
                     child: Icon(
                       active ? item.activeIcon : item.icon,
-                      color: active ? AppColors.textHi : AppColors.muted,
-                      size: 24,
+                      color: active ? AppColors.accent : AppColors.muted,
+                      size: 22,
                     ),
                   ),
                 );

@@ -5,6 +5,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/form_text_field.dart';
 import '../controller/home_controller.dart';
+import 'widgets/home_search_delegate.dart';
 import 'widgets/settings_drawer.dart';
 
 class HomePage extends StatefulWidget {
@@ -17,6 +18,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late final HomeController _controller;
+  int _selectedTab = 0; // 0 = Resultados, 1 = Noticias
 
   @override
   void initState() {
@@ -97,6 +99,16 @@ class _HomePageState extends State<HomePage> {
                   onTabChange: widget.onTabChange,
                 )),
               ],
+
+              // ── Resultados / Noticias tabs ────────────────
+              SliverToBoxAdapter(child: _TabSelector(
+                selected: _selectedTab,
+                onSelect: (i) => setState(() => _selectedTab = i),
+              )),
+              if (_selectedTab == 0)
+                SliverToBoxAdapter(child: _ResultadosSection(controller: _controller))
+              else
+                const SliverToBoxAdapter(child: _NoticiasSection()),
 
               const SliverToBoxAdapter(child: SizedBox(height: 120)),
             ],
@@ -211,7 +223,11 @@ class _HeroSection extends StatelessWidget {
                 child: Text('PlayVision', style: TextStyle(
                     color: AppColors.text, fontSize: 18, fontWeight: FontWeight.w800)),
               ),
-              GestureDetector(onTap: () {},
+              GestureDetector(
+                  onTap: () => showSearch(
+                    context: context,
+                    delegate: HomeSearchDelegate(controller),
+                  ),
                   child: const Icon(Icons.search_rounded, color: AppColors.muted, size: 22)),
               const SizedBox(width: 8),
               Builder(builder: (ctx) => GestureDetector(
@@ -225,11 +241,11 @@ class _HeroSection extends StatelessWidget {
             // Stats
             Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('Total matches', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                const Text('Total matches', style: TextStyle(color: AppColors.muted, fontSize: 13)),
                 const SizedBox(height: 4),
                 Text('$total', style: const TextStyle(
-                    color: AppColors.textHi, fontSize: 52,
-                    fontWeight: FontWeight.w800, letterSpacing: -2, height: 1)),
+                    color: AppColors.textHi, fontSize: 56,
+                    fontWeight: FontWeight.w900, letterSpacing: -2, height: 1)),
                 const SizedBox(height: 6),
                 Row(children: [
                   const Icon(Icons.check_circle_rounded, color: AppColors.accent, size: 14),
@@ -383,9 +399,10 @@ class _SelectedTeamHeader extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: AppColors.card,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.borderGreen),
+          
         ),
         child: Row(children: [
           // Avatar
@@ -443,12 +460,10 @@ class _AnalyseButton extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppColors.accentMid, AppColors.accentLo],
-            begin: Alignment.topLeft, end: Alignment.bottomRight,
-          ),
+          color: AppColors.card,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.borderGreen),
+          
         ),
         child: controller.isAnalyzing
             ? const Column(children: [
@@ -502,6 +517,7 @@ class _ViewAnalysisButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.accent,
           borderRadius: BorderRadius.circular(14),
+          
         ),
         child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           Icon(Icons.analytics_outlined, color: AppColors.bg, size: 20),
@@ -603,7 +619,7 @@ class _MatchRow extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
       ),
@@ -611,7 +627,7 @@ class _MatchRow extends StatelessWidget {
         Container(
           width: 44, height: 44,
           decoration: BoxDecoration(
-              color: AppColors.accentLo, borderRadius: BorderRadius.circular(12)),
+              color: AppColors.elevated, borderRadius: BorderRadius.circular(12)),
           child: Center(child: Text(initial, style: const TextStyle(
               color: AppColors.accent, fontSize: 18, fontWeight: FontWeight.w700))),
         ),
@@ -665,4 +681,344 @@ class _SparkPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_) => false;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Tab selector
+// ─────────────────────────────────────────────────────────────
+class _TabSelector extends StatelessWidget {
+  final int selected;
+  final void Function(int) onSelect;
+  const _TabSelector({required this.selected, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(children: [
+          _TabPill(label: 'Resultados', active: selected == 0, onTap: () => onSelect(0)),
+          _TabPill(label: 'Noticias',   active: selected == 1, onTap: () => onSelect(1)),
+        ]),
+      ),
+    );
+  }
+}
+
+class _TabPill extends StatelessWidget {
+  final String label;
+  final bool active;
+  final VoidCallback onTap;
+  const _TabPill({required this.label, required this.active, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: active ? AppColors.accentLo : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          border: active ? Border.all(color: AppColors.borderGreen) : null,
+        ),
+        child: Text(label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: active ? AppColors.accent : AppColors.muted,
+            fontSize: 13, fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+          )),
+      ),
+    ),
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Resultados section
+// ─────────────────────────────────────────────────────────────
+class _ResultadosSection extends StatelessWidget {
+  final HomeController controller;
+  const _ResultadosSection({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    if (controller.isLoadingMatches) {
+      return const Padding(
+        padding: EdgeInsets.all(32),
+        child: Center(child: CircularProgressIndicator(color: AppColors.accent, strokeWidth: 1.5)),
+      );
+    }
+
+    final matches = controller.recentMatches;
+    if (matches.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: const Center(child: Column(children: [
+            Icon(Icons.sports_soccer_outlined, color: AppColors.dim, size: 28),
+            SizedBox(height: 8),
+            Text('No results yet', style: TextStyle(color: AppColors.muted, fontSize: 13)),
+          ])),
+        ),
+      );
+    }
+
+    // Group by team
+    final grouped = <String, List<Map<String, dynamic>>>{};
+    for (final m in matches) {
+      final key = (m['teams'] as Map?)?['name'] as String? ?? 'Unknown';
+      grouped.putIfAbsent(key, () => []).add(m);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
+      child: Column(
+        children: grouped.entries.map((entry) => _LeagueGroup(
+          teamName: entry.key,
+          matches: entry.value,
+        )).toList(),
+      ),
+    );
+  }
+}
+
+class _LeagueGroup extends StatelessWidget {
+  final String teamName;
+  final List<Map<String, dynamic>> matches;
+  const _LeagueGroup({required this.teamName, required this.matches});
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Group header
+      Padding(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 6),
+        child: Row(children: [
+          Container(
+            width: 24, height: 24,
+            decoration: const BoxDecoration(color: AppColors.accentLo, shape: BoxShape.circle),
+            child: const Icon(Icons.groups_outlined, color: AppColors.accent, size: 13),
+          ),
+          const SizedBox(width: 8),
+          Text(teamName, style: const TextStyle(
+              color: AppColors.text, fontSize: 13, fontWeight: FontWeight.w700)),
+          const Spacer(),
+          const Icon(Icons.star_border_rounded, color: AppColors.dim, size: 16),
+        ]),
+      ),
+      // Matches
+      ...matches.map((m) => _ResultRow(match: m)),
+      const Divider(color: AppColors.border, height: 1),
+      const SizedBox(height: 4),
+    ],
+  );
+}
+
+class _ResultRow extends StatelessWidget {
+  final Map<String, dynamic> match;
+  const _ResultRow({required this.match});
+
+  @override
+  Widget build(BuildContext context) {
+    final status   = match['status'] as String? ?? AppConstants.statusUploaded;
+    final opponent = match['opponent'] as String? ?? '—';
+    final rawDate  = match['match_date'] as String?;
+
+    String timeLabel = '—';
+    String dateLabel = '—';
+    if (rawDate != null) {
+      try {
+        final dt = DateTime.parse(rawDate);
+        timeLabel = DateFormat('HH:mm').format(dt);
+        dateLabel = DateFormat('dd MMM').format(dt);
+      } catch (_) {}
+    }
+
+    final (Color statusColor, String statusLabel) = switch (status) {
+      AppConstants.statusDone       => (AppColors.success,  'Finalizado'),
+      AppConstants.statusProcessing => (AppColors.warning,  'En curso'),
+      _                             => (AppColors.muted,    'Programado'),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: AppColors.border)),
+      ),
+      child: Row(children: [
+        // Status + time
+        SizedBox(
+          width: 58,
+          child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            Text(statusLabel,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: statusColor, fontSize: 9, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 2),
+            Text(timeLabel, style: const TextStyle(color: AppColors.muted, fontSize: 11)),
+            Text(dateLabel, style: const TextStyle(color: AppColors.dim, fontSize: 10)),
+          ]),
+        ),
+        const SizedBox(width: 12),
+        // Match info
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            _TeamBadge(name: 'Local'),
+            const SizedBox(width: 8),
+            const Text('vs', style: TextStyle(color: AppColors.dim, fontSize: 11)),
+            const SizedBox(width: 8),
+            _TeamBadge(name: opponent),
+          ]),
+        ])),
+        // Score / result indicator
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: status == AppConstants.statusDone ? AppColors.successBg : AppColors.surface,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            status == AppConstants.statusDone ? '— : —' : '—',
+            style: TextStyle(
+              color: status == AppConstants.statusDone ? AppColors.success : AppColors.dim,
+              fontSize: 13, fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ]),
+    );
+  }
+}
+
+class _TeamBadge extends StatelessWidget {
+  final String name;
+  const _TeamBadge({required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      Container(
+        width: 22, height: 22,
+        decoration: const BoxDecoration(color: AppColors.elevated, shape: BoxShape.circle),
+        child: Center(child: Text(initial,
+            style: const TextStyle(color: AppColors.accent, fontSize: 10, fontWeight: FontWeight.w700))),
+      ),
+      const SizedBox(width: 5),
+      Text(name, style: const TextStyle(color: AppColors.text, fontSize: 12, fontWeight: FontWeight.w500)),
+    ]);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Noticias section (blog style)
+// ─────────────────────────────────────────────────────────────
+class _NoticiasSection extends StatelessWidget {
+  const _NoticiasSection();
+
+  static const _articles = [
+    (
+      category: 'Análisis',
+      title: 'Cómo el análisis de video está cambiando el fútbol moderno',
+      time: 'Hace 2 horas',
+      icon: Icons.analytics_outlined,
+    ),
+    (
+      category: 'Táctica',
+      title: 'Presión alta vs bloque bajo: cuál funciona mejor según los datos',
+      time: 'Hace 5 horas',
+      icon: Icons.architecture_outlined,
+    ),
+    (
+      category: 'Entrenamiento',
+      title: '5 ejercicios para mejorar el recorrido total de tus jugadores',
+      time: 'Hace 1 día',
+      icon: Icons.fitness_center_outlined,
+    ),
+    (
+      category: 'IA & Fútbol',
+      title: 'YOLO y la detección de jugadores: el futuro del scouting',
+      time: 'Hace 2 días',
+      icon: Icons.smart_toy_outlined,
+    ),
+    (
+      category: 'Posiciones',
+      title: 'Mapas de calor: cómo leer las zonas de dominio en cancha',
+      time: 'Hace 3 días',
+      icon: Icons.map_outlined,
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+    child: Column(children: _articles.map((a) => _ArticleCard(
+      category: a.category, title: a.title,
+      time: a.time, icon: a.icon,
+    )).toList()),
+  );
+}
+
+class _ArticleCard extends StatelessWidget {
+  final String category;
+  final String title;
+  final String time;
+  final IconData icon;
+  const _ArticleCard({required this.category, required this.title,
+      required this.time, required this.icon});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: AppColors.border),
+    ),
+    child: Row(children: [
+      // Icon thumbnail
+      Container(
+        width: 52, height: 52,
+        decoration: BoxDecoration(
+          color: AppColors.accentLo,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: AppColors.accent, size: 24),
+      ),
+      const SizedBox(width: 12),
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            color: AppColors.accentLo,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(category, style: const TextStyle(
+              color: AppColors.accent, fontSize: 10, fontWeight: FontWeight.w700)),
+        ),
+        const SizedBox(height: 6),
+        Text(title, maxLines: 2, overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: AppColors.text, fontSize: 13,
+                fontWeight: FontWeight.w600, height: 1.3)),
+        const SizedBox(height: 4),
+        Text(time, style: const TextStyle(color: AppColors.muted, fontSize: 11)),
+      ])),
+      const SizedBox(width: 8),
+      const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.dim, size: 13),
+    ]),
+  );
 }
