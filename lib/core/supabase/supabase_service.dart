@@ -172,6 +172,32 @@ class SupabaseService {
     });
   }
 
+  /// NUEVO MÉTODO: Crea el partido y retorna su ID (necesario para el nuevo flujo de IA)
+  Future<int> createMatchAndReturnId({
+    required int teamId,
+    required String opponent,
+    required DateTime matchDate,
+    required String sourceType,
+    String? videoUrl,
+    double? latitude,
+    double? longitude,
+    String status = 'processing',
+  }) async {
+    final response = await client.from('matches').insert({
+      'team_id': teamId,
+      'opponent': opponent,
+      'match_date': matchDate.toIso8601String(),
+      'source_type': sourceType,
+      'video_url': videoUrl,
+      'latitude': latitude,
+      'longitude': longitude,
+      'status': status,
+    }).select('id'); // Pedimos a Supabase que nos devuelva el id generado
+
+    final list = List<Map<String, dynamic>>.from(response);
+    return list.first['id'] as int;
+  }
+
   Future<void> updateMatchStatus({
     required int matchId,
     required String status,
@@ -232,6 +258,13 @@ class SupabaseService {
       'shots_on_target': shotsOnTarget,
       'rating': rating,
     });
+  }
+
+  /// NUEVO MÉTODO: Guarda una lista entera de stats de jugadores de un solo golpe.
+  /// Ideal para recibir el JSON del backend de IA y guardarlo sin hacer múltiples peticiones.
+  Future<void> savePlayerStatsBatch(List<Map<String, dynamic>> statsList) async {
+    if (statsList.isEmpty) return;
+    await client.from('player_match_stats').insert(statsList);
   }
 
   // =========================

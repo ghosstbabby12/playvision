@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from supabase import create_client
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 import cv2
 import math
 import shutil
@@ -73,7 +74,7 @@ def zone_label(x, y, w, h):
     row = "Ataque" if y < h / 3 else ("Defensa" if y > 2 * h / 3 else "Medio")
     return f"{row}-{col}"
 
-def create_or_update_match(team_id: int, match_id: int | None, opponent: str, source_type: str, video_url: str):
+def create_or_update_match(team_id: int, match_id: Optional[int], opponent: str, source_type: str, video_url: str):
     data = {
         "team_id": team_id,
         "opponent": opponent,
@@ -96,6 +97,7 @@ def create_player_stat(match_id: int, track_id: int, stats: dict):
     insert_data = {
         "match_id": match_id,
         "player_id": None, # Queda nulo por ahora hasta que asignes un jugador real
+        "track_id": track_id, # Añadido track_id explícitamente para asegurar compatibilidad
         "distance": stats.get("distance_km"),
         "velocity": stats.get("speed_ms"),
         "possession": stats.get("possession_pct"),
@@ -119,12 +121,16 @@ def save_match_report(match_id: int, team_id: int, payload: dict):
 
 @app.post("/analyze")
 async def analyze_video(
-    team_id: int = Form(...),
-    match_id: int | None = Form(None),
+    team_id: str = Form(...), # Recibimos como texto desde Flutter Web
+    match_id: str = Form(None), # Recibimos como texto opcional
     opponent: str = Form(""),
     source_type: str = Form("upload"),
     file: UploadFile = File(...),
 ):
+    # Convertimos a entero internamente de forma segura
+    team_id_int = int(team_id)
+    match_id_int = int(match_id) if match_id and match_id != "null" else None
+
     video_path = f"uploaded_{file.filename}"
 
     try:
@@ -142,11 +148,14 @@ async def analyze_video(
         video_id  = uuid.uuid4().hex[:8]
         out_path  = os.path.join(VIDEOS_DIR, f"annotated_{video_id}.mp4")
         out_fps   = src_fps / FRAME_SKIP
-        fourcc    = cv2.VideoWriter_fourcc(*"avc1")
+        
+        # CORRECCIÓN DE CODEC: Usar mp4v es mucho más estable en Windows que avc1 (h264)
+        fourcc    = cv2.VideoWriter_fourcc(*"mp4v")
         writer    = cv2.VideoWriter(out_path, fourcc, out_fps, (frame_width, frame_height))
         
         if not writer.isOpened():
-            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            # Plan de respaldo si mp4v falla: probar XVID (genera un .avi, pero lo guardamos como mp4)
+            fourcc = cv2.VideoWriter_fourcc(*"XVID")
             writer = cv2.VideoWriter(out_path, fourcc, out_fps, (frame_width, frame_height))
 
         player_data = defaultdict(lambda: {
@@ -281,19 +290,30 @@ async def analyze_video(
             "players": players_out,
         }
 
-        persisted_match_id = create_or_update_match(
-            team_id=team_id,
-            match_id=match_id,
-            opponent=opponent,
-            source_type=source_type,
-            video_url=video_url,
-        )
+        # CORRECCIÓN DE LA LÓGICA DE PARTIDO: Usar los INT en lugar de los STR originales
+        persisted_match_id = match_id_int
+
+        if persisted_match_id is None:
+            persisted_match_id = create_or_update_match(
+                team_id=team_id_int,
+                match_id=None,
+                opponent=opponent,
+                source_type=source_type,
+                video_url=video_url,
+            )
+        else:
+            # Si ya existía, al menos le actualizamos el video_url para que apunte al nuevo
+            create_or_update_match(
+                team_id=team_id_int,
+                match_id=persisted_match_id,
+                opponent=opponent,
+                source_type=source_type,
+                video_url=video_url,
+            )
 
         if persisted_match_id is not None:
-            for p in players_out:
-                create_player_stat(persisted_match_id, p["track_id"], p)
-
-            save_match_report(persisted_match_id, team_id, result_payload)
+            # Guardado general del reporte en JSON usando el INT
+            save_match_report(persisted_match_id, team_id_int, result_payload)
 
         return result_payload
 

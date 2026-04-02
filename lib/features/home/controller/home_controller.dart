@@ -88,25 +88,48 @@ class HomeController extends ChangeNotifier {
   }
 
   // ── Analyse video ────────────────────────────────────────
-  Future<void> pickAndAnalyze({String opponent = ''}) async {
+  Future<void> pickAndAnalyze({required String opponent}) async {
+    final teamId = selectedTeam?['id'] as int?;
+    if (teamId == null) {
+      errorMessage = 'Please select a team first.';
+      notifyListeners();
+      return;
+    }
+
     final file = await _picker.pickVideo(source: ImageSource.gallery);
     if (file == null) return;
 
     isAnalyzing = true;
+    errorMessage = null;
+    successMessage = null;
     notifyListeners();
 
+    int? matchId;
+
     try {
+      // 1. Crear el partido en Supabase en estado "processing"
+      matchId = await _service.createMatchAndReturnId(
+        teamId: teamId,
+        opponent: opponent,
+        matchDate: DateTime.now(),
+        sourceType: AppConstants.sourceUpload,
+      );
+
+      // 2. Preparar y enviar el video a la API de Python
       final bytes   = await file.readAsBytes();
       final request = http.MultipartRequest(
         'POST',
         Uri.parse('${AppConstants.apiBase}/analyze'),
       );
 
-      // Send team_id if a team is selected
-      final teamId = selectedTeam?['id'];
-      if (teamId != null) request.fields['team_id'] = teamId.toString();
+      // CORRECCIÓN CLAVE: Enviamos IDs exactos en formato String sin variables nulas
+      request.fields['team_id']     = teamId.toString();
       request.fields['opponent']    = opponent;
       request.fields['source_type'] = AppConstants.sourceUpload;
+      
+      if (matchId != null) {
+        request.fields['match_id'] = matchId.toString(); 
+      }
 
       request.files.add(
         http.MultipartFile.fromBytes('file', bytes, filename: file.name),
@@ -116,16 +139,59 @@ class HomeController extends ChangeNotifier {
       final body     = await streamed.stream.bytesToString();
 
       if (streamed.statusCode == 200) {
+        // 3. Recibir resultado JSON
         final result = jsonDecode(body) as Map<String, dynamic>;
+        
+        // 4. Actualizar estado y URL del video en Supabase
+        if (matchId != null) {
+          await _service.updateMatchStatus(matchId: matchId, status: 'done');
+          
+          final videoUrl = result['video_url'] as String?;
+          if (videoUrl != null && videoUrl.isNotEmpty) {
+            await _service.updateMatchVideoUrl(matchId: matchId, videoUrl: videoUrl);
+          }
+        }
+
+        // 5. Guardar estadísticas de todos los jugadores generados
+        final players = result['players'] as List?;
+        if (players != null && players.isNotEmpty && matchId != null) {
+          final statsToInsert = players.map((p) => {
+            'match_id': matchId,
+            'player_id': null, // Null hasta que el usuario enlace un jugador real
+            'track_id': p['track_id'],
+            'distance': p['distance_km'],
+            'velocity': p['speed_ms'],
+            'possession': p['possession_pct'],
+            'presence': p['presence_pct'],
+            'zone': p['zone'],
+            // Valores por defecto
+            'minutes': 0, 'passes_ok': 0, 'passes_bad': 0,
+            'losses': 0, 'recoveries': 0, 'shots': 0,
+            'shots_on_target': 0, 'rating': 0.0,
+          }).toList();
+
+          await _service.savePlayerStatsBatch(statsToInsert);
+        }
+
+        // 6. Guardar en Store y notificar UI
         AnalysisStore.instance.save(result);
         successMessage = 'Analysis complete!';
-        // Refresh matches for selected team
-        if (teamId != null) await loadMatchesForTeam(teamId as int);
+        
+        // 7. Recargar los partidos de este equipo para que aparezca el nuevo
+        await loadMatchesForTeam(teamId);
+        
       } else {
-        errorMessage = 'Server error: ${streamed.statusCode}';
+        errorMessage = 'Server error: ${streamed.statusCode} - $body';
+        // Si el backend falla, marcamos el partido como error
+        if (matchId != null) {
+          await _service.updateMatchStatus(matchId: matchId, status: 'error');
+        }
       }
     } catch (e) {
       errorMessage = 'Connection error: $e';
+      if (matchId != null) {
+        await _service.updateMatchStatus(matchId: matchId, status: 'error');
+      }
     } finally {
       isAnalyzing = false;
       notifyListeners();
@@ -152,7 +218,7 @@ class HomeController extends ChangeNotifier {
   }
 
   void consumeMessages() {
-    errorMessage  = null;
+    errorMessage   = null;
     successMessage = null;
   }
 }

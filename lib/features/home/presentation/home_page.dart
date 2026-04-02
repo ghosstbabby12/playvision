@@ -43,10 +43,12 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // --- FUNCIÓN CON LA IP CORREGIDA PARA WEB (127.0.0.1) ---
+  // --- FUNCIÓN CON LA IP DE TU COMPUTADORA ---
   Future<void> _fetchLiveMatches() async {
     try {
-      final response = await http.get(Uri.parse("http://127.0.0.1:8000/api/live-matches"));
+      String apiUrl = "http://127.0.0.1:8000/api/live-matches";
+      
+      final response = await http.get(Uri.parse(apiUrl));
       if (response.statusCode == 200) {
         final decodedData = json.decode(response.body);
         if (mounted) {
@@ -130,7 +132,7 @@ class _HomePageState extends State<HomePage> {
                     onTap: () => widget.onTabChange?.call(1),
                   )),
 
-                // Previous analyses
+                // Previous analyses (AHORA SÍ FUNCIONA Y MUESTRA LA LISTA)
                 SliverToBoxAdapter(child: _PreviousAnalysesSection(
                   controller: _controller,
                   onTabChange: widget.onTabChange,
@@ -143,7 +145,7 @@ class _HomePageState extends State<HomePage> {
                 onSelect: (i) => setState(() => _selectedTab = i),
               )),
               
-              // AQUÍ USAMOS LA SECCIÓN CON LA API
+              // SECCIÓN CON LA API
               if (_selectedTab == 0)
                 SliverToBoxAdapter(child: _ResultadosAPISection(
                   isLoading: _isLoadingLiveMatches,
@@ -257,7 +259,6 @@ class _HeroSection extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            // Top bar
             Row(children: [
               const Icon(Icons.sports_soccer_outlined, color: AppColors.accent, size: 20),
               const SizedBox(width: 8),
@@ -277,10 +278,7 @@ class _HeroSection extends StatelessWidget {
                 child: const Icon(Icons.settings_outlined, color: AppColors.muted, size: 22),
               )),
             ]),
-
             const SizedBox(height: 24),
-
-            // Stats
             Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 const Text('Total matches', style: TextStyle(color: AppColors.muted, fontSize: 13)),
@@ -298,7 +296,6 @@ class _HeroSection extends StatelessWidget {
               ])),
               _SparkLine(values: const [0.4, 0.6, 0.3, 0.8, 0.5, 0.9, 0.7]),
             ]),
-
             const SizedBox(height: 8),
             Text(DateFormat('EEE d MMMM').format(DateTime.now()),
                 style: const TextStyle(color: AppColors.dim, fontSize: 11)),
@@ -328,7 +325,6 @@ class _TeamSelectorSection extends StatelessWidget {
         const Text('Choose a team to start a new analysis',
             style: TextStyle(color: AppColors.muted, fontSize: 13)),
         const SizedBox(height: 20),
-
         if (controller.isLoading)
           const Center(child: CircularProgressIndicator(color: AppColors.accent, strokeWidth: 1.5))
         else if (controller.teams.isEmpty)
@@ -481,17 +477,66 @@ class _SelectedTeamHeader extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Analyse video button
+// Analyse video button (CON RECARGA DE PARTIDOS)
 // ─────────────────────────────────────────────────────────────
 class _AnalyseButton extends StatelessWidget {
   final HomeController controller;
   const _AnalyseButton({required this.controller});
 
+  Future<void> _askOpponentAndAnalyze(BuildContext context) async {
+    final opponentCtrl = TextEditingController();
+    
+    final opponent = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('New Analysis', 
+            style: TextStyle(color: AppColors.text, fontWeight: FontWeight.w700)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Who is the opponent in this video?', 
+                style: TextStyle(color: AppColors.muted, fontSize: 13)),
+            const SizedBox(height: 16),
+            FormTextField(controller: opponentCtrl, label: 'Opponent team name'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.muted)),
+          ),
+          TextButton(
+            onPressed: () {
+              if (opponentCtrl.text.trim().isNotEmpty) {
+                Navigator.pop(ctx, opponentCtrl.text.trim());
+              }
+            },
+            child: const Text('Start', 
+                style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+
+    // Si el usuario ingresó un nombre, iniciamos el análisis y esperamos que termine
+    if (opponent != null && opponent.isNotEmpty) {
+      await controller.pickAndAnalyze(opponent: opponent);
+      // UNA VEZ TERMINADO, recargamos los partidos para que aparezca en la lista de abajo
+      if (controller.selectedTeam != null) {
+        controller.loadMatchesForTeam(controller.selectedTeam!['id'] as int);
+        controller.loadRecentMatches(); // Recarga contador de arriba también
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
     child: GestureDetector(
-      onTap: controller.isAnalyzing ? null : () => controller.pickAndAnalyze(),
+      onTap: controller.isAnalyzing ? null : () => _askOpponentAndAnalyze(context),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20),
@@ -565,7 +610,7 @@ class _ViewAnalysisButton extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Previous analyses section
+// Previous analyses section (AQUÍ ES DONDE SE MUESTRAN AHORA)
 // ─────────────────────────────────────────────────────────────
 class _PreviousAnalysesSection extends StatelessWidget {
   final HomeController controller;
@@ -574,7 +619,135 @@ class _PreviousAnalysesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(height: 10);
+    final teamId = controller.selectedTeam?['id'] as int?;
+    if (teamId == null) return const SizedBox.shrink();
+
+    final isLoading = controller.isLoadingMatchesForTeam(teamId);
+    final matches = controller.selectedTeamMatches;
+
+    if (isLoading) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 30),
+        child: Center(child: CircularProgressIndicator(color: AppColors.accent, strokeWidth: 1.5)),
+      );
+    }
+
+    if (matches.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('Team matches',
+              style: TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: const Center(child: Text('No analysed matches yet', 
+                style: TextStyle(color: AppColors.muted, fontSize: 13))),
+          ),
+        ]),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Team matches',
+              style: TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 12),
+          ...matches.map((m) => _MatchItem(
+            match: m,
+            onTap: () {
+              // Si el usuario toca un partido viejo, te puede llevar a la pestaña de análisis
+              onTabChange?.call(1);
+            },
+          )),
+        ],
+      ),
+    );
+  }
+}
+
+class _MatchItem extends StatelessWidget {
+  final Map<String, dynamic> match;
+  final VoidCallback onTap;
+  const _MatchItem({required this.match, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final opponent = match['opponent'] as String? ?? 'Unknown opponent';
+    final dateStr  = match['match_date'] as String? ?? '';
+    final status   = match['status'] as String? ?? 'uploaded';
+    
+    DateTime? dt;
+    if (dateStr.isNotEmpty) {
+      try { dt = DateTime.parse(dateStr).toLocal(); } catch (_) {}
+    }
+    final formattedDate = dt != null ? DateFormat(AppConstants.dateFormat).format(dt) : '—';
+
+    Color statusColor;
+    String statusLabel;
+    
+    if (status == AppConstants.statusDone) {
+      statusColor = AppColors.success;
+      statusLabel = AppConstants.labelAnalysed;
+    } else if (status == AppConstants.statusProcessing) {
+      statusColor = AppColors.warning;
+      statusLabel = AppConstants.labelProcessing;
+    } else {
+      statusColor = AppColors.dim;
+      statusLabel = AppConstants.labelUploaded;
+    }
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(children: [
+          Container(
+            width: 44, height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.elevated,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.sports_soccer_outlined, color: AppColors.dim, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('vs $opponent', style: const TextStyle(
+                color: AppColors.text, fontSize: 14, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 4),
+            Row(children: [
+              Text(formattedDate, style: const TextStyle(color: AppColors.muted, fontSize: 11)),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(statusLabel, style: TextStyle(
+                    color: statusColor, fontSize: 9, fontWeight: FontWeight.w700)),
+              ),
+            ]),
+          ])),
+          const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.dim, size: 13),
+        ]),
+      ),
+    );
   }
 }
 
@@ -711,7 +884,6 @@ class _ResultadosAPISection extends StatelessWidget {
       );
     }
 
-    // Agrupar por Liga (En la API viene en fixture.league.name)
     final grouped = <String, List<Map<String, dynamic>>>{};
     for (final m in matches) {
       final key = m['league']?['name'] as String? ?? 'Others';
@@ -741,7 +913,6 @@ class _LeagueGroup extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      // Cabecera de la liga
       Padding(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
         child: Row(children: [
@@ -759,7 +930,6 @@ class _LeagueGroup extends StatelessWidget {
           ),
         ]),
       ),
-      // Partidos de esa liga
       ...matches.map((m) => _ResultRowAPI(match: m)),
       const SizedBox(height: 8),
     ],
@@ -784,7 +954,6 @@ class _ResultRowAPI extends StatelessWidget {
     final elapsed = match['fixture']?['status']?['elapsed'] ?? 0;
     final dateStr = match['fixture']?['date'] ?? '';
 
-    // Lógica de hora
     String timeLabel = '—';
     String dateLabel = '—';
     if (dateStr.isNotEmpty) {
@@ -800,13 +969,13 @@ class _ResultRowAPI extends StatelessWidget {
     String scoreText;
 
     if (statusShort == 'FT' || statusShort == 'AET' || statusShort == 'PEN') {
-      statusColor = AppColors.dim; // Gris si terminó
+      statusColor = AppColors.dim;
       statusLabel = 'Finalizado';
       scoreText = '$homeGoals : $awayGoals';
     } else if (statusShort == '1H' || statusShort == '2H' || statusShort == 'HT') {
-      statusColor = AppColors.success; // Verde brillante si está en vivo
+      statusColor = AppColors.success;
       statusLabel = 'En Vivo';
-      timeLabel = "$elapsed'"; // En vivo mostramos el minuto
+      timeLabel = "$elapsed'";
       scoreText = '$homeGoals : $awayGoals';
     } else {
       statusColor = AppColors.muted;
@@ -820,7 +989,6 @@ class _ResultRowAPI extends StatelessWidget {
         border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Row(children: [
-        // Columna Izquierda: Estado, minuto y fecha
         SizedBox(
           width: 58,
           child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
@@ -833,8 +1001,6 @@ class _ResultRowAPI extends StatelessWidget {
           ]),
         ),
         const SizedBox(width: 12),
-        
-        // Columna Central: Equipos
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             _TeamBadgeAPI(name: homeTeam, logoUrl: homeLogo),
@@ -844,8 +1010,6 @@ class _ResultRowAPI extends StatelessWidget {
             _TeamBadgeAPI(name: awayTeam, logoUrl: awayLogo),
           ]),
         ])),
-
-        // Columna Derecha: Marcador
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
