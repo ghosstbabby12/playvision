@@ -11,6 +11,8 @@ import math
 import shutil
 import os
 import uuid
+import requests
+import time
 from collections import defaultdict
 
 # --- CORRECCIÓN DE VARIABLES DE ENTORNO ---
@@ -55,6 +57,17 @@ FPS             = float(os.getenv("FPS", "30.0"))
 CONF_THRESHOLD  = float(os.getenv("CONF_THRESHOLD", "0.55"))
 FRAME_SKIP      = int(os.getenv("FRAME_SKIP", "5"))
 
+# ==========================================
+# VARIABLES PARA API DE PARTIDOS EN VIVO
+# ==========================================
+API_KEY_SPORTS = "5b04f6e82ecd9629ff7b1a495bab699e"
+HEADERS_SPORTS = {
+    "x-apisports-key": API_KEY_SPORTS 
+}
+cache_partidos = None
+ultimo_llamado_partidos = 0
+TIEMPO_CACHE_PARTIDOS = 60 # Actualiza cada minuto
+
 def zone_label(x, y, w, h):
     col = "Izq"    if x < w / 3 else ("Der"     if x > 2 * w / 3 else "Centro")
     row = "Ataque" if y < h / 3 else ("Defensa" if y > 2 * h / 3 else "Medio")
@@ -92,19 +105,18 @@ def create_player_stat(match_id: int, track_id: int, stats: dict):
         "updated_at": datetime.utcnow().isoformat(),
     }
     
-    # Ejecutamos la inserción con los nombres correctos de tus columnas
     supabase.table("player_match_stats").insert(insert_data).execute()
+
 def save_match_report(match_id: int, team_id: int, payload: dict):
     report = {
         "match_id": match_id,
-        # Guardamos todo el resultado completo del análisis en la columna JSON de tu base de datos
         "summary_json": payload,
         "created_at": datetime.utcnow().isoformat(),
         "updated_at": datetime.utcnow().isoformat(),
     }
     
-    # Ejecutamos la inserción
     supabase.table("match_reports").insert(report).execute()
+
 @app.post("/analyze")
 async def analyze_video(
     team_id: int = Form(...),
@@ -127,7 +139,6 @@ async def analyze_video(
         frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         src_fps      = cap.get(cv2.CAP_PROP_FPS) or 30.0
 
-        # Preparar writer para video anotado (se escribe 1 de cada FRAME_SKIP frames)
         video_id  = uuid.uuid4().hex[:8]
         out_path  = os.path.join(VIDEOS_DIR, f"annotated_{video_id}.mp4")
         out_fps   = src_fps / FRAME_SKIP
@@ -135,7 +146,6 @@ async def analyze_video(
         writer    = cv2.VideoWriter(out_path, fourcc, out_fps, (frame_width, frame_height))
         
         if not writer.isOpened():
-            # fallback codec
             fourcc = cv2.VideoWriter_fourcc(*"mp4v")
             writer = cv2.VideoWriter(out_path, fourcc, out_fps, (frame_width, frame_height))
 
@@ -193,14 +203,12 @@ async def analyze_video(
                 if ball_center and math.dist(pos, ball_center) < BALL_RADIUS:
                     data["frames_with_ball"] += 1
 
-            # Guardar frame anotado
             annotated = results[0].plot(labels=True, conf=False, line_width=2)
             writer.write(annotated)
 
         cap.release()
         writer.release()
 
-        # Filtrar jugadores reales
         min_frames = max(10, int(analyzed_frames * MIN_PRESENCE))
         stable = {pid: d for pid, d in player_data.items() if d["frames_seen"] >= min_frames}
         active = dict(
@@ -223,8 +231,7 @@ async def analyze_video(
 
             team_total_dist += total_dist
 
-            # Conversión a unidades reales
-            scale       = FIELD_WIDTH_M / frame_width   # m/px
+            scale       = FIELD_WIDTH_M / frame_width
             distance_m  = total_dist * scale
             distance_km = round(distance_m / 1000, 2)
             speed_ms    = round(avg_speed * scale * (FPS / FRAME_SKIP), 1)
@@ -293,3 +300,36 @@ async def analyze_video(
     finally:
         if os.path.exists(video_path):
             os.remove(video_path)
+
+
+# ==========================================
+# NUEVO ENDPOINT: OBTENER PARTIDOS EN VIVO/HOY
+# ==========================================
+@app.get("/api/live-matches")
+def obtener_partidos_hoy():
+    global cache_partidos, ultimo_llamado_partidos
+    tiempo_actual = time.time()
+    
+    # Usa caché si no ha pasado 1 minuto para no agotar tus peticiones
+    if cache_partidos and (tiempo_actual - ultimo_llamado_partidos < TIEMPO_CACHE_PARTIDOS):
+        return {"origen": "cache", "data": cache_partidos}
+        
+    # Obtener fecha actual en formato YYYY-MM-DD
+    fecha_hoy = datetime.now().strftime("%Y-%m-%d")
+    
+    # URL para traer TODOS los partidos del día (ya jugados, en vivo y programados)
+    url = f"https://v3.football.api-sports.io/fixtures?date={fecha_hoy}"
+    
+    try:
+        response = requests.get(url, headers=HEADERS_SPORTS)
+        datos = response.json()
+        
+        if "errors" in datos and datos["errors"]:
+            return {"error": datos["errors"]}
+            
+        cache_partidos = datos.get("response", [])
+        ultimo_llamado_partidos = tiempo_actual
+        
+        return {"origen": "api", "data": cache_partidos}
+    except Exception as e:
+        return {"error": str(e)}
