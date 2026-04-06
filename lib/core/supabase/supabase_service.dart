@@ -172,7 +172,7 @@ class SupabaseService {
     });
   }
 
-  /// NUEVO MÉTODO: Crea el partido y retorna su ID (necesario para el nuevo flujo de IA)
+  /// Crea el partido y retorna su ID (necesario para el nuevo flujo de IA)
   Future<int> createMatchAndReturnId({
     required int teamId,
     required String opponent,
@@ -192,7 +192,7 @@ class SupabaseService {
       'latitude': latitude,
       'longitude': longitude,
       'status': status,
-    }).select('id'); // Pedimos a Supabase que nos devuelva el id generado
+    }).select('id');
 
     final list = List<Map<String, dynamic>>.from(response);
     return list.first['id'] as int;
@@ -216,6 +216,30 @@ class SupabaseService {
         .from('matches')
         .update({'video_url': videoUrl})
         .eq('id', matchId);
+  }
+
+  // =========================
+  // MATCH REPORTS (Análisis JSON)
+  // =========================
+
+  /// Obtiene el reporte JSON gigante generado por la IA (Python) para un partido específico
+  Future<Map<String, dynamic>?> getMatchReport(int matchId) async {
+    try {
+      final response = await client
+          .from('match_reports')
+          .select('summary_json')
+          .eq('match_id', matchId)
+          .limit(1);
+
+      final list = List<Map<String, dynamic>>.from(response);
+      if (list.isEmpty) return null;
+      
+      // Supabase devuelve el jsonb directamente como un Map de Dart
+      return list.first['summary_json'] as Map<String, dynamic>?;
+    } catch (e) {
+      print('Error al obtener reporte del partido: $e');
+      return null;
+    }
   }
 
   // =========================
@@ -260,7 +284,7 @@ class SupabaseService {
     });
   }
 
-  /// NUEVO MÉTODO: Guarda una lista entera de stats de jugadores de un solo golpe.
+  /// Guarda una lista entera de stats de jugadores de un solo golpe.
   /// Ideal para recibir el JSON del backend de IA y guardarlo sin hacer múltiples peticiones.
   Future<void> savePlayerStatsBatch(List<Map<String, dynamic>> statsList) async {
     if (statsList.isEmpty) return;

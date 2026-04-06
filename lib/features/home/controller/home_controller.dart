@@ -87,6 +87,31 @@ class HomeController extends ChangeNotifier {
     }
   }
 
+  // ── Load specific match analysis ─────────────────────────
+  Future<bool> loadAnalysisForMatch(int matchId) async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      final report = await _service.getMatchReport(matchId);
+      if (report != null) {
+        // Guardamos el reporte ESPECÍFICO de este partido en memoria
+        AnalysisStore.instance.save(report);
+        return true; // Éxito
+      } else {
+        errorMessage = 'Analysis data not found for this match.';
+        return false;
+      }
+    } catch (e) {
+      errorMessage = 'Error loading analysis: $e';
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
   // ── Analyse video ────────────────────────────────────────
   Future<void> pickAndAnalyze({String opponent = ''}) async {
     final teamId = selectedTeam?['id'] as int?;
@@ -122,7 +147,7 @@ class HomeController extends ChangeNotifier {
         Uri.parse('${AppConstants.apiBase}/analyze'),
       );
 
-      // CORRECCIÓN CLAVE: Enviamos IDs exactos en formato String sin variables nulas
+      // Enviamos IDs exactos en formato String sin variables nulas
       request.fields['team_id']     = teamId.toString();
       request.fields['opponent']    = opponent;
       request.fields['source_type'] = AppConstants.sourceUpload;

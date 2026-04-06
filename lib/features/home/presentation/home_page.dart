@@ -103,10 +103,8 @@ class _HomePageState extends State<HomePage> {
           endDrawer: const SettingsDrawer(),
           body: CustomScrollView(
             slivers: [
-              // ── Hero ──────────────────────────────────────
               SliverToBoxAdapter(child: _HeroSection(controller: _controller)),
 
-              // ── FLOW: no team selected ─────────────────────
               if (!hasTeam) ...[
                 SliverToBoxAdapter(child: _TeamSelectorSection(
                   controller: _controller,
@@ -114,38 +112,31 @@ class _HomePageState extends State<HomePage> {
                 )),
               ],
 
-              // ── FLOW: team selected ────────────────────────
               if (hasTeam) ...[
-                // Selected team header
                 SliverToBoxAdapter(child: _SelectedTeamHeader(
                   controller: _controller,
                   onEdit: () => _openTeamDialog(team: _controller.selectedTeam),
                   onDelete: () => _deleteTeam(_controller.selectedTeam!),
                 )),
 
-                // Analyse video button
                 SliverToBoxAdapter(child: _AnalyseButton(controller: _controller)),
 
-                // If analysis result exists → Ver Análisis button
                 if (_controller.hasResult)
                   SliverToBoxAdapter(child: _ViewAnalysisButton(
                     onTap: () => widget.onTabChange?.call(1),
                   )),
 
-                // Previous analyses (AHORA SÍ FUNCIONA Y MUESTRA LA LISTA)
                 SliverToBoxAdapter(child: _PreviousAnalysesSection(
                   controller: _controller,
                   onTabChange: widget.onTabChange,
                 )),
               ],
 
-              // ── Resultados / Noticias tabs ────────────────
               SliverToBoxAdapter(child: _TabSelector(
                 selected: _selectedTab,
                 onSelect: (i) => setState(() => _selectedTab = i),
               )),
               
-              // SECCIÓN CON LA API
               if (_selectedTab == 0)
                 SliverToBoxAdapter(child: _ResultadosAPISection(
                   isLoading: _isLoadingLiveMatches,
@@ -234,9 +225,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Hero
-// ─────────────────────────────────────────────────────────────
 class _HeroSection extends StatelessWidget {
   final HomeController controller;
   const _HeroSection({required this.controller});
@@ -294,7 +282,7 @@ class _HeroSection extends StatelessWidget {
                       color: AppColors.accent, fontSize: 12, fontWeight: FontWeight.w600)),
                 ]),
               ])),
-              _SparkLine(values: const [0.4, 0.6, 0.3, 0.8, 0.5, 0.9, 0.7]),
+              const _SparkLine(values: [0.4, 0.6, 0.3, 0.8, 0.5, 0.9, 0.7]),
             ]),
             const SizedBox(height: 8),
             Text(DateFormat('EEE d MMMM').format(DateTime.now()),
@@ -306,9 +294,6 @@ class _HeroSection extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// STATE 1: Team selector (no team selected)
-// ─────────────────────────────────────────────────────────────
 class _TeamSelectorSection extends StatelessWidget {
   final HomeController controller;
   final VoidCallback onAdd;
@@ -414,9 +399,6 @@ class _TeamCircleItem extends StatelessWidget {
   );
 }
 
-// ─────────────────────────────────────────────────────────────
-// STATE 2: Selected team header
-// ─────────────────────────────────────────────────────────────
 class _SelectedTeamHeader extends StatelessWidget {
   final HomeController controller;
   final VoidCallback onEdit;
@@ -476,9 +458,6 @@ class _SelectedTeamHeader extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Analyse video button (CON RECARGA DE PARTIDOS)
-// ─────────────────────────────────────────────────────────────
 class _AnalyseButton extends StatelessWidget {
   final HomeController controller;
   const _AnalyseButton({required this.controller});
@@ -536,9 +515,6 @@ class _AnalyseButton extends StatelessWidget {
   );
 }
 
-// ─────────────────────────────────────────────────────────────
-// Ver análisis button (only after analysis)
-// ─────────────────────────────────────────────────────────────
 class _ViewAnalysisButton extends StatelessWidget {
   final VoidCallback onTap;
   const _ViewAnalysisButton({required this.onTap});
@@ -566,9 +542,6 @@ class _ViewAnalysisButton extends StatelessWidget {
   );
 }
 
-// ─────────────────────────────────────────────────────────────
-// Previous analyses section (AQUÍ ES DONDE SE MUESTRAN AHORA)
-// ─────────────────────────────────────────────────────────────
 class _PreviousAnalysesSection extends StatelessWidget {
   final HomeController controller;
   final void Function(int)? onTabChange;
@@ -621,8 +594,8 @@ class _PreviousAnalysesSection extends StatelessWidget {
           const SizedBox(height: 12),
           ...matches.map((m) => _MatchItem(
             match: m,
+            controller: controller,
             onTap: () {
-              // Si el usuario toca un partido viejo, te puede llevar a la pestaña de análisis
               onTabChange?.call(1);
             },
           )),
@@ -632,26 +605,41 @@ class _PreviousAnalysesSection extends StatelessWidget {
   }
 }
 
-class _MatchItem extends StatelessWidget {
+class _MatchItem extends StatefulWidget {
   final Map<String, dynamic> match;
   final VoidCallback onTap;
-  const _MatchItem({required this.match, required this.onTap});
+  final HomeController controller;
+
+  const _MatchItem({required this.match, required this.onTap, required this.controller});
+
+  @override
+  State<_MatchItem> createState() => _MatchItemState();
+}
+
+class _MatchItemState extends State<_MatchItem> {
+  bool _isDownloading = false;
 
   @override
   Widget build(BuildContext context) {
-    final opponent = match['opponent'] as String? ?? 'Unknown opponent';
-    final dateStr  = match['match_date'] as String? ?? '';
-    final status   = match['status'] as String? ?? 'uploaded';
-    
+    final controller = widget.controller;
+
+    final opponent = widget.match['opponent'] as String? ?? 'Unknown opponent';
+    final dateStr = widget.match['match_date'] as String? ?? '';
+    final status = widget.match['status'] as String? ?? 'uploaded';
+    final matchId = widget.match['id'] as int;
+
     DateTime? dt;
     if (dateStr.isNotEmpty) {
-      try { dt = DateTime.parse(dateStr).toLocal(); } catch (_) {}
+      try {
+        dt = DateTime.parse(dateStr).toLocal();
+      } catch (_) {}
     }
-    final formattedDate = dt != null ? DateFormat(AppConstants.dateFormat).format(dt) : '—';
+    final formattedDate =
+        dt != null ? DateFormat(AppConstants.dateFormat).format(dt) : '—';
 
     Color statusColor;
     String statusLabel;
-    
+
     if (status == AppConstants.statusDone) {
       statusColor = AppColors.success;
       statusLabel = AppConstants.labelAnalysed;
@@ -664,7 +652,38 @@ class _MatchItem extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: () async {
+        if (_isDownloading) return;
+
+        if (status == AppConstants.statusDone) {
+          setState(() => _isDownloading = true);
+
+          final success = await controller.loadAnalysisForMatch(matchId);
+          
+          if (!context.mounted) return;
+          setState(() => _isDownloading = false);
+
+          if (success) {
+            widget.onTap(); 
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: const Text('Failed to load analysis for this match.'),
+              backgroundColor: AppColors.danger,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ));
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text('This match is not analysed yet.'),
+            backgroundColor: AppColors.warning,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+          ));
+        }
+      },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(14),
@@ -673,44 +692,85 @@ class _MatchItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppColors.border),
         ),
-        child: Row(children: [
-          Container(
-            width: 44, height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.elevated,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.sports_soccer_outlined, color: AppColors.dim, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('vs $opponent', style: const TextStyle(
-                color: AppColors.text, fontSize: 14, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 4),
-            Row(children: [
-              Text(formattedDate, style: const TextStyle(color: AppColors.muted, fontSize: 11)),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(statusLabel, style: TextStyle(
-                    color: statusColor, fontSize: 9, fontWeight: FontWeight.w700)),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.elevated,
+                borderRadius: BorderRadius.circular(10),
               ),
-            ]),
-          ])),
-          const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.dim, size: 13),
-        ]),
+              child: const Icon(Icons.sports_soccer_outlined,
+                  color: AppColors.dim, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'vs $opponent',
+                    style: const TextStyle(
+                      color: AppColors.text,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        formattedDate,
+                        style: const TextStyle(
+                          color: AppColors.muted,
+                          fontSize: 11,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          statusLabel,
+                          style: TextStyle(
+                            color: statusColor,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            if (_isDownloading)
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  color: AppColors.accent,
+                  strokeWidth: 2,
+                ),
+              )
+            else
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: AppColors.dim,
+                size: 13,
+              ),
+          ],
+        ),
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Spark line decoration
-// ─────────────────────────────────────────────────────────────
 class _SparkLine extends StatelessWidget {
   final List<double> values;
   const _SparkLine({required this.values});
@@ -747,9 +807,6 @@ class _SparkPainter extends CustomPainter {
   bool shouldRepaint(_) => false;
 }
 
-// ─────────────────────────────────────────────────────────────
-// Tab selector
-// ─────────────────────────────────────────────────────────────
 class _TabSelector extends StatelessWidget {
   final int selected;
   final void Function(int) onSelect;
@@ -804,9 +861,6 @@ class _TabPill extends StatelessWidget {
   );
 }
 
-// ─────────────────────────────────────────────────────────────
-// NUEVA SECCIÓN DE RESULTADOS CON LA API 
-// ─────────────────────────────────────────────────────────────
 class _ResultadosAPISection extends StatelessWidget {
   final bool isLoading;
   final List<dynamic> matches;
@@ -995,8 +1049,7 @@ class _TeamBadgeAPI extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(children: [
       if (logoUrl.isNotEmpty)
-        Image.network(logoUrl, width: 22, height: 22,
-            errorBuilder: (_, __, ___) => const SizedBox(width: 22, height: 22))
+        Image.network(logoUrl, width: 22, height: 22, errorBuilder: (_, __, ___) => const SizedBox(width: 22, height: 22))
       else
         Container(
           width: 22, height: 22,
@@ -1005,15 +1058,11 @@ class _TeamBadgeAPI extends StatelessWidget {
               style: const TextStyle(color: AppColors.accent, fontSize: 10, fontWeight: FontWeight.w700))),
         ),
       const SizedBox(width: 5),
-      Expanded(child: Text(name, overflow: TextOverflow.ellipsis,
-          style: const TextStyle(color: AppColors.text, fontSize: 12, fontWeight: FontWeight.w500))),
+      Expanded(child: Text(name, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.text, fontSize: 12, fontWeight: FontWeight.w500))),
     ]);
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Noticias section (blog style)
-// ─────────────────────────────────────────────────────────────
 class _NoticiasSection extends StatelessWidget {
   const _NoticiasSection();
 
