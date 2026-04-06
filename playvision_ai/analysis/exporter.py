@@ -62,6 +62,33 @@ def save_match_report(match_id: int, team_id: int, payload: dict) -> None:
     }).execute()
 
 
+BUCKET = "match-videos"
+
+
+def upload_video(local_path: str, file_name: str) -> Optional[str]:
+    """
+    Upload annotated video to Supabase Storage.
+    Returns the public URL, or None if upload fails.
+    The bucket must exist and have public read access enabled in Supabase dashboard.
+    """
+    try:
+        db = _db()
+        with open(local_path, "rb") as f:
+            video_bytes = f.read()
+
+        db.storage.from_(BUCKET).upload(
+            path=file_name,
+            file=video_bytes,
+            file_options={"content-type": "video/mp4", "upsert": "true"},
+        )
+
+        public_url = db.storage.from_(BUCKET).get_public_url(file_name)
+        return public_url
+    except Exception as e:
+        print(f"[warn] Storage upload failed: {e}")
+        return None
+
+
 def save_player_stats(match_id: int, players: list) -> None:
     """
     Insert one row per player into player_match_stats.
