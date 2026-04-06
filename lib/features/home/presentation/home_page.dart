@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 
@@ -159,46 +161,119 @@ class _HomePageState extends State<HomePage> {
     final clubCtrl     = TextEditingController(text: team?['club']     as String? ?? '');
     final isEdit       = team != null;
 
+    XFile?     pickedLogo;
+    Uint8List? logoBytes;
+    bool       isSaving = false;
+
     await showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(isEdit ? 'Edit team' : 'New team',
-            style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.w700)),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
-          FormTextField(controller: nameCtrl,     label: 'Name'),
-          const SizedBox(height: 10),
-          FormTextField(controller: categoryCtrl, label: 'Category'),
-          const SizedBox(height: 10),
-          FormTextField(controller: clubCtrl,     label: 'Club'),
-        ]),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel', style: TextStyle(color: AppColors.muted))),
-          TextButton(
-            onPressed: () async {
-              if (nameCtrl.text.trim().isEmpty) return;
-              if (isEdit) {
-                await _controller.updateTeam(
-                  id: team['id'] as int, name: nameCtrl.text.trim(),
-                  category: nameCtrl.text.trim().isEmpty ? null : categoryCtrl.text.trim(),
-                  club: clubCtrl.text.trim().isEmpty ? null : clubCtrl.text.trim(),
-                );
-              } else {
-                await _controller.createTeam(
-                  name: nameCtrl.text.trim(),
-                  category: categoryCtrl.text.trim().isEmpty ? null : categoryCtrl.text.trim(),
-                  club: clubCtrl.text.trim().isEmpty ? null : clubCtrl.text.trim(),
-                );
-              }
-              if (!ctx.mounted) return;
-              Navigator.pop(ctx);
-            },
-            child: Text(isEdit ? 'Save' : 'Create',
-                style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.w700)),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlg) => AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(isEdit ? 'Edit team' : 'New team',
+              style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.w700)),
+          content: SingleChildScrollView(
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              // ── Logo picker ──────────────────────────────────
+              GestureDetector(
+                onTap: () async {
+                  final picker = ImagePicker();
+                  final file   = await picker.pickImage(
+                    source: ImageSource.gallery,
+                    maxWidth: 512, maxHeight: 512, imageQuality: 85,
+                  );
+                  if (file == null) return;
+                  final bytes = Uint8List.fromList(await file.readAsBytes());
+                  setDlg(() { pickedLogo = file; logoBytes = bytes; });
+                },
+                child: Stack(alignment: Alignment.bottomRight, children: [
+                  Container(
+                    width: 80, height: 80,
+                    decoration: BoxDecoration(
+                      color: AppColors.elevated,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.borderGreen, width: 2),
+                      image: logoBytes != null
+                          ? DecorationImage(
+                              image: MemoryImage(logoBytes!),
+                              fit: BoxFit.cover)
+                          : (team?['logo_url'] as String?)?.isNotEmpty == true
+                              ? DecorationImage(
+                                  image: NetworkImage(team!['logo_url'] as String),
+                                  fit: BoxFit.cover)
+                              : null,
+                    ),
+                    child: (logoBytes == null && (team?['logo_url'] as String?) == null)
+                        ? const Icon(Icons.groups_outlined, color: AppColors.accent, size: 32)
+                        : null,
+                  ),
+                  Container(
+                    width: 24, height: 24,
+                    decoration: const BoxDecoration(
+                        color: AppColors.accent, shape: BoxShape.circle),
+                    child: const Icon(Icons.camera_alt, color: Colors.black, size: 13),
+                  ),
+                ]),
+              ),
+              const SizedBox(height: 6),
+              Text(pickedLogo != null ? 'Logo selected' : 'Tap to add logo',
+                  style: const TextStyle(color: AppColors.muted, fontSize: 11)),
+              const SizedBox(height: 16),
+              FormTextField(controller: nameCtrl,     label: 'Name'),
+              const SizedBox(height: 10),
+              FormTextField(controller: categoryCtrl, label: 'Category'),
+              const SizedBox(height: 10),
+              FormTextField(controller: clubCtrl,     label: 'Club'),
+            ]),
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: isSaving ? null : () => Navigator.pop(ctx),
+              child: const Text('Cancel', style: TextStyle(color: AppColors.muted)),
+            ),
+            TextButton(
+              onPressed: isSaving ? null : () async {
+                if (nameCtrl.text.trim().isEmpty) return;
+                setDlg(() => isSaving = true);
+
+                // Upload logo if a new one was picked
+                String? logoUrl;
+                if (pickedLogo != null && logoBytes != null) {
+                  final tmpId = isEdit ? (team['id'] as int) : DateTime.now().millisecondsSinceEpoch;
+                  final ext   = pickedLogo!.name.split('.').last.toLowerCase();
+                  logoUrl = await _controller.uploadLogo(
+                    teamId: tmpId, bytes: logoBytes!, extension: ext,
+                  );
+                }
+
+                if (isEdit) {
+                  await _controller.updateTeam(
+                    id: team['id'] as int,
+                    name: nameCtrl.text.trim(),
+                    category: categoryCtrl.text.trim().isEmpty ? null : categoryCtrl.text.trim(),
+                    club: clubCtrl.text.trim().isEmpty ? null : clubCtrl.text.trim(),
+                    logoUrl: logoUrl,
+                  );
+                } else {
+                  await _controller.createTeam(
+                    name: nameCtrl.text.trim(),
+                    category: categoryCtrl.text.trim().isEmpty ? null : categoryCtrl.text.trim(),
+                    club: clubCtrl.text.trim().isEmpty ? null : clubCtrl.text.trim(),
+                    logoUrl: logoUrl,
+                  );
+                }
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+              },
+              child: isSaving
+                  ? const SizedBox(width: 16, height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accent))
+                  : Text(isEdit ? 'Save' : 'Create',
+                      style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.w700)),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -349,10 +424,11 @@ class _TeamSelectorSection extends StatelessWidget {
                 ...controller.teams.map((t) => Padding(
                   padding: const EdgeInsets.only(right: 14),
                   child: _TeamCircleItem(
-                    label: t['name'] as String? ?? '—',
+                    label:   t['name']    as String? ?? '—',
                     initial: _initial(t['name'] as String?),
-                    isAdd: false,
-                    onTap: () => controller.selectTeam(t),
+                    logoUrl: t['logo_url'] as String?,
+                    isAdd:   false,
+                    onTap:   () => controller.selectTeam(t),
                   ),
                 )),
               ],
@@ -370,10 +446,16 @@ class _TeamSelectorSection extends StatelessWidget {
 class _TeamCircleItem extends StatelessWidget {
   final String label;
   final String initial;
+  final String? logoUrl;
   final bool isAdd;
   final VoidCallback onTap;
-  const _TeamCircleItem({required this.label, required this.initial,
-      required this.isAdd, required this.onTap});
+  const _TeamCircleItem({
+    required this.label,
+    required this.initial,
+    required this.isAdd,
+    required this.onTap,
+    this.logoUrl,
+  });
 
   @override
   Widget build(BuildContext context) => GestureDetector(
@@ -386,10 +468,18 @@ class _TeamCircleItem extends StatelessWidget {
           shape: BoxShape.circle,
           border: Border.all(
             color: isAdd ? AppColors.borderGreen : AppColors.border, width: 1.5),
+          image: (!isAdd && logoUrl != null && logoUrl!.isNotEmpty)
+              ? DecorationImage(
+                  image: NetworkImage(logoUrl!),
+                  fit: BoxFit.cover,
+                )
+              : null,
         ),
-        child: Center(child: Text(initial, style: TextStyle(
-            color: isAdd ? AppColors.accent : AppColors.text,
-            fontSize: 22, fontWeight: FontWeight.w700))),
+        child: (!isAdd && logoUrl != null && logoUrl!.isNotEmpty)
+            ? null
+            : Center(child: Text(initial, style: TextStyle(
+                color: isAdd ? AppColors.accent : AppColors.text,
+                fontSize: 22, fontWeight: FontWeight.w700))),
       ),
       const SizedBox(height: 6),
       SizedBox(width: 64, child: Text(label,
@@ -410,6 +500,8 @@ class _SelectedTeamHeader extends StatelessWidget {
     final team    = controller.selectedTeam!;
     final initial = (team['name'] as String?)?.isNotEmpty == true
         ? (team['name'] as String)[0].toUpperCase() : '?';
+    final logoUrl = team['logo_url'] as String?;
+    final hasLogo = logoUrl != null && logoUrl.isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
@@ -423,9 +515,20 @@ class _SelectedTeamHeader extends StatelessWidget {
         child: Row(children: [
           Container(
             width: 52, height: 52,
-            decoration: const BoxDecoration(color: AppColors.accentLo, shape: BoxShape.circle),
-            child: Center(child: Text(initial, style: const TextStyle(
-                color: AppColors.accent, fontSize: 22, fontWeight: FontWeight.w700))),
+            decoration: BoxDecoration(
+              color: AppColors.accentLo,
+              shape: BoxShape.circle,
+              image: hasLogo
+                  ? DecorationImage(
+                      image: NetworkImage(logoUrl),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
+            child: hasLogo
+                ? null
+                : Center(child: Text(initial, style: const TextStyle(
+                    color: AppColors.accent, fontSize: 22, fontWeight: FontWeight.w700))),
           ),
           const SizedBox(width: 14),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart'; // Añadido para debugPrint
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseService {
@@ -32,17 +32,40 @@ class SupabaseService {
     return list.first;
   }
 
+  /// Upload a logo image to Supabase Storage and return its public URL.
+  /// Bucket `team-logos` must exist with public read access.
+  Future<String?> uploadTeamLogo({
+    required int teamId,
+    required Uint8List bytes,
+    required String extension, // e.g. 'jpg', 'png'
+  }) async {
+    try {
+      final path = 'team_$teamId.$extension';
+      await client.storage
+          .from('team-logos')
+          .uploadBinary(path, bytes,
+              fileOptions: FileOptions(
+                  contentType: 'image/$extension', upsert: true));
+      return client.storage.from('team-logos').getPublicUrl(path);
+    } catch (e) {
+      debugPrint('Logo upload error: $e');
+      return null;
+    }
+  }
+
   Future<void> createTeam({
     required String name,
     String? category,
     String? club,
+    String? logoUrl,
     String? userId,
   }) async {
     await client.from('teams').insert({
       'name': name,
       'category': category,
       'club': club,
-      if (userId != null) 'user_id': userId, 
+      if (logoUrl != null) 'logo_url': logoUrl,
+      if (userId != null) 'user_id': userId,
     });
   }
 
@@ -51,11 +74,13 @@ class SupabaseService {
     required String name,
     String? category,
     String? club,
+    String? logoUrl,
   }) async {
     await client.from('teams').update({
       'name': name,
       'category': category,
       'club': club,
+      if (logoUrl != null) 'logo_url': logoUrl,
     }).eq('id', id);
   }
 

@@ -216,15 +216,32 @@ class HomeController extends ChangeNotifier {
   }
 
   // ── Team CRUD ────────────────────────────────────────────
-  Future<void> createTeam({required String name, String? category, String? club}) async {
-    await _service.createTeam(name: name, category: category, club: club);
+  Future<String?> uploadLogo({
+    required int teamId,
+    required Uint8List bytes,
+    required String extension,
+  }) async {
+    return _service.uploadTeamLogo(
+      teamId: teamId,
+      bytes: bytes,
+      extension: extension,
+    );
+  }
+
+  Future<void> createTeam({
+    required String name,
+    String? category,
+    String? club,
+    String? logoUrl,
+  }) async {
+    await _service.createTeam(name: name, category: category, club: club, logoUrl: logoUrl);
     await loadTeams();
   }
 
   Future<void> updateTeam({
-    required int id, required String name, String? category, String? club,
+    required int id, required String name, String? category, String? club, String? logoUrl,
   }) async {
-    await _service.updateTeam(id: id, name: name, category: category, club: club);
+    await _service.updateTeam(id: id, name: name, category: category, club: club, logoUrl: logoUrl);
     await loadTeams();
   }
 
