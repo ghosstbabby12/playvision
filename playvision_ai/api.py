@@ -20,10 +20,10 @@ from datetime import datetime
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(dotenv_path=BASE_DIR / ".env", override=True)
 
-from analysis.detector      import detect_frame
-from analysis.tracker       import PlayerTracker
+from analysis.detector       import detect_frame
+from analysis.tracker        import PlayerTracker
 from analysis.metrics_engine import compute_metrics
-from analysis.exporter      import create_or_update_match, save_match_report, save_player_stats
+from analysis.exporter       import create_or_update_match, save_match_report, save_player_stats
 
 # ── Config ────────────────────────────────────────────────────────────────────
 NUM_PLAYERS    = int(os.getenv("NUM_PLAYERS",   "10"))
@@ -32,9 +32,9 @@ BALL_RADIUS    = int(os.getenv("BALL_RADIUS",   "80"))
 FIELD_WIDTH_M  = float(os.getenv("FIELD_WIDTH_M","105.0"))
 FPS            = float(os.getenv("FPS",          "30.0"))
 CONF_THRESHOLD = float(os.getenv("CONF_THRESHOLD","0.55"))
-FRAME_SKIP     = int(os.getenv("FRAME_SKIP",    "3"))   # default 3 (was 5) for better metrics
+FRAME_SKIP     = int(os.getenv("FRAME_SKIP",    "3"))   
 
-TARGET_WIDTH   = 1280   # resize to 720p-wide for speed (keeps aspect ratio)
+TARGET_WIDTH   = 1280
 
 # ── Live-match cache ──────────────────────────────────────────────────────────
 _API_KEY_SPORTS       = "5b04f6e82ecd9629ff7b1a495bab699e"
@@ -53,10 +53,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-VIDEOS_DIR = "annotated_videos"
-os.makedirs(VIDEOS_DIR, exist_ok=True)
-app.mount("/videos", StaticFiles(directory=VIDEOS_DIR), name="videos")
+class CORSMiddlewareStaticFiles(StaticFiles):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
+    async def get_response(self, path: str, scope):
+        response = await super().get_response(path, scope)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Range, Content-Type, Authorization"
+        response.headers["Access-Control-Expose-Headers"] = "Content-Length, Content-Range"
+        return response
+
+VIDEOS_DIR = os.path.join(BASE_DIR, "annotated_videos")
+os.makedirs(VIDEOS_DIR, exist_ok=True)
+
+app.mount("/videos", CORSMiddlewareStaticFiles(directory=str(VIDEOS_DIR)), name="videos")
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def _resize_frame(frame, target_width: int):
@@ -67,15 +79,20 @@ def _resize_frame(frame, target_width: int):
     new_h  = int(h * scale)
     return cv2.resize(frame, (target_width, new_h), interpolation=cv2.INTER_LINEAR)
 
-
 def _open_writer(out_path: str, fps: float, width: int, height: int):
-    for fourcc_str in ("mp4v", "XVID"):
-        fourcc = cv2.VideoWriter_fourcc(*fourcc_str)
-        writer = cv2.VideoWriter(out_path, fourcc, fps, (width, height))
-        if writer.isOpened():
-            return writer
-    raise RuntimeError("Could not open VideoWriter with any codec")
+    # 1. Intentar 'avc1' (H.264), el codec que Chrome soporta perfectamente
+    fourcc = cv2.VideoWriter_fourcc(*'avc1')
+    writer = cv2.VideoWriter(out_path, fourcc, fps, (width, height))
+    if writer.isOpened():
+        return writer
+        
+    # 2. Fallback a 'mp4v' si avc1 falla en este sistema
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    writer = cv2.VideoWriter(out_path, fourcc, fps, (width, height))
+    if writer.isOpened():
+        return writer
 
+    raise RuntimeError("Could not open VideoWriter with any codec")
 
 # ── /analyze endpoint ─────────────────────────────────────────────────────────
 @app.post("/analyze")
@@ -89,10 +106,9 @@ async def analyze_video(
     team_id_int  = int(team_id)
     match_id_int = int(match_id) if match_id and match_id not in ("null", "") else None
 
-    video_path = f"uploaded_{uuid.uuid4().hex[:8]}_{file.filename}"
+    video_path = os.path.join(BASE_DIR, f"uploaded_{uuid.uuid4().hex[:8]}_{file.filename}")
 
     try:
-        # 1. Save upload ──────────────────────────────────────────────────────
         with open(video_path, "wb") as buf:
             shutil.copyfileobj(file.file, buf)
 
@@ -104,7 +120,6 @@ async def analyze_video(
         src_h   = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         src_fps = cap.get(cv2.CAP_PROP_FPS) or FPS
 
-        # Compute output dimensions (720p resize)
         scale_r  = min(1.0, TARGET_WIDTH / src_w)
         out_w    = int(src_w * scale_r)
         out_h    = int(src_h * scale_r)
@@ -114,7 +129,6 @@ async def analyze_video(
         out_path = os.path.join(VIDEOS_DIR, f"annotated_{video_id}.mp4")
         writer   = _open_writer(out_path, out_fps, out_w, out_h)
 
-        # 2. Process frames ───────────────────────────────────────────────────
         tracker     = PlayerTracker(ball_radius=BALL_RADIUS)
         frame_count = 0
         analyzed    = 0
@@ -128,7 +142,6 @@ async def analyze_video(
             if frame_count % FRAME_SKIP != 0:
                 continue
 
-            # Resize for speed
             frame = _resize_frame(frame, TARGET_WIDTH)
 
             frame_players, ball_center, raw_result = detect_frame(
@@ -146,7 +159,6 @@ async def analyze_video(
         cap.release()
         writer.release()
 
-        # 3. Compute metrics ──────────────────────────────────────────────────
         players_out, team_stats = compute_metrics(
             player_data    = tracker.data,
             analyzed_frames= analyzed,
@@ -159,7 +171,6 @@ async def analyze_video(
             min_presence   = MIN_PRESENCE,
         )
 
-        # 4. Build response ────────────────────────────────────────────────────
         video_url = (
             f"{os.getenv('API_HOST', 'http://127.0.0.1')}:"
             f"{os.getenv('API_PORT', '8000')}"
@@ -175,7 +186,6 @@ async def analyze_video(
             "players":          players_out,
         }
 
-        # 5. Persist to Supabase ──────────────────────────────────────────────
         try:
             if match_id_int is None:
                 match_id_int = create_or_update_match(
@@ -205,8 +215,6 @@ async def analyze_video(
         if os.path.exists(video_path):
             os.remove(video_path)
 
-
-# ── /api/live-matches endpoint ────────────────────────────────────────────────
 @app.get("/api/live-matches")
 def live_matches():
     global _cache_partidos, _ultimo_llamado

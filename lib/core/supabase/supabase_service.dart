@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart'; // Añadido para debugPrint
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseService {
@@ -237,7 +238,7 @@ class SupabaseService {
       // Supabase devuelve el jsonb directamente como un Map de Dart
       return list.first['summary_json'] as Map<String, dynamic>?;
     } catch (e) {
-      print('Error al obtener reporte del partido: $e');
+      debugPrint('Error al obtener reporte del partido: $e'); // CORREGIDO AQUÍ
       return null;
     }
   }

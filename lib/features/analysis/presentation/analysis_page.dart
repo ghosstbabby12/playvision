@@ -143,8 +143,11 @@ class _AnalysisPageState extends State<AnalysisPage>
                         SummaryTab(data: _controller.result!),
                         FieldMapTab(players: _controller.result!['players'] as List),
                         PlayersTab(players: _controller.result!['players'] as List),
+                        // AQUÍ ESTÁ LA CORRECCIÓN DE LA LECTURA DEL JSON
                         VideoPlayerTab(
-                          videoUrl: _controller.result!['video_url'] as String?,
+                          videoUrl: (_controller.result!['video_url'] as String?) ??
+                                    (_controller.result!['videoUrl'] as String?) ?? 
+                                    (_controller.result!['match']?['video_url'] as String?),
                           localFile: _controller.videoFile,
                         ),
                       ])

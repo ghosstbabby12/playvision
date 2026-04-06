@@ -19,7 +19,7 @@ class VideoPlayerTab extends StatefulWidget {
 class _VideoPlayerTabState extends State<VideoPlayerTab> {
   VideoPlayerController? _ctrl;
   bool _initialized = false;
-  bool _hasError    = false;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -30,13 +30,20 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
   Future<void> _init() async {
     // 1. Intentar URL de red (video anotado del backend)
     if (widget.videoUrl != null && widget.videoUrl!.isNotEmpty) {
-      final ctrl = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
+      String finalUrl = widget.videoUrl!;
+      if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+        finalUrl = 'http://$finalUrl';
+      }
+
+      final ctrl = VideoPlayerController.networkUrl(Uri.parse(finalUrl));
       try {
         await ctrl.initialize();
         if (mounted) setState(() { _ctrl = ctrl; _initialized = true; });
         return;
-      } catch (_) {
+      } catch (e) {
+        if (mounted) setState(() => _errorMessage = "Error de red: $e \nURL: $finalUrl");
         await ctrl.dispose();
+        return;
       }
     }
 
@@ -47,12 +54,15 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
         await ctrl.initialize();
         if (mounted) setState(() { _ctrl = ctrl; _initialized = true; });
         return;
-      } catch (_) {
+      } catch (e) {
+        if (mounted) setState(() => _errorMessage = "Error local: $e");
         await ctrl.dispose();
       }
+    } else if (kIsWeb && widget.localFile != null) {
+      if (mounted) setState(() => _errorMessage = "En web no se pueden reproducir archivos locales directamente.");
+    } else {
+        if (mounted) setState(() => _errorMessage = "URL o archivo no proporcionado.");
     }
-
-    if (mounted) setState(() => _hasError = true);
   }
 
   @override
@@ -63,22 +73,21 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
 
   @override
   Widget build(BuildContext context) {
-    if (_hasError || (_ctrl == null && !_initialized)) {
+    if (_errorMessage != null) {
       return Center(
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          const Icon(Icons.videocam_off_outlined, color: AppColors.accentLo, size: 48),
-          const SizedBox(height: 16),
-          const Text('Video not available',
-              style: TextStyle(color: AppColors.muted, fontSize: 15, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          const Text('Analyse a match to see the annotated video',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.dim, fontSize: 12)),
-          if (!_initialized && !_hasError) ...[
-            const SizedBox(height: 20),
-            const CircularProgressIndicator(color: AppColors.accent, strokeWidth: 1.5),
-          ],
-        ]),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            const Icon(Icons.error_outline, color: AppColors.danger, size: 48),
+            const SizedBox(height: 16),
+            const Text('Error al cargar el vídeo',
+                style: TextStyle(color: AppColors.danger, fontSize: 16, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            Text(_errorMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+          ]),
+        ),
       );
     }
 
@@ -89,7 +98,6 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
     }
 
     return Column(children: [
-      // ── Video ─────────────────────────────────────────────
       Expanded(
         child: GestureDetector(
           onTap: _togglePlay,
@@ -104,13 +112,10 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
           ),
         ),
       ),
-
-      // ── Controls ──────────────────────────────────────────
       Container(
         color: AppColors.surface,
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
         child: Column(children: [
-          // Progress bar + times
           ValueListenableBuilder(
             valueListenable: _ctrl!,
             builder: (_, value, __) {
@@ -136,12 +141,8 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
               ]);
             },
           ),
-
           const SizedBox(height: 8),
-
-          // Playback buttons
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            // -10s
             _CtrlButton(
               icon: Icons.replay_10_rounded,
               onTap: () {
@@ -150,7 +151,6 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
               },
             ),
             const SizedBox(width: 16),
-            // Play/Pause
             ValueListenableBuilder(
               valueListenable: _ctrl!,
               builder: (_, value, __) => GestureDetector(
@@ -169,7 +169,6 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
               ),
             ),
             const SizedBox(width: 16),
-            // +10s
             _CtrlButton(
               icon: Icons.forward_10_rounded,
               onTap: () {
