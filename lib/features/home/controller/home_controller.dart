@@ -127,9 +127,7 @@ class HomeController extends ChangeNotifier {
       request.fields['opponent']    = opponent;
       request.fields['source_type'] = AppConstants.sourceUpload;
       
-      if (matchId != null) {
-        request.fields['match_id'] = matchId.toString(); 
-      }
+      request.fields['match_id'] = matchId.toString();
 
       request.files.add(
         http.MultipartFile.fromBytes('file', bytes, filename: file.name),
@@ -141,20 +139,17 @@ class HomeController extends ChangeNotifier {
       if (streamed.statusCode == 200) {
         // 3. Recibir resultado JSON
         final result = jsonDecode(body) as Map<String, dynamic>;
-        
+
         // 4. Actualizar estado y URL del video en Supabase
-        if (matchId != null) {
-          await _service.updateMatchStatus(matchId: matchId, status: 'done');
-          
-          final videoUrl = result['video_url'] as String?;
-          if (videoUrl != null && videoUrl.isNotEmpty) {
-            await _service.updateMatchVideoUrl(matchId: matchId, videoUrl: videoUrl);
-          }
+        await _service.updateMatchStatus(matchId: matchId, status: 'done');
+        final videoUrl = result['video_url'] as String?;
+        if (videoUrl != null && videoUrl.isNotEmpty) {
+          await _service.updateMatchVideoUrl(matchId: matchId, videoUrl: videoUrl);
         }
 
         // 5. Guardar estadísticas de todos los jugadores generados
         final players = result['players'] as List?;
-        if (players != null && players.isNotEmpty && matchId != null) {
+        if (players != null && players.isNotEmpty) {
           final statsToInsert = players.map((p) => {
             'match_id': matchId,
             'player_id': null, // Null hasta que el usuario enlace un jugador real
@@ -183,9 +178,7 @@ class HomeController extends ChangeNotifier {
       } else {
         errorMessage = 'Server error: ${streamed.statusCode} - $body';
         // Si el backend falla, marcamos el partido como error
-        if (matchId != null) {
-          await _service.updateMatchStatus(matchId: matchId, status: 'error');
-        }
+        await _service.updateMatchStatus(matchId: matchId, status: 'error');
       }
     } catch (e) {
       errorMessage = 'Connection error: $e';

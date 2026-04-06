@@ -5,8 +5,10 @@ import '../data/match_repository.dart';
 import '../data/match_model.dart';
 
 class LiveMatchesScreen extends StatefulWidget {
+  const LiveMatchesScreen({super.key});
+
   @override
-  _LiveMatchesScreenState createState() => _LiveMatchesScreenState();
+  State<LiveMatchesScreen> createState() => _LiveMatchesScreenState();
 }
 
 class _LiveMatchesScreenState extends State<LiveMatchesScreen> {

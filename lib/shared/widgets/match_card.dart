@@ -4,7 +4,7 @@ import '../../features/live_matches/data/match_model.dart';
 class MatchCard extends StatelessWidget {
   final MatchModel match;
 
-  const MatchCard({Key? key, required this.match}) : super(key: key);
+  const MatchCard({super.key, required this.match});
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +50,7 @@ class MatchCard extends StatelessWidget {
                 // Logo/Inicial Equipo Local
                 CircleAvatar(
                   radius: 12,
-                  backgroundColor: Colors.green.withOpacity(0.2),
+                  backgroundColor: Colors.green.withValues(alpha: 0.2),
                   child: match.homeLogo.isNotEmpty 
                       ? Image.network(match.homeLogo, width: 16, height: 16)
                       : Text(match.homeTeam[0], style: TextStyle(color: Colors.green, fontSize: 12)),
@@ -78,7 +78,7 @@ class MatchCard extends StatelessWidget {
                 // Logo/Inicial Equipo Visitante
                 CircleAvatar(
                   radius: 12,
-                  backgroundColor: Colors.green.withOpacity(0.2),
+                  backgroundColor: Colors.green.withValues(alpha: 0.2),
                   child: match.awayLogo.isNotEmpty 
                       ? Image.network(match.awayLogo, width: 16, height: 16)
                       : Text(match.awayTeam[0], style: TextStyle(color: Colors.green, fontSize: 12)),

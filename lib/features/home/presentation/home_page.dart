@@ -59,7 +59,7 @@ class _HomePageState extends State<HomePage> {
         }
       }
     } catch (e) {
-      print("Error API partidos: $e");
+      debugPrint("Error API partidos: $e");
       if (mounted) {
         setState(() => _isLoadingLiveMatches = false);
       }
