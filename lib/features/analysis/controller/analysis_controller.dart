@@ -16,7 +16,8 @@ class AnalysisController extends ChangeNotifier {
   String? errorMessage;
 
   void init() {
-    result = AnalysisStore.instance.lastResult;
+    result    = AnalysisStore.instance.lastResult;
+    videoFile = AnalysisStore.instance.lastLocalFile;
   }
 
   Future<void> pickVideo() async {
@@ -49,7 +50,7 @@ class AnalysisController extends ChangeNotifier {
 
       if (streamed.statusCode == 200) {
         result = jsonDecode(body) as Map<String, dynamic>;
-        AnalysisStore.instance.save(result!);
+        AnalysisStore.instance.save(result!, localFile: videoFile);
       } else {
         errorMessage = 'Server error: ${streamed.statusCode} - $body';
       }

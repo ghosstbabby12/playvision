@@ -483,60 +483,17 @@ class _AnalyseButton extends StatelessWidget {
   final HomeController controller;
   const _AnalyseButton({required this.controller});
 
-  Future<void> _askOpponentAndAnalyze(BuildContext context) async {
-    final opponentCtrl = TextEditingController();
-    
-    final opponent = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('New Analysis', 
-            style: TextStyle(color: AppColors.text, fontWeight: FontWeight.w700)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Who is the opponent in this video?', 
-                style: TextStyle(color: AppColors.muted, fontSize: 13)),
-            const SizedBox(height: 16),
-            FormTextField(controller: opponentCtrl, label: 'Opponent team name'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.muted)),
-          ),
-          TextButton(
-            onPressed: () {
-              if (opponentCtrl.text.trim().isNotEmpty) {
-                Navigator.pop(ctx, opponentCtrl.text.trim());
-              }
-            },
-            child: const Text('Start', 
-                style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.w700)),
-          ),
-        ],
-      ),
-    );
-
-    // Si el usuario ingresó un nombre, iniciamos el análisis y esperamos que termine
-    if (opponent != null && opponent.isNotEmpty) {
-      await controller.pickAndAnalyze(opponent: opponent);
-      // UNA VEZ TERMINADO, recargamos los partidos para que aparezca en la lista de abajo
-      if (controller.selectedTeam != null) {
-        controller.loadMatchesForTeam(controller.selectedTeam!['id'] as int);
-        controller.loadRecentMatches(); // Recarga contador de arriba también
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
     child: GestureDetector(
-      onTap: controller.isAnalyzing ? null : () => _askOpponentAndAnalyze(context),
+      onTap: controller.isAnalyzing ? null : () async {
+        await controller.pickAndAnalyze();
+        if (controller.selectedTeam != null) {
+          controller.loadMatchesForTeam(controller.selectedTeam!['id'] as int);
+          controller.loadRecentMatches();
+        }
+      },
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20),
@@ -1003,11 +960,11 @@ class _ResultRowAPI extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            _TeamBadgeAPI(name: homeTeam, logoUrl: homeLogo),
+            Expanded(child: _TeamBadgeAPI(name: homeTeam, logoUrl: homeLogo)),
             const SizedBox(width: 8),
             const Text('vs', style: TextStyle(color: AppColors.dim, fontSize: 11)),
             const SizedBox(width: 8),
-            _TeamBadgeAPI(name: awayTeam, logoUrl: awayLogo),
+            Expanded(child: _TeamBadgeAPI(name: awayTeam, logoUrl: awayLogo)),
           ]),
         ])),
         Container(
@@ -1036,21 +993,21 @@ class _TeamBadgeAPI extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        if (logoUrl.isNotEmpty)
-          Image.network(logoUrl, width: 22, height: 22)
-        else
-          Container(
-            width: 22, height: 22,
-            decoration: const BoxDecoration(color: AppColors.elevated, shape: BoxShape.circle),
-            child: Center(child: Text(name.isNotEmpty ? name[0] : '?',
-                style: const TextStyle(color: AppColors.accent, fontSize: 10, fontWeight: FontWeight.w700))),
-          ),
-        const SizedBox(width: 5),
-        Expanded(child: Text(name, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.text, fontSize: 12, fontWeight: FontWeight.w500))),
-      ]),
-    );
+    return Row(children: [
+      if (logoUrl.isNotEmpty)
+        Image.network(logoUrl, width: 22, height: 22,
+            errorBuilder: (_, __, ___) => const SizedBox(width: 22, height: 22))
+      else
+        Container(
+          width: 22, height: 22,
+          decoration: const BoxDecoration(color: AppColors.elevated, shape: BoxShape.circle),
+          child: Center(child: Text(name.isNotEmpty ? name[0] : '?',
+              style: const TextStyle(color: AppColors.accent, fontSize: 10, fontWeight: FontWeight.w700))),
+        ),
+      const SizedBox(width: 5),
+      Expanded(child: Text(name, overflow: TextOverflow.ellipsis,
+          style: const TextStyle(color: AppColors.text, fontSize: 12, fontWeight: FontWeight.w500))),
+    ]);
   }
 }
 

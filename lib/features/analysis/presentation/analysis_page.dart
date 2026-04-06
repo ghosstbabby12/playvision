@@ -143,7 +143,10 @@ class _AnalysisPageState extends State<AnalysisPage>
                         SummaryTab(data: _controller.result!),
                         FieldMapTab(players: _controller.result!['players'] as List),
                         PlayersTab(players: _controller.result!['players'] as List),
-                        VideoPlayerTab(videoUrl: _controller.result!['video_url'] as String?),
+                        VideoPlayerTab(
+                          videoUrl: _controller.result!['video_url'] as String?,
+                          localFile: _controller.videoFile,
+                        ),
                       ])
                     : VideoUploadView(
                         videoFile: _controller.videoFile,

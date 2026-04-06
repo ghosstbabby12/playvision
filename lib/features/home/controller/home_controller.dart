@@ -88,7 +88,7 @@ class HomeController extends ChangeNotifier {
   }
 
   // ── Analyse video ────────────────────────────────────────
-  Future<void> pickAndAnalyze({required String opponent}) async {
+  Future<void> pickAndAnalyze({String opponent = ''}) async {
     final teamId = selectedTeam?['id'] as int?;
     if (teamId == null) {
       errorMessage = 'Please select a team first.';
@@ -147,29 +147,28 @@ class HomeController extends ChangeNotifier {
           await _service.updateMatchVideoUrl(matchId: matchId, videoUrl: videoUrl);
         }
 
-        // 5. Guardar estadísticas de todos los jugadores generados
+        // 5. Guardar en Store PRIMERO para que el video esté disponible
+        AnalysisStore.instance.save(result, localFile: file);
+
+        // 6. Guardar estadísticas de jugadores (solo columnas existentes en DB)
         final players = result['players'] as List?;
         if (players != null && players.isNotEmpty) {
           final statsToInsert = players.map((p) => {
             'match_id': matchId,
-            'player_id': null, // Null hasta que el usuario enlace un jugador real
-            'track_id': p['track_id'],
+            'player_id': null,
             'distance': p['distance_km'],
-            'velocity': p['speed_ms'],
-            'possession': p['possession_pct'],
-            'presence': p['presence_pct'],
-            'zone': p['zone'],
-            // Valores por defecto
             'minutes': 0, 'passes_ok': 0, 'passes_bad': 0,
             'losses': 0, 'recoveries': 0, 'shots': 0,
             'shots_on_target': 0, 'rating': 0.0,
           }).toList();
 
-          await _service.savePlayerStatsBatch(statsToInsert);
+          try {
+            await _service.savePlayerStatsBatch(statsToInsert);
+          } catch (e) {
+            // Stats insert failed but analysis result is already saved
+            debugPrint('Stats insert error: $e');
+          }
         }
-
-        // 6. Guardar en Store y notificar UI
-        AnalysisStore.instance.save(result);
         successMessage = 'Analysis complete!';
         
         // 7. Recargar los partidos de este equipo para que aparezca el nuevo
