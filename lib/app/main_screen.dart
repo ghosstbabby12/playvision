@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../features/home/presentation/home_page.dart';
-import '../features/analysis/presentation/analysis_page.dart';
+import '../features/analysis/presentation/analyses_history_page.dart';
 import '../features/matches/presentation/matches_page.dart';
 import '../features/training/presentation/training_page.dart';
 
@@ -18,7 +18,7 @@ class _MainScreenState extends State<MainScreen> {
 
   List<Widget> get _pages => [
     HomePage(onTabChange: (i) => setState(() => _currentIndex = i)),
-    const AnalysisPage(),
+    const AnalysesHistoryPage(),
     const MatchesPage(),
     const TrainingPage(),
   ];

@@ -121,7 +121,9 @@ class _HomePageState extends State<HomePage> {
                   onDelete: () => _deleteTeam(_controller.selectedTeam!),
                 )),
 
-                SliverToBoxAdapter(child: _AnalyseButton(controller: _controller)),
+                SliverToBoxAdapter(child: _AnalyseButton(
+                  onTap: () => widget.onTabChange?.call(1),
+                )),
 
                 if (_controller.hasResult)
                   SliverToBoxAdapter(child: _ViewAnalysisButton(
@@ -562,20 +564,14 @@ class _SelectedTeamHeader extends StatelessWidget {
 }
 
 class _AnalyseButton extends StatelessWidget {
-  final HomeController controller;
-  const _AnalyseButton({required this.controller});
+  final VoidCallback onTap;
+  const _AnalyseButton({required this.onTap});
 
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
     child: GestureDetector(
-      onTap: controller.isAnalyzing ? null : () async {
-        await controller.pickAndAnalyze();
-        if (controller.selectedTeam != null) {
-          controller.loadMatchesForTeam(controller.selectedTeam!['id'] as int);
-          controller.loadRecentMatches();
-        }
-      },
+      onTap: onTap,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20),
@@ -584,35 +580,25 @@ class _AnalyseButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.borderGreen),
         ),
-        child: controller.isAnalyzing
-            ? const Column(children: [
-                CircularProgressIndicator(color: AppColors.accent, strokeWidth: 1.5),
-                SizedBox(height: 12),
-                Text('Analysing with AI...', style: TextStyle(
-                    color: AppColors.accent, fontSize: 14, fontWeight: FontWeight.w600)),
-                SizedBox(height: 4),
-                Text('This may take a few minutes',
-                    style: TextStyle(color: AppColors.muted, fontSize: 12)),
-              ])
-            : Row(children: [
-                Container(
-                  width: 52, height: 52,
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(Icons.videocam_outlined, color: AppColors.accent, size: 26),
-                ),
-                const SizedBox(width: 16),
-                const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('Analyse video', style: TextStyle(
-                      color: AppColors.textHi, fontSize: 17, fontWeight: FontWeight.w700)),
-                  SizedBox(height: 4),
-                  Text('Upload a match video and get AI stats',
-                      style: TextStyle(color: AppColors.muted, fontSize: 12)),
-                ])),
-                const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.accent, size: 16),
-              ]),
+        child: Row(children: [
+          Container(
+            width: 52, height: 52,
+            decoration: BoxDecoration(
+              color: AppColors.accent.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(Icons.videocam_outlined, color: AppColors.accent, size: 26),
+          ),
+          const SizedBox(width: 16),
+          const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Analyse video', style: TextStyle(
+                color: AppColors.textHi, fontSize: 17, fontWeight: FontWeight.w700)),
+            SizedBox(height: 4),
+            Text('Upload a match video and get AI stats',
+                style: TextStyle(color: AppColors.muted, fontSize: 12)),
+          ])),
+          const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.accent, size: 16),
+        ]),
       ),
     ),
   );

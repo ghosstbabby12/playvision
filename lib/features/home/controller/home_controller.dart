@@ -38,6 +38,7 @@ class HomeController extends ChangeNotifier {
   // ── Team selection ───────────────────────────────────────
   void selectTeam(Map<String, dynamic> team) {
     selectedTeam = team;
+    AnalysisStore.instance.selectedTeamId = team['id'] as int?;
     notifyListeners();
     loadMatchesForTeam(team['id'] as int);
   }

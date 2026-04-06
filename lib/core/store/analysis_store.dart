@@ -7,6 +7,7 @@ class AnalysisStore {
 
   Map<String, dynamic>? lastResult;
   XFile? lastLocalFile;
+  int? selectedTeamId;
 
   void save(Map<String, dynamic> result, {XFile? localFile}) {
     lastResult    = result;
