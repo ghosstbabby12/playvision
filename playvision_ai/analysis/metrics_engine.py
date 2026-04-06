@@ -4,7 +4,6 @@ metrics_engine.py — Converts raw tracker data into player and team metrics.
 New metrics added vs. v1:
   - speed_kmh (km/h peak smooth speed)
   - heatmap_zones (3x3 zone visit counts)
-  - passes_approx (possession<->no-possession transitions — proxy)
 """
 
 
@@ -44,8 +43,8 @@ def compute_metrics(
         sorted(stable.items(), key=lambda x: x[1]["frames_seen"], reverse=True)[:num_players]
     )
 
-    scale        = field_width_m / frame_width   # metres per pixel
-    effective_fps = fps / frame_skip              # real frames per second being analysed
+    scale         = field_width_m / frame_width
+    effective_fps = fps / frame_skip
 
     players_out     = []
     team_total_dist = 0
@@ -57,9 +56,8 @@ def compute_metrics(
         presence_pct = data["frames_seen"] / max(analyzed_frames, 1) * 100
         poss_pct     = data["frames_with_ball"] / max(data["frames_seen"], 1) * 100
 
-        # Moving-average speed (already smoothed inside tracker)
         speed_history = data.get("speed_history", [])
-        avg_speed_px  = sum(speed_history) / len(speed_history) if speed_history else (
+        avg_speed_px  = (sum(speed_history) / len(speed_history)) if speed_history else (
             total_dist / max(len(data["distances"]), 1)
         )
 

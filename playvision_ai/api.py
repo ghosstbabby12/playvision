@@ -3,6 +3,7 @@ api.py — FastAPI entry-point.  Thin orchestration layer only.
 All heavy logic lives in the analysis/ package.
 """
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
@@ -23,7 +24,9 @@ load_dotenv(dotenv_path=BASE_DIR / ".env", override=True)
 from analysis.detector       import detect_frame
 from analysis.tracker        import PlayerTracker
 from analysis.metrics_engine import compute_metrics
-from analysis.exporter       import create_or_update_match, save_match_report, save_player_stats
+from analysis.exporter       import create_or_update_match, save_match_report, save_player_stats, upload_video
+from analysis.heatmap_engine import heatmap_from_positions_sample, encode_heatmap_png
+from analysis.video_heatmap  import VideoHeatmapOverlay
 
 # ── Config ────────────────────────────────────────────────────────────────────
 NUM_PLAYERS    = int(os.getenv("NUM_PLAYERS",   "10"))
@@ -125,13 +128,16 @@ async def analyze_video(
         out_h    = int(src_h * scale_r)
         out_fps  = src_fps / FRAME_SKIP
 
-        video_id = uuid.uuid4().hex[:8]
-        out_path = os.path.join(VIDEOS_DIR, f"annotated_{video_id}.mp4")
-        writer   = _open_writer(out_path, out_fps, out_w, out_h)
+        video_id      = uuid.uuid4().hex[:8]
+        out_path      = os.path.join(VIDEOS_DIR, f"annotated_{video_id}.mp4")
+        heat_path     = os.path.join(VIDEOS_DIR, f"heatmap_{video_id}.mp4")
+        writer        = _open_writer(out_path,  out_fps, out_w, out_h)
+        heat_writer   = _open_writer(heat_path, out_fps, out_w, out_h)
 
-        tracker     = PlayerTracker(ball_radius=BALL_RADIUS)
-        frame_count = 0
-        analyzed    = 0
+        tracker        = PlayerTracker(ball_radius=BALL_RADIUS)
+        heat_overlay   = VideoHeatmapOverlay(width=out_w, height=out_h)
+        frame_count    = 0
+        analyzed       = 0
 
         while cap.isOpened():
             ret, frame = cap.read()
@@ -149,15 +155,22 @@ async def analyze_video(
             )
             tracker.update(frame_players, ball_center)
 
+            # ── Normal annotated video ──────────────────────────
             if raw_result is not None:
                 annotated = raw_result.plot(labels=True, conf=False, line_width=2)
                 annotated = _resize_frame(annotated, TARGET_WIDTH)
                 writer.write(annotated)
 
+            # ── Heatmap overlay video ───────────────────────────
+            heat_overlay.update(frame_players)
+            heat_frame = heat_overlay.apply(frame)
+            heat_writer.write(heat_frame)
+
             analyzed += 1
 
         cap.release()
         writer.release()
+        heat_writer.release()
 
         players_out, team_stats = compute_metrics(
             player_data    = tracker.data,
@@ -171,17 +184,28 @@ async def analyze_video(
             min_presence   = MIN_PRESENCE,
         )
 
-        video_url = (
+        # 4. Upload video to Supabase Storage ──────────────────────────────────
+        base_url = (
             f"{os.getenv('API_HOST', 'http://127.0.0.1')}:"
-            f"{os.getenv('API_PORT', '8000')}"
-            f"/videos/annotated_{video_id}.mp4"
+            f"{os.getenv('API_PORT', '8000')}/videos"
         )
+
+        # Upload annotated video
+        ann_file  = f"annotated_{video_id}.mp4"
+        heat_file = f"heatmap_{video_id}.mp4"
+
+        storage_url      = upload_video(out_path,  ann_file)
+        heat_storage_url = upload_video(heat_path, heat_file)
+
+        video_url      = storage_url      or f"{base_url}/{ann_file}"
+        heat_video_url = heat_storage_url or f"{base_url}/{heat_file}"
 
         result_payload = {
             "frames_total":     frame_count,
             "frames_analyzed":  analyzed,
             "players_detected": len(players_out),
             "video_url":        video_url,
+            "heatmap_video_url": heat_video_url,
             "team":             team_stats,
             "players":          players_out,
         }
@@ -214,6 +238,29 @@ async def analyze_video(
     finally:
         if os.path.exists(video_path):
             os.remove(video_path)
+
+@app.post("/heatmap")
+async def generate_heatmap(
+    players_json: str = Form(...),   # JSON string: list of player dicts
+    player_rank:  str = Form(None),  # optional: "3" to filter one player
+    mode:         str = Form("team"), # "team" | "player"
+):
+    """
+    Generate a tactical heatmap PNG from positions_sample data.
+
+    Accepts the `players` array from the /analyze response.
+    Returns a PNG image directly (Content-Type: image/png).
+    """
+    import json
+    try:
+        players = json.loads(players_json)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid players_json")
+
+    rank = int(player_rank) if player_rank and player_rank.isdigit() else None
+    image = heatmap_from_positions_sample(players, selected_rank=rank)
+    return Response(content=encode_heatmap_png(image), media_type="image/png")
+
 
 @app.get("/api/live-matches")
 def live_matches():

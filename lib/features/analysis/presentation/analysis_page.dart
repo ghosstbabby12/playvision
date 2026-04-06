@@ -5,7 +5,7 @@ import '../controller/analysis_controller.dart';
 import 'widgets/field_map_tab.dart';
 import 'widgets/players_tab.dart';
 import 'widgets/summary_tab.dart';
-import 'widgets/video_player_tab.dart';
+import 'widgets/video_scenes_tab.dart';
 import 'widgets/video_upload_view.dart';
 
 class AnalysisPage extends StatefulWidget {
@@ -143,12 +143,13 @@ class _AnalysisPageState extends State<AnalysisPage>
                         SummaryTab(data: _controller.result!),
                         FieldMapTab(players: _controller.result!['players'] as List),
                         PlayersTab(players: _controller.result!['players'] as List),
-                        // AQUÍ ESTÁ LA CORRECCIÓN DE LA LECTURA DEL JSON
-                        VideoPlayerTab(
+                        VideoScenesTab(
                           videoUrl: (_controller.result!['video_url'] as String?) ??
-                                    (_controller.result!['videoUrl'] as String?) ?? 
+                                    (_controller.result!['videoUrl'] as String?) ??
                                     (_controller.result!['match']?['video_url'] as String?),
+                          heatmapVideoUrl: _controller.result!['heatmap_video_url'] as String?,
                           localFile: _controller.videoFile,
+                          players: _controller.result!['players'] as List,
                         ),
                       ])
                     : VideoUploadView(
