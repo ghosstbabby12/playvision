@@ -87,7 +87,8 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen> {
                                 Column(
                                   children: [
                                     if (match.homeLogo.isNotEmpty)
-                                      Image.network(match.homeLogo, width: 40, height: 40),
+                                      Image.network(match.homeLogo, width: 40, height: 40,
+                                          errorBuilder: (_, __, ___) => const SizedBox(width: 40, height: 40)),
                                     SizedBox(height: 8),
                                     Text(match.homeTeam, style: TextStyle(fontWeight: FontWeight.bold)),
                                   ],
@@ -106,7 +107,8 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen> {
                                 Column(
                                   children: [
                                     if (match.awayLogo.isNotEmpty)
-                                      Image.network(match.awayLogo, width: 40, height: 40),
+                                      Image.network(match.awayLogo, width: 40, height: 40,
+                                          errorBuilder: (_, __, ___) => const SizedBox(width: 40, height: 40)),
                                     SizedBox(height: 8),
                                     Text(match.awayTeam, style: TextStyle(fontWeight: FontWeight.bold)),
                                   ],

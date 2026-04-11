@@ -153,10 +153,12 @@ class _AnalysisPageState extends State<AnalysisPage>
                         ),
                       ])
                     : VideoUploadView(
-                        videoFile: _controller.videoFile,
+                        videoFile:   _controller.videoFile,
+                        videoUrl:    _controller.videoUrl,
                         isAnalyzing: _controller.isAnalyzing,
                         onPickVideo: _controller.pickVideo,
-                        onAnalyze: _controller.analyzeVideo,
+                        onAnalyze:   _controller.analyzeVideo,
+                        onSetUrl:    _controller.setVideoUrl,
                       ),
               ),
             ]),

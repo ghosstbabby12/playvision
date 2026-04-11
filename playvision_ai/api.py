@@ -97,144 +97,212 @@ def _open_writer(out_path: str, fps: float, width: int, height: int):
 
     raise RuntimeError("Could not open VideoWriter with any codec")
 
-# ── /analyze endpoint ─────────────────────────────────────────────────────────
+# ── Shared pipeline ───────────────────────────────────────────────────────────
+def _run_pipeline(
+    video_path:   str,
+    team_id_int:  int,
+    match_id_int: Optional[int],
+    opponent:     str,
+    source_type:  str,
+) -> dict:
+    """Process a video file through the full detection → metrics → upload pipeline."""
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        raise HTTPException(status_code=400, detail="Cannot open video file")
+
+    src_w   = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    src_h   = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    src_fps = cap.get(cv2.CAP_PROP_FPS) or FPS
+
+    scale_r = min(1.0, TARGET_WIDTH / src_w)
+    out_w   = int(src_w * scale_r)
+    out_h   = int(src_h * scale_r)
+    out_fps = src_fps / FRAME_SKIP
+
+    video_id    = uuid.uuid4().hex[:8]
+    out_path    = os.path.join(VIDEOS_DIR, f"annotated_{video_id}.mp4")
+    heat_path   = os.path.join(VIDEOS_DIR, f"heatmap_{video_id}.mp4")
+    writer      = _open_writer(out_path,  out_fps, out_w, out_h)
+    heat_writer = _open_writer(heat_path, out_fps, out_w, out_h)
+
+    tracker      = PlayerTracker(ball_radius=BALL_RADIUS)
+    heat_overlay = VideoHeatmapOverlay(width=out_w, height=out_h)
+    frame_count  = 0
+    analyzed     = 0
+
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        frame_count += 1
+        if frame_count % FRAME_SKIP != 0:
+            continue
+
+        frame = _resize_frame(frame, TARGET_WIDTH)
+        frame_players, ball_center, raw_result = detect_frame(
+            frame, conf_threshold=CONF_THRESHOLD
+        )
+        tracker.update(frame_players, ball_center)
+
+        if raw_result is not None:
+            annotated = raw_result.plot(labels=True, conf=False, line_width=2)
+            annotated = _resize_frame(annotated, TARGET_WIDTH)
+            writer.write(annotated)
+
+        heat_overlay.update(frame_players)
+        heat_writer.write(heat_overlay.apply(frame))
+        analyzed += 1
+
+    cap.release()
+    writer.release()
+    heat_writer.release()
+
+    players_out, team_stats = compute_metrics(
+        player_data    = tracker.data,
+        analyzed_frames= analyzed,
+        frame_width    = out_w,
+        frame_height   = out_h,
+        field_width_m  = FIELD_WIDTH_M,
+        fps            = src_fps,
+        frame_skip     = FRAME_SKIP,
+        num_players    = NUM_PLAYERS,
+        min_presence   = MIN_PRESENCE,
+    )
+
+    base_url = (
+        f"{os.getenv('API_HOST', 'http://127.0.0.1')}:"
+        f"{os.getenv('API_PORT', '8000')}/videos"
+    )
+    ann_file  = f"annotated_{video_id}.mp4"
+    heat_file = f"heatmap_{video_id}.mp4"
+
+    storage_url      = upload_video(out_path,  ann_file)
+    heat_storage_url = upload_video(heat_path, heat_file)
+
+    video_url      = storage_url      or f"{base_url}/{ann_file}"
+    heat_video_url = heat_storage_url or f"{base_url}/{heat_file}"
+
+    result_payload = {
+        "frames_total":      frame_count,
+        "frames_analyzed":   analyzed,
+        "players_detected":  len(players_out),
+        "video_url":         video_url,
+        "heatmap_video_url": heat_video_url,
+        "team":              team_stats,
+        "players":           players_out,
+    }
+
+    try:
+        if match_id_int is None:
+            match_id_int = create_or_update_match(
+                team_id=team_id_int, match_id=None,
+                opponent=opponent, source_type=source_type,
+                video_url=video_url,
+            )
+        else:
+            create_or_update_match(
+                team_id=team_id_int, match_id=match_id_int,
+                opponent=opponent, source_type=source_type,
+                video_url=video_url,
+            )
+        if match_id_int is not None:
+            save_match_report(match_id_int, team_id_int, result_payload)
+            try:
+                save_player_stats(match_id_int, players_out)
+            except Exception as e:
+                print(f"[warn] player stats insert skipped: {e}")
+    except Exception as e:
+        print(f"[warn] Supabase persist failed: {e}")
+
+    return result_payload
+
+
+# ── /analyze — upload a local file ───────────────────────────────────────────
 @app.post("/analyze")
 async def analyze_video(
-    team_id:     str            = Form(...),
-    match_id:    Optional[str]  = Form(None),
-    opponent:    str            = Form(""),
-    source_type: str            = Form("upload"),
-    file:        UploadFile     = File(...),
+    team_id:     str           = Form(...),
+    match_id:    Optional[str] = Form(None),
+    opponent:    str           = Form(""),
+    source_type: str           = Form("upload"),
+    file:        UploadFile    = File(...),
+):
+    team_id_int  = int(team_id)
+    match_id_int = int(match_id) if match_id and match_id not in ("null", "") else None
+    video_path   = os.path.join(BASE_DIR, f"uploaded_{uuid.uuid4().hex[:8]}_{file.filename}")
+    try:
+        with open(video_path, "wb") as buf:
+            shutil.copyfileobj(file.file, buf)
+        return _run_pipeline(video_path, team_id_int, match_id_int, opponent, source_type)
+    finally:
+        if os.path.exists(video_path):
+            os.remove(video_path)
+
+
+# ── URL helpers ───────────────────────────────────────────────────────────────
+_PLATFORM_PATTERNS = (
+    "youtube.com", "youtu.be",
+    "vimeo.com", "dailymotion.com",
+    "twitch.tv", "instagram.com",
+    "twitter.com", "x.com", "tiktok.com",
+    "facebook.com", "fb.watch",
+)
+
+def _is_platform_url(url: str) -> bool:
+    return any(p in url for p in _PLATFORM_PATTERNS)
+
+def _download_with_ytdlp(url: str, out_path: str) -> None:
+    try:
+        import yt_dlp
+    except ImportError:
+        raise HTTPException(status_code=500, detail="yt-dlp not installed. Run: pip install yt-dlp")
+
+    ydl_opts = {
+        # Single-file format — no merge needed, no ffmpeg required
+        "format": "best[ext=mp4][height<=720]/best[ext=mp4]/best",
+        "outtmpl": out_path,
+        "quiet": True,
+        "no_warnings": True,
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=True)
+        # yt-dlp may append extension; rename if needed
+        expected = ydl.prepare_filename(info)
+        if expected != out_path and os.path.exists(expected):
+            os.rename(expected, out_path)
+
+def _download_direct(url: str, out_path: str) -> None:
+    resp = requests.get(url, stream=True, timeout=120,
+                        headers={"User-Agent": "Mozilla/5.0"})
+    if resp.status_code != 200:
+        raise HTTPException(status_code=400, detail=f"Could not download video: HTTP {resp.status_code}")
+    with open(out_path, "wb") as f:
+        for chunk in resp.iter_content(chunk_size=1024 * 1024):
+            f.write(chunk)
+
+
+# ── /analyze-url — analyze a video from a remote URL ─────────────────────────
+@app.post("/analyze-url")
+async def analyze_video_url(
+    team_id:     str           = Form(...),
+    match_id:    Optional[str] = Form(None),
+    opponent:    str           = Form(""),
+    source_type: str           = Form("url"),
+    video_url:   str           = Form(...),
 ):
     team_id_int  = int(team_id)
     match_id_int = int(match_id) if match_id and match_id not in ("null", "") else None
 
-    video_path = os.path.join(BASE_DIR, f"uploaded_{uuid.uuid4().hex[:8]}_{file.filename}")
-
+    video_path = os.path.join(BASE_DIR, f"remote_{uuid.uuid4().hex[:8]}.mp4")
     try:
-        with open(video_path, "wb") as buf:
-            shutil.copyfileobj(file.file, buf)
+        if _is_platform_url(video_url):
+            print(f"[info] Platform URL detected — using yt-dlp: {video_url}")
+            _download_with_ytdlp(video_url, video_path)
+        else:
+            print(f"[info] Direct URL — streaming download: {video_url}")
+            _download_direct(video_url, video_path)
 
-        cap = cv2.VideoCapture(video_path)
-        if not cap.isOpened():
-            raise HTTPException(status_code=400, detail="Cannot open video file")
-
-        src_w   = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        src_h   = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        src_fps = cap.get(cv2.CAP_PROP_FPS) or FPS
-
-        scale_r  = min(1.0, TARGET_WIDTH / src_w)
-        out_w    = int(src_w * scale_r)
-        out_h    = int(src_h * scale_r)
-        out_fps  = src_fps / FRAME_SKIP
-
-        video_id      = uuid.uuid4().hex[:8]
-        out_path      = os.path.join(VIDEOS_DIR, f"annotated_{video_id}.mp4")
-        heat_path     = os.path.join(VIDEOS_DIR, f"heatmap_{video_id}.mp4")
-        writer        = _open_writer(out_path,  out_fps, out_w, out_h)
-        heat_writer   = _open_writer(heat_path, out_fps, out_w, out_h)
-
-        tracker        = PlayerTracker(ball_radius=BALL_RADIUS)
-        heat_overlay   = VideoHeatmapOverlay(width=out_w, height=out_h)
-        frame_count    = 0
-        analyzed       = 0
-
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
-
-            frame_count += 1
-            if frame_count % FRAME_SKIP != 0:
-                continue
-
-            frame = _resize_frame(frame, TARGET_WIDTH)
-
-            frame_players, ball_center, raw_result = detect_frame(
-                frame, conf_threshold=CONF_THRESHOLD
-            )
-            tracker.update(frame_players, ball_center)
-
-            # ── Normal annotated video ──────────────────────────
-            if raw_result is not None:
-                annotated = raw_result.plot(labels=True, conf=False, line_width=2)
-                annotated = _resize_frame(annotated, TARGET_WIDTH)
-                writer.write(annotated)
-
-            # ── Heatmap overlay video ───────────────────────────
-            heat_overlay.update(frame_players)
-            heat_frame = heat_overlay.apply(frame)
-            heat_writer.write(heat_frame)
-
-            analyzed += 1
-
-        cap.release()
-        writer.release()
-        heat_writer.release()
-
-        players_out, team_stats = compute_metrics(
-            player_data    = tracker.data,
-            analyzed_frames= analyzed,
-            frame_width    = out_w,
-            frame_height   = out_h,
-            field_width_m  = FIELD_WIDTH_M,
-            fps            = src_fps,
-            frame_skip     = FRAME_SKIP,
-            num_players    = NUM_PLAYERS,
-            min_presence   = MIN_PRESENCE,
-        )
-
-        # 4. Upload video to Supabase Storage ──────────────────────────────────
-        base_url = (
-            f"{os.getenv('API_HOST', 'http://127.0.0.1')}:"
-            f"{os.getenv('API_PORT', '8000')}/videos"
-        )
-
-        # Upload annotated video
-        ann_file  = f"annotated_{video_id}.mp4"
-        heat_file = f"heatmap_{video_id}.mp4"
-
-        storage_url      = upload_video(out_path,  ann_file)
-        heat_storage_url = upload_video(heat_path, heat_file)
-
-        video_url      = storage_url      or f"{base_url}/{ann_file}"
-        heat_video_url = heat_storage_url or f"{base_url}/{heat_file}"
-
-        result_payload = {
-            "frames_total":     frame_count,
-            "frames_analyzed":  analyzed,
-            "players_detected": len(players_out),
-            "video_url":        video_url,
-            "heatmap_video_url": heat_video_url,
-            "team":             team_stats,
-            "players":          players_out,
-        }
-
-        try:
-            if match_id_int is None:
-                match_id_int = create_or_update_match(
-                    team_id=team_id_int, match_id=None,
-                    opponent=opponent, source_type=source_type,
-                    video_url=video_url,
-                )
-            else:
-                create_or_update_match(
-                    team_id=team_id_int, match_id=match_id_int,
-                    opponent=opponent, source_type=source_type,
-                    video_url=video_url,
-                )
-
-            if match_id_int is not None:
-                save_match_report(match_id_int, team_id_int, result_payload)
-                try:
-                    save_player_stats(match_id_int, players_out)
-                except Exception as e:
-                    print(f"[warn] player stats insert skipped: {e}")
-        except Exception as e:
-            print(f"[warn] Supabase persist failed: {e}")
-
-        return result_payload
-
+        return _run_pipeline(video_path, team_id_int, match_id_int, opponent, source_type)
     finally:
         if os.path.exists(video_path):
             os.remove(video_path)

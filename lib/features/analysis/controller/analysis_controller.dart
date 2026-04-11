@@ -12,8 +12,9 @@ class AnalysisController extends ChangeNotifier {
   final ImagePicker      _picker  = ImagePicker();
   final SupabaseService  _service = SupabaseService.instance;
 
-  XFile? videoFile;
-  bool   isAnalyzing = false;
+  XFile?  videoFile;
+  String? videoUrl;        // remote URL input
+  bool    isAnalyzing = false;
   Map<String, dynamic>? result;
   String? errorMessage;
 
@@ -26,12 +27,20 @@ class AnalysisController extends ChangeNotifier {
     final file = await _picker.pickVideo(source: ImageSource.gallery);
     if (file == null) return;
     videoFile = file;
+    videoUrl  = null;
+    result    = null;
+    notifyListeners();
+  }
+
+  void setVideoUrl(String url) {
+    videoUrl  = url.trim().isEmpty ? null : url.trim();
+    videoFile = null;
     result    = null;
     notifyListeners();
   }
 
   Future<void> analyzeVideo() async {
-    if (videoFile == null) return;
+    if (videoFile == null && videoUrl == null) return;
 
     final teamId = AnalysisStore.instance.selectedTeamId;
     if (teamId == null) {
@@ -55,19 +64,35 @@ class AnalysisController extends ChangeNotifier {
       );
 
       // 2. Send video to backend
-      final bytes   = await videoFile!.readAsBytes();
-      final request = http.MultipartRequest(
-        'POST', Uri.parse('${AppConstants.apiBase}/analyze'),
-      );
-      request.fields['team_id']     = teamId.toString();
-      request.fields['match_id']    = matchId.toString();
-      request.fields['source_type'] = AppConstants.sourceUpload;
-      request.files.add(
-        http.MultipartFile.fromBytes('file', bytes, filename: videoFile!.name),
-      );
+      http.StreamedResponse streamed;
+      String body;
 
-      final streamed = await request.send().timeout(AppConstants.analysisTimeout);
-      final body     = await streamed.stream.bytesToString();
+      if (videoUrl != null) {
+        // ── URL mode: POST form fields to /analyze-url ──────────────────────
+        final request = http.MultipartRequest(
+          'POST', Uri.parse('${AppConstants.apiBase}/analyze-url'),
+        );
+        request.fields['team_id']     = teamId.toString();
+        request.fields['match_id']    = matchId.toString();
+        request.fields['source_type'] = 'url';
+        request.fields['video_url']   = videoUrl!;
+        streamed = await request.send().timeout(AppConstants.analysisTimeout);
+      } else {
+        // ── File mode: multipart upload to /analyze ──────────────────────────
+        final bytes   = await videoFile!.readAsBytes();
+        final request = http.MultipartRequest(
+          'POST', Uri.parse('${AppConstants.apiBase}/analyze'),
+        );
+        request.fields['team_id']     = teamId.toString();
+        request.fields['match_id']    = matchId.toString();
+        request.fields['source_type'] = AppConstants.sourceUpload;
+        request.files.add(
+          http.MultipartFile.fromBytes('file', bytes, filename: videoFile!.name),
+        );
+        streamed = await request.send().timeout(AppConstants.analysisTimeout);
+      }
+
+      body = await streamed.stream.bytesToString();
 
       if (streamed.statusCode == 200) {
         result = jsonDecode(body) as Map<String, dynamic>;
@@ -95,8 +120,9 @@ class AnalysisController extends ChangeNotifier {
   }
 
   void reset() {
-    result = null;
-    videoFile = null;
+    result       = null;
+    videoFile    = null;
+    videoUrl     = null;
     errorMessage = null;
     notifyListeners();
   }

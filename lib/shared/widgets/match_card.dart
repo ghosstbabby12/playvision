@@ -51,9 +51,11 @@ class MatchCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 12,
                   backgroundColor: Colors.green.withValues(alpha: 0.2),
-                  child: match.homeLogo.isNotEmpty 
-                      ? Image.network(match.homeLogo, width: 16, height: 16)
-                      : Text(match.homeTeam[0], style: TextStyle(color: Colors.green, fontSize: 12)),
+                  child: match.homeLogo.isNotEmpty
+                      ? Image.network(match.homeLogo, width: 16, height: 16,
+                          errorBuilder: (_, __, ___) => Text(match.homeTeam[0],
+                              style: const TextStyle(color: Colors.green, fontSize: 12)))
+                      : Text(match.homeTeam[0], style: const TextStyle(color: Colors.green, fontSize: 12)),
                 ),
                 SizedBox(width: 8),
                 // Nombre Equipo Local
@@ -79,9 +81,11 @@ class MatchCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 12,
                   backgroundColor: Colors.green.withValues(alpha: 0.2),
-                  child: match.awayLogo.isNotEmpty 
-                      ? Image.network(match.awayLogo, width: 16, height: 16)
-                      : Text(match.awayTeam[0], style: TextStyle(color: Colors.green, fontSize: 12)),
+                  child: match.awayLogo.isNotEmpty
+                      ? Image.network(match.awayLogo, width: 16, height: 16,
+                          errorBuilder: (_, __, ___) => Text(match.awayTeam[0],
+                              style: const TextStyle(color: Colors.green, fontSize: 12)))
+                      : Text(match.awayTeam[0], style: const TextStyle(color: Colors.green, fontSize: 12)),
                 ),
                 SizedBox(width: 8),
                 // Nombre Equipo Visitante

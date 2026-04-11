@@ -54,6 +54,12 @@ class HomeController extends ChangeNotifier {
     notifyListeners();
     try {
       teams = await _service.getTeams();
+      // Keep selectedTeam in sync with refreshed data
+      if (selectedTeam != null) {
+        final id = selectedTeam!['id'];
+        final updated = teams.where((t) => t['id'] == id).firstOrNull;
+        if (updated != null) selectedTeam = updated;
+      }
     } catch (e) {
       errorMessage = 'Failed to load teams: $e';
     } finally {

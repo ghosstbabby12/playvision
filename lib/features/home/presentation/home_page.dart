@@ -10,6 +10,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/form_text_field.dart';
 import '../controller/home_controller.dart';
+import '../../analysis/presentation/analysis_page.dart';
 import 'widgets/home_search_delegate.dart';
 import 'widgets/settings_drawer.dart';
 
@@ -122,17 +123,18 @@ class _HomePageState extends State<HomePage> {
                 )),
 
                 SliverToBoxAdapter(child: _AnalyseButton(
-                  onTap: () => widget.onTabChange?.call(1),
+                  onTap: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => const AnalysisPage())),
                 )),
 
                 if (_controller.hasResult)
                   SliverToBoxAdapter(child: _ViewAnalysisButton(
-                    onTap: () => widget.onTabChange?.call(1),
+                    onTap: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const AnalysisPage())),
                   )),
 
                 SliverToBoxAdapter(child: _PreviousAnalysesSection(
                   controller: _controller,
-                  onTabChange: widget.onTabChange,
                 )),
               ],
 
@@ -633,8 +635,7 @@ class _ViewAnalysisButton extends StatelessWidget {
 
 class _PreviousAnalysesSection extends StatelessWidget {
   final HomeController controller;
-  final void Function(int)? onTabChange;
-  const _PreviousAnalysesSection({required this.controller, this.onTabChange});
+  const _PreviousAnalysesSection({required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -684,9 +685,8 @@ class _PreviousAnalysesSection extends StatelessWidget {
           ...matches.map((m) => _MatchItem(
             match: m,
             controller: controller,
-            onTap: () {
-              onTabChange?.call(1);
-            },
+            onTap: () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const AnalysisPage())),
           )),
         ],
       ),
@@ -1019,8 +1019,12 @@ class _LeagueGroup extends StatelessWidget {
           Container(
             width: 24, height: 24,
             decoration: const BoxDecoration(color: Colors.transparent, shape: BoxShape.circle),
-            child: leagueLogo.isNotEmpty 
-                ? Image.network(leagueLogo) 
+            child: leagueLogo.isNotEmpty
+                ? Image.network(
+                    leagueLogo,
+                    errorBuilder: (_, __, ___) =>
+                        const Icon(Icons.emoji_events, color: AppColors.accent, size: 16),
+                  )
                 : const Icon(Icons.emoji_events, color: AppColors.accent, size: 16),
           ),
           const SizedBox(width: 8),
