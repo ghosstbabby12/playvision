@@ -9,7 +9,7 @@ import math
 from collections import defaultdict, deque
 
 SMOOTHING_WINDOW  = 7    # frames for velocity moving average
-MAX_JUMP_PX       = 250  # pixels — larger jumps are treated as tracking noise
+MAX_JUMP_PX       = 400  # pixels — larger jumps are treated as tracking noise
 
 
 class PlayerTracker:

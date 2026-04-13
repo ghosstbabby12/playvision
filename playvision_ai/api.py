@@ -21,21 +21,28 @@ from datetime import datetime
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(dotenv_path=BASE_DIR / ".env", override=True)
 
-from analysis.detector       import detect_frame
-from analysis.tracker        import PlayerTracker
-from analysis.metrics_engine import compute_metrics
-from analysis.exporter       import create_or_update_match, save_match_report, save_player_stats, upload_video
-from analysis.heatmap_engine import heatmap_from_positions_sample, encode_heatmap_png
-from analysis.video_heatmap  import VideoHeatmapOverlay
+from analysis.detector        import detect_frame
+from analysis.tracker         import PlayerTracker
+from analysis.metrics_engine  import compute_metrics
+from analysis.exporter        import create_or_update_match, save_match_report, save_player_stats, upload_video
+from analysis.heatmap_engine  import heatmap_from_positions_sample, encode_heatmap_png
+from analysis.video_heatmap   import VideoHeatmapOverlay
+from analysis.team_classifier  import TeamClassifier
+from analysis.ar_renderer      import render_frame as ar_render
+from analysis.detector         import reset_state as reset_detector
+from analysis.ball_tracker     import BallTracker
+from analysis.possession_engine import PossessionEngine
+from analysis.pass_detector    import PassLog
+from analysis.commentary_engine import CommentaryEngine
 
 # ── Config ────────────────────────────────────────────────────────────────────
-NUM_PLAYERS    = int(os.getenv("NUM_PLAYERS",   "10"))
-MIN_PRESENCE   = float(os.getenv("MIN_PRESENCE", "0.05"))
+NUM_PLAYERS    = int(os.getenv("NUM_PLAYERS",   "22"))
+MIN_PRESENCE   = float(os.getenv("MIN_PRESENCE", "0.01"))
 BALL_RADIUS    = int(os.getenv("BALL_RADIUS",   "80"))
 FIELD_WIDTH_M  = float(os.getenv("FIELD_WIDTH_M","105.0"))
 FPS            = float(os.getenv("FPS",          "30.0"))
-CONF_THRESHOLD = float(os.getenv("CONF_THRESHOLD","0.55"))
-FRAME_SKIP     = int(os.getenv("FRAME_SKIP",    "3"))   
+CONF_THRESHOLD = float(os.getenv("CONF_THRESHOLD","0.35"))
+FRAME_SKIP     = int(os.getenv("FRAME_SKIP",    "2"))   
 
 TARGET_WIDTH   = 1280
 
@@ -125,10 +132,20 @@ def _run_pipeline(
     writer      = _open_writer(out_path,  out_fps, out_w, out_h)
     heat_writer = _open_writer(heat_path, out_fps, out_w, out_h)
 
-    tracker      = PlayerTracker(ball_radius=BALL_RADIUS)
-    heat_overlay = VideoHeatmapOverlay(width=out_w, height=out_h)
-    frame_count  = 0
-    analyzed     = 0
+    reset_detector()   # clear smoothing history from previous video
+    tracker         = PlayerTracker(ball_radius=BALL_RADIUS)
+    heat_overlay    = VideoHeatmapOverlay(width=out_w, height=out_h)
+    team_classifier = TeamClassifier()
+    ball_tracker    = BallTracker()
+    possession      = PossessionEngine()
+    pass_log        = PassLog()
+    commentary      = CommentaryEngine(out_w, out_h)
+    frame_count     = 0
+    analyzed        = 0
+    prev_owner: int | None = None
+    # Maps raw ByteTrack IDs → sequential display numbers (1, 2, 3 … NUM_PLAYERS)
+    id_map: dict[int, int] = {}
+    _next_id = [0]   # mutable so the inner loop can increment it
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -140,16 +157,58 @@ def _run_pipeline(
             continue
 
         frame = _resize_frame(frame, TARGET_WIDTH)
-        frame_players, ball_center, raw_result = detect_frame(
+        frame_players, ball_detected, raw_result = detect_frame(
             frame, conf_threshold=CONF_THRESHOLD
         )
-        tracker.update(frame_players, ball_center)
+        team_classifier.update(frame, raw_result)
 
-        if raw_result is not None:
-            annotated = raw_result.plot(labels=True, conf=False, line_width=2)
-            annotated = _resize_frame(annotated, TARGET_WIDTH)
-            writer.write(annotated)
+        # ── Assign stable display numbers (1…N) to new track IDs ─────────────
+        for pid in frame_players:
+            if pid not in id_map:
+                _next_id[0] += 1
+                id_map[pid] = _next_id[0]
 
+        # ── Ball: stabilize raw detection, fall back to last known ───────────
+        ball_center = ball_tracker.update(ball_detected)
+        # For possession we extend persistence using last_known so the
+        # engine never runs fully blind even when YOLO misses the ball.
+        ball_for_possession = ball_center or ball_tracker.last_known
+
+        # ── Tracker (uses detected ball for possession-frame counting) ────────
+        tracker.update(frame_players, ball_for_possession)
+
+        # ── Possession & pass detection ──────────────────────────────────────
+        pass_log.tick()
+        pass_log.update_positions(frame_players)
+
+        current_owner = possession.update(frame_players, ball_for_possession)
+
+        if (prev_owner is not None
+                and current_owner is not None
+                and current_owner != prev_owner):
+            pass_log.try_register(prev_owner, current_owner, team_classifier, frame_count)
+
+        prev_owner = current_owner
+
+        # ── Commentary (every 30 analyzed frames) ────────────────────────────
+        if analyzed % 30 == 0:
+            commentary.update(frame_count, frame_players, ball_center,
+                              pass_log.all_passes, team_classifier)
+            ball_str = f"({int(ball_center[0])},{int(ball_center[1])})" if ball_center else "none"
+            print(f"[debug] frame={frame_count} players={len(frame_players)} "
+                  f"ball={ball_str} passes={pass_log.total} owner={current_owner}")
+
+        # ── AR overlay ───────────────────────────────────────────────────────
+        ar_frame = ar_render(
+            frame, frame_players, ball_center,
+            pass_log.recent, current_owner,
+            team_classifier, commentary.latest,
+            total_passes=pass_log.total,
+            id_map=id_map,
+        )
+        writer.write(ar_frame)
+
+        # ── Heatmap overlay ───────────────────────────────────────────────────
         heat_overlay.update(frame_players)
         heat_writer.write(heat_overlay.apply(frame))
         analyzed += 1
@@ -157,6 +216,16 @@ def _run_pipeline(
     cap.release()
     writer.release()
     heat_writer.release()
+
+    # ── Diagnostics ──────────────────────────────────────────────────────────
+    track_entries = {pid: d["frames_seen"] for pid, d in tracker.data.items()}
+    min_f         = max(1, int(analyzed * MIN_PRESENCE))
+    stable_ids    = [pid for pid, fs in track_entries.items() if fs >= min_f]
+    print(f"[debug] done | analyzed={analyzed} | tracked_ids={len(track_entries)} "
+          f"| min_frames={min_f} | stable={len(stable_ids)} | passes={pass_log.total}")
+    if track_entries:
+        top5 = sorted(track_entries.items(), key=lambda x: x[1], reverse=True)[:5]
+        print(f"[debug] top players frames_seen: {top5}")
 
     players_out, team_stats = compute_metrics(
         player_data    = tracker.data,
@@ -187,6 +256,7 @@ def _run_pipeline(
         "frames_total":      frame_count,
         "frames_analyzed":   analyzed,
         "players_detected":  len(players_out),
+        "pass_count":        pass_log.total,
         "video_url":         video_url,
         "heatmap_video_url": heat_video_url,
         "team":              team_stats,

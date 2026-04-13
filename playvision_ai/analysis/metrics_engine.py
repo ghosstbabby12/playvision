@@ -37,7 +37,7 @@ def compute_metrics(
     """
     Returns (players_out, team_stats).
     """
-    min_frames = max(10, int(analyzed_frames * min_presence))
+    min_frames = max(1, int(analyzed_frames * min_presence))
     stable = {pid: d for pid, d in player_data.items() if d["frames_seen"] >= min_frames}
     active = dict(
         sorted(stable.items(), key=lambda x: x[1]["frames_seen"], reverse=True)[:num_players]
