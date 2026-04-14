@@ -304,6 +304,13 @@ async def analyze_video(
         with open(video_path, "wb") as buf:
             shutil.copyfileobj(file.file, buf)
         return _run_pipeline(video_path, team_id_int, match_id_int, opponent, source_type)
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        print(f"[error] /analyze failed: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
     finally:
         if os.path.exists(video_path):
             os.remove(video_path)
@@ -342,8 +349,11 @@ def _download_with_ytdlp(url: str, out_path: str) -> None:
             os.rename(expected, out_path)
 
 def _download_direct(url: str, out_path: str) -> None:
-    resp = requests.get(url, stream=True, timeout=120,
-                        headers={"User-Agent": "Mozilla/5.0"})
+    try:
+        resp = requests.get(url, stream=True, timeout=120,
+                            headers={"User-Agent": "Mozilla/5.0"})
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Could not reach URL: {e}")
     if resp.status_code != 200:
         raise HTTPException(status_code=400, detail=f"Could not download video: HTTP {resp.status_code}")
     with open(out_path, "wb") as f:
@@ -366,13 +376,24 @@ async def analyze_video_url(
     video_path = os.path.join(BASE_DIR, f"remote_{uuid.uuid4().hex[:8]}.mp4")
     try:
         if _is_platform_url(video_url):
-            print(f"[info] Platform URL detected — using yt-dlp: {video_url}")
+            print(f"[info] Platform URL — yt-dlp: {video_url}")
             _download_with_ytdlp(video_url, video_path)
         else:
-            print(f"[info] Direct URL — streaming download: {video_url}")
+            print(f"[info] Direct URL — streaming: {video_url}")
             _download_direct(video_url, video_path)
 
+        if not os.path.exists(video_path) or os.path.getsize(video_path) < 1024:
+            raise HTTPException(status_code=400, detail="Downloaded file is empty or missing")
+
         return _run_pipeline(video_path, team_id_int, match_id_int, opponent, source_type)
+
+    except HTTPException:
+        raise   # let FastAPI handle these cleanly
+    except Exception as e:
+        import traceback
+        print(f"[error] /analyze-url failed: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
     finally:
         if os.path.exists(video_path):
             os.remove(video_path)
