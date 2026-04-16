@@ -15,6 +15,8 @@ class _LoginPageState extends State<LoginPage> {
   
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _isLoginMode = true; // <-- NUEVO: Controla si estamos en Login o Registro
+  
   String? _errorMessage;
   String? _successMessage;
 
@@ -80,6 +82,7 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         _successMessage = '¡Cuenta creada con éxito! Ahora puedes iniciar sesión.';
         _passwordController.clear();
+        _isLoginMode = true; // <-- Lo devolvemos al modo Login para que entre
       });
     } on AuthException catch (e) {
       setState(() => _errorMessage = e.message);
@@ -88,6 +91,16 @@ class _LoginPageState extends State<LoginPage> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  // <-- NUEVO: Función para alternar entre Login y Registro
+  void _toggleMode() {
+    setState(() {
+      _isLoginMode = !_isLoginMode;
+      _errorMessage = null;
+      _successMessage = null;
+      _passwordController.clear();
+    });
   }
 
   @override
@@ -110,7 +123,7 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Nuevo Logo Realista / Tecnológico
+                // Logo Realista / Tecnológico
                 const Center(
                   child: ModernSoccerLogo(size: 110),
                 ),
@@ -128,7 +141,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Inicia sesión o regístrate para continuar',
+                  _isLoginMode // <-- Cambia el texto según el modo
+                      ? 'Inicia sesión o regístrate para continuar'
+                      : 'Crea tu cuenta para empezar a analizar',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: _textMuted, fontSize: 15, fontWeight: FontWeight.w500),
                 ),
@@ -160,7 +175,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 36),
 
                 ElevatedButton(
-                  onPressed: _isLoading ? null : _signIn,
+                  onPressed: _isLoading ? null : (_isLoginMode ? _signIn : _signUp), // <-- Usa el método correcto
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _accentGreen,
                     foregroundColor: _bgDark,
@@ -175,9 +190,9 @@ class _LoginPageState extends State<LoginPage> {
                           width: 24, height: 24,
                           child: CircularProgressIndicator(color: _bgDark, strokeWidth: 2.5),
                         )
-                      : const Text(
-                          'Iniciar Sesión',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                      : Text(
+                          _isLoginMode ? 'Iniciar Sesión' : 'Registrarse', // <-- Cambia el texto del botón
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 0.5),
                         ),
                 ),
                 const SizedBox(height: 24),
@@ -195,7 +210,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 24),
 
                 OutlinedButton(
-                  onPressed: _isLoading ? null : _signUp,
+                  onPressed: _isLoading ? null : _toggleMode, // <-- Activa el cambio de modo
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
                     side: BorderSide(color: _surfaceColor, width: 2),
@@ -204,9 +219,9 @@ class _LoginPageState extends State<LoginPage> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: const Text(
-                    'Crear una cuenta nueva',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  child: Text(
+                    _isLoginMode ? 'Crear una cuenta nueva' : 'Ya tengo una cuenta', // <-- Cambia el texto del botón secundario
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],

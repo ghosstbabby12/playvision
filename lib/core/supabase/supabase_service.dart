@@ -47,8 +47,8 @@ class SupabaseService {
     required String extension, 
   }) async {
     try {
-      // Agregamos el userId a la ruta de la imagen para que no choquen si 2 usuarios tienen un team_id 1
-      final path = '${_currentUserId}/team_$teamId.$extension';
+      // CORREGIDO AQUÍ: Quitamos las llaves innecesarias
+      final path = '$_currentUserId/team_$teamId.$extension';
       await client.storage
           .from('team-logos')
           .uploadBinary(path, bytes,
@@ -263,9 +263,6 @@ class SupabaseService {
   // =========================
   // MATCH REPORTS & OTHERS
   // =========================
-  // Nota: Las siguientes tablas (reports, stats, etc) ya están protegidas 
-  // si el match_id que les pasas está protegido, pero dejamos el código tal cual 
-  // para que siga funcionando con la lógica que tenías.
 
   Future<Map<String, dynamic>?> getMatchReport(int matchId) async {
     try {

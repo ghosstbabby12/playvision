@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 
@@ -73,8 +74,46 @@ class SettingsDrawer extends StatelessWidget {
             ),
 
             const Spacer(),
+            
+            // ── Botón de Cerrar Sesión ───────────────────────
+            const Divider(color: AppColors.border, height: 1),
+            const SizedBox(height: 8),
+            ListTile(
+              leading: const Icon(Icons.logout_rounded, color: AppColors.danger, size: 20),
+              title: const Text(
+                'Cerrar Sesión', 
+                style: TextStyle(color: AppColors.danger, fontSize: 14, fontWeight: FontWeight.w600)
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+              visualDensity: const VisualDensity(vertical: -1),
+              onTap: () async {
+                // 1. Mostrar loading
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => const Center(
+                    child: CircularProgressIndicator(color: AppColors.accent),
+                  ),
+                );
+
+                try {
+                  // 2. Cerrar sesión en Supabase
+                  await Supabase.instance.client.auth.signOut();
+                  
+                  if (context.mounted) {
+                    // 3. Quitar loading y redirigir explícitamente al /login
+                    Navigator.pop(context);
+                    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+                  }
+                } catch (e) {
+                  if (context.mounted) Navigator.pop(context);
+                  debugPrint('Error al cerrar sesión: $e');
+                }
+              },
+            ),
+            
             const Padding(
-              padding: EdgeInsets.all(20),
+              padding: EdgeInsets.fromLTRB(20, 8, 20, 20),
               child: Text('v1.0.0', style: TextStyle(color: AppColors.dim, fontSize: 11)),
             ),
           ],
@@ -89,7 +128,7 @@ class SettingsDrawer extends StatelessWidget {
       context: context,
       applicationName: 'PlayVision',
       applicationVersion: '1.0.0',
-      applicationLegalese: '© 2025 PlayVision. All rights reserved.',
+      applicationLegalese: '© 2026 PlayVision. All rights reserved.',
     );
   }
 }
