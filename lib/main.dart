@@ -31,11 +31,16 @@ class PlayVisionApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Revisamos si el usuario ya tiene una sesión iniciada
+    final session = Supabase.instance.client.auth.currentSession;
+
     return MaterialApp(
       title: 'PlayVision',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.green),
-      initialRoute: AppRoutes.home,
+      
+      // Si hay sesión iniciada lo mandamos a "/", si no, lo mandamos a "/login"
+      initialRoute: session != null ? AppRoutes.main : AppRoutes.login,
       routes: AppRoutes.routes,
     );
   }

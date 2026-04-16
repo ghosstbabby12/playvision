@@ -61,7 +61,7 @@ class HomeController extends ChangeNotifier {
         if (updated != null) selectedTeam = updated;
       }
     } catch (e) {
-      errorMessage = 'Failed to load teams: $e';
+      errorMessage = 'No se pudieron cargar los equipos: $e';
     } finally {
       isLoading = false;
       notifyListeners();
@@ -74,7 +74,7 @@ class HomeController extends ChangeNotifier {
     try {
       recentMatches = await _service.getMatches();
     } catch (e) {
-      errorMessage = 'Failed to load matches: $e';
+      errorMessage = 'No se pudieron cargar los partidos: $e';
     } finally {
       isLoadingMatches = false;
       notifyListeners();
@@ -87,7 +87,7 @@ class HomeController extends ChangeNotifier {
     try {
       teamMatches[teamId] = await _service.getMatchesByTeam(teamId);
     } catch (e) {
-      errorMessage = 'Failed to load matches: $e';
+      errorMessage = 'Fallo al cargar los partidos de este equipo: $e';
     } finally {
       _loadingMatches.remove(teamId);
       notifyListeners();
@@ -103,15 +103,14 @@ class HomeController extends ChangeNotifier {
     try {
       final report = await _service.getMatchReport(matchId);
       if (report != null) {
-        // Guardamos el reporte ESPECÍFICO de este partido en memoria
         AnalysisStore.instance.save(report);
-        return true; // Éxito
+        return true; 
       } else {
-        errorMessage = 'Analysis data not found for this match.';
+        errorMessage = 'Datos de análisis no encontrados para este partido.';
         return false;
       }
     } catch (e) {
-      errorMessage = 'Error loading analysis: $e';
+      errorMessage = 'Error cargando análisis: $e';
       return false;
     } finally {
       isLoading = false;
@@ -123,7 +122,7 @@ class HomeController extends ChangeNotifier {
   Future<void> pickAndAnalyze({String opponent = ''}) async {
     final teamId = selectedTeam?['id'] as int?;
     if (teamId == null) {
-      errorMessage = 'Please select a team first.';
+      errorMessage = 'Por favor selecciona un equipo primero.';
       notifyListeners();
       return;
     }
@@ -154,11 +153,9 @@ class HomeController extends ChangeNotifier {
         Uri.parse('${AppConstants.apiBase}/analyze'),
       );
 
-      // Enviamos IDs exactos en formato String sin variables nulas
       request.fields['team_id']     = teamId.toString();
       request.fields['opponent']    = opponent;
       request.fields['source_type'] = AppConstants.sourceUpload;
-      
       request.fields['match_id'] = matchId.toString();
 
       request.files.add(
@@ -169,20 +166,16 @@ class HomeController extends ChangeNotifier {
       final body     = await streamed.stream.bytesToString();
 
       if (streamed.statusCode == 200) {
-        // 3. Recibir resultado JSON
         final result = jsonDecode(body) as Map<String, dynamic>;
 
-        // 4. Actualizar estado y URL del video en Supabase
         await _service.updateMatchStatus(matchId: matchId, status: 'done');
         final videoUrl = result['video_url'] as String?;
         if (videoUrl != null && videoUrl.isNotEmpty) {
           await _service.updateMatchVideoUrl(matchId: matchId, videoUrl: videoUrl);
         }
 
-        // 5. Guardar en Store PRIMERO para que el video esté disponible
         AnalysisStore.instance.save(result, localFile: file);
 
-        // 6. Guardar estadísticas de jugadores (solo columnas existentes en DB)
         final players = result['players'] as List?;
         if (players != null && players.isNotEmpty) {
           final statsToInsert = players.map((p) => {
@@ -197,22 +190,18 @@ class HomeController extends ChangeNotifier {
           try {
             await _service.savePlayerStatsBatch(statsToInsert);
           } catch (e) {
-            // Stats insert failed but analysis result is already saved
             debugPrint('Stats insert error: $e');
           }
         }
-        successMessage = 'Analysis complete!';
-        
-        // 7. Recargar los partidos de este equipo para que aparezca el nuevo
+        successMessage = '¡Análisis completo!';
         await loadMatchesForTeam(teamId);
         
       } else {
-        errorMessage = 'Server error: ${streamed.statusCode} - $body';
-        // Si el backend falla, marcamos el partido como error
+        errorMessage = 'Error del servidor: ${streamed.statusCode} - $body';
         await _service.updateMatchStatus(matchId: matchId, status: 'error');
       }
     } catch (e) {
-      errorMessage = 'Connection error: $e';
+      errorMessage = 'Error de conexión: $e';
       if (matchId != null) {
         await _service.updateMatchStatus(matchId: matchId, status: 'error');
       }
@@ -241,8 +230,14 @@ class HomeController extends ChangeNotifier {
     String? club,
     String? logoUrl,
   }) async {
-    await _service.createTeam(name: name, category: category, club: club, logoUrl: logoUrl);
-    await loadTeams();
+    try {
+      await _service.createTeam(name: name, category: category, club: club, logoUrl: logoUrl);
+      await loadTeams();
+      successMessage = "¡Equipo creado con éxito!";
+    } catch(e) {
+      errorMessage = "No se pudo crear el equipo: $e";
+    }
+    notifyListeners();
   }
 
   Future<void> updateTeam({

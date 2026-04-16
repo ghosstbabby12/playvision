@@ -7,6 +7,13 @@ class SupabaseService {
 
   final SupabaseClient client = Supabase.instance.client;
 
+  // Función interna para obtener el usuario actual de forma segura
+  String get _currentUserId {
+    final userId = client.auth.currentUser?.id;
+    if (userId == null) throw Exception("Sesión no iniciada. Por favor haz login.");
+    return userId;
+  }
+
   // =========================
   // TEAMS
   // =========================
@@ -15,6 +22,7 @@ class SupabaseService {
     final response = await client
         .from('teams')
         .select()
+        .eq('user_id', _currentUserId) // Solo los equipos de este usuario
         .order('created_at', ascending: false);
 
     return List<Map<String, dynamic>>.from(response);
@@ -25,6 +33,7 @@ class SupabaseService {
         .from('teams')
         .select()
         .eq('id', teamId)
+        .eq('user_id', _currentUserId) // Medida extra de seguridad
         .limit(1);
 
     final list = List<Map<String, dynamic>>.from(response);
@@ -32,15 +41,14 @@ class SupabaseService {
     return list.first;
   }
 
-  /// Upload a logo image to Supabase Storage and return its public URL.
-  /// Bucket `team-logos` must exist with public read access.
   Future<String?> uploadTeamLogo({
     required int teamId,
     required Uint8List bytes,
-    required String extension, // e.g. 'jpg', 'png'
+    required String extension, 
   }) async {
     try {
-      final path = 'team_$teamId.$extension';
+      // Agregamos el userId a la ruta de la imagen para que no choquen si 2 usuarios tienen un team_id 1
+      final path = '${_currentUserId}/team_$teamId.$extension';
       await client.storage
           .from('team-logos')
           .uploadBinary(path, bytes,
@@ -58,14 +66,13 @@ class SupabaseService {
     String? category,
     String? club,
     String? logoUrl,
-    String? userId,
   }) async {
     await client.from('teams').insert({
       'name': name,
       'category': category,
       'club': club,
       if (logoUrl != null) 'logo_url': logoUrl,
-      if (userId != null) 'user_id': userId,
+      'user_id': _currentUserId, // Guarda el dueño
     });
   }
 
@@ -81,11 +88,11 @@ class SupabaseService {
       'category': category,
       'club': club,
       if (logoUrl != null) 'logo_url': logoUrl,
-    }).eq('id', id);
+    }).eq('id', id).eq('user_id', _currentUserId);
   }
 
   Future<void> deleteTeam(int id) async {
-    await client.from('teams').delete().eq('id', id);
+    await client.from('teams').delete().eq('id', id).eq('user_id', _currentUserId);
   }
 
   // =========================
@@ -93,9 +100,11 @@ class SupabaseService {
   // =========================
 
   Future<List<Map<String, dynamic>>> getPlayers() async {
+    // Al pedir todos los jugadores, cruzamos con la tabla teams para asegurar que el equipo sea del usuario actual
     final response = await client
         .from('players')
-        .select('*, teams(name)')
+        .select('*, teams!inner(name, user_id)')
+        .eq('teams.user_id', _currentUserId)
         .order('created_at', ascending: false);
 
     return List<Map<String, dynamic>>.from(response);
@@ -137,6 +146,7 @@ class SupabaseService {
     final response = await client
         .from('matches')
         .select('*, teams(name)')
+        .eq('user_id', _currentUserId) // Solo sus partidos
         .order('created_at', ascending: false);
 
     return List<Map<String, dynamic>>.from(response);
@@ -147,6 +157,7 @@ class SupabaseService {
         .from('matches')
         .select('*, teams(name)')
         .eq('team_id', teamId)
+        .eq('user_id', _currentUserId)
         .order('created_at', ascending: false);
 
     return List<Map<String, dynamic>>.from(response);
@@ -157,6 +168,7 @@ class SupabaseService {
         .from('matches')
         .select('*, teams(name)')
         .eq('id', matchId)
+        .eq('user_id', _currentUserId)
         .limit(1);
 
     final list = List<Map<String, dynamic>>.from(response);
@@ -168,6 +180,7 @@ class SupabaseService {
     final response = await client
         .from('matches')
         .select('*, teams(name)')
+        .eq('user_id', _currentUserId)
         .order('created_at', ascending: false)
         .limit(1);
 
@@ -195,10 +208,10 @@ class SupabaseService {
       'latitude': latitude,
       'longitude': longitude,
       'status': status,
+      'user_id': _currentUserId, // Guarda el dueño
     });
   }
 
-  /// Crea el partido y retorna su ID (necesario para el nuevo flujo de IA)
   Future<int> createMatchAndReturnId({
     required int teamId,
     required String opponent,
@@ -218,6 +231,7 @@ class SupabaseService {
       'latitude': latitude,
       'longitude': longitude,
       'status': status,
+      'user_id': _currentUserId, // Guarda el dueño
     }).select('id');
 
     final list = List<Map<String, dynamic>>.from(response);
@@ -231,7 +245,8 @@ class SupabaseService {
     await client
         .from('matches')
         .update({'status': status})
-        .eq('id', matchId);
+        .eq('id', matchId)
+        .eq('user_id', _currentUserId);
   }
 
   Future<void> updateMatchVideoUrl({
@@ -241,14 +256,17 @@ class SupabaseService {
     await client
         .from('matches')
         .update({'video_url': videoUrl})
-        .eq('id', matchId);
+        .eq('id', matchId)
+        .eq('user_id', _currentUserId);
   }
 
   // =========================
-  // MATCH REPORTS (Análisis JSON)
+  // MATCH REPORTS & OTHERS
   // =========================
+  // Nota: Las siguientes tablas (reports, stats, etc) ya están protegidas 
+  // si el match_id que les pasas está protegido, pero dejamos el código tal cual 
+  // para que siga funcionando con la lógica que tenías.
 
-  /// Obtiene el reporte JSON gigante generado por la IA (Python) para un partido específico
   Future<Map<String, dynamic>?> getMatchReport(int matchId) async {
     try {
       final response = await client
@@ -259,18 +277,12 @@ class SupabaseService {
 
       final list = List<Map<String, dynamic>>.from(response);
       if (list.isEmpty) return null;
-      
-      // Supabase devuelve el jsonb directamente como un Map de Dart
       return list.first['summary_json'] as Map<String, dynamic>?;
     } catch (e) {
-      debugPrint('Error al obtener reporte del partido: $e'); // CORREGIDO AQUÍ
+      debugPrint('Error al obtener reporte del partido: $e'); 
       return null;
     }
   }
-
-  // =========================
-  // PLAYER MATCH STATS
-  // =========================
 
   Future<List<Map<String, dynamic>>> getPlayerMatchStats(int matchId) async {
     final response = await client
@@ -310,16 +322,10 @@ class SupabaseService {
     });
   }
 
-  /// Guarda una lista entera de stats de jugadores de un solo golpe.
-  /// Ideal para recibir el JSON del backend de IA y guardarlo sin hacer múltiples peticiones.
   Future<void> savePlayerStatsBatch(List<Map<String, dynamic>> statsList) async {
     if (statsList.isEmpty) return;
     await client.from('player_match_stats').insert(statsList);
   }
-
-  // =========================
-  // RECOMMENDATIONS
-  // =========================
 
   Future<List<Map<String, dynamic>>> getRecommendationsByMatch(int matchId) async {
     final response = await client
@@ -348,10 +354,6 @@ class SupabaseService {
       'priority': priority,
     });
   }
-
-  // =========================
-  // PREDICTIONS
-  // =========================
 
   Future<List<Map<String, dynamic>>> getPredictionsByPlayer(int playerId) async {
     final response = await client

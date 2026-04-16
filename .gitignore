@@ -1,26 +1,46 @@
-# Flutter
+# =========================
+# FLUTTER & DART
+# =========================
 .dart_tool/
 .packages
 .pub/
 build/
-
-# macOS
-.DS_Store
-
-# IDE
-.idea/
-.vscode/
-
-# Flutter plugins
 .flutter-plugins
 .flutter-plugins-dependencies
 
+# =========================
+# VARIABLES DE ENTORNO
+# =========================
 .env
 .env.*
 !.env.example
-playvision_ai/*.mp4
-playvision_ai/*.pt
-playvision_ai/__pycache__/
 
-playvision_ai/annotated_videos/
+# =========================
+# PYTHON & IA (Backend)
+# =========================
+# Ignorar todos los directorios de caché de Python en cualquier subcarpeta
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+
+# Archivos pesados de YOLO y multimedia
+playvision_ai/*.mp4
+playvision_ai/*.avi
+playvision_ai/*.pt
 yolov8n.pt
+yolo26n.pt
+playvision_ai/annotated_videos/
+
+# =========================
+# SISTEMAS OPERATIVOS Y IDEs
+# =========================
+.DS_Store
+.idea/
+.vscode/
+*.swp
