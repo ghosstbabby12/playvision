@@ -243,14 +243,24 @@ class HomeController extends ChangeNotifier {
   Future<void> updateTeam({
     required int id, required String name, String? category, String? club, String? logoUrl,
   }) async {
-    await _service.updateTeam(id: id, name: name, category: category, club: club, logoUrl: logoUrl);
-    await loadTeams();
+    try {
+      await _service.updateTeam(id: id, name: name, category: category, club: club, logoUrl: logoUrl);
+      await loadTeams();
+    } catch (e) {
+      errorMessage = 'No se pudo actualizar el equipo: $e';
+      notifyListeners();
+    }
   }
 
   Future<void> deleteTeam(int id) async {
-    if (selectedTeam?['id'] == id) clearTeamSelection();
-    await _service.deleteTeam(id);
-    await loadTeams();
+    try {
+      if (selectedTeam?['id'] == id) clearTeamSelection();
+      await _service.deleteTeam(id);
+      await loadTeams();
+    } catch (e) {
+      errorMessage = 'No se pudo eliminar el equipo: $e';
+      notifyListeners();
+    }
   }
 
   void consumeMessages() {

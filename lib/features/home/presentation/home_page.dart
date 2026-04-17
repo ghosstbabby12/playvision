@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
-import 'package:supabase_flutter/supabase_flutter.dart'; // IMPORTANTE: Agregado Supabase
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -46,24 +46,21 @@ class _HomePageState extends State<HomePage> {
     _timer = Timer.periodic(const Duration(minutes: 1), (_) => _fetchLiveMatches());
   }
 
-  // --- FUNCIÓN CON LA IP DE TU COMPUTADORA ---
   Future<void> _fetchLiveMatches() async {
+    List<dynamic> matches = [];
     try {
-      String apiUrl = 'http://127.0.0.1:8000/api/live-matches';
-      final response = await http.get(Uri.parse(apiUrl));
+      final response = await http.get(
+        Uri.parse('${AppConstants.apiBase}/api/live-matches'),
+      );
       if (response.statusCode == 200) {
-        final decodedData = json.decode(response.body);
-        if (mounted) {
-          setState(() {
-            _liveMatches = decodedData['data'] ?? [];
-            _isLoadingLiveMatches = false;
-          });
-        }
+        matches = (json.decode(response.body) as Map)['data'] ?? [];
       }
     } catch (e) {
       debugPrint('Error API partidos: $e');
+    } finally {
       if (mounted) {
         setState(() {
+          _liveMatches = matches;
           _isLoadingLiveMatches = false;
         });
       }
@@ -77,7 +74,6 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  // AQUÍ ESTÁ LA CORRECCIÓN DEL CARTEL ROJO
   void _handleMessages() {
     // Si no hay sesión (porque acabamos de hacer logout), no mostrar ningún mensaje
     final session = Supabase.instance.client.auth.currentSession;

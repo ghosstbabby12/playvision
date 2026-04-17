@@ -47,7 +47,6 @@ class SupabaseService {
     required String extension, 
   }) async {
     try {
-      // CORREGIDO AQUÍ: Quitamos las llaves innecesarias
       final path = '$_currentUserId/team_$teamId.$extension';
       await client.storage
           .from('team-logos')

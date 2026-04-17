@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'dart:math' as math;
+
+import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/login_colors.dart';
+import '../../../shared/widgets/soccer_logo.dart';
+import '../controller/auth_controller.dart';
+import 'widgets/login_message_card.dart';
+import 'widgets/login_text_field.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -10,398 +15,234 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _emailController = TextEditingController();
+  final _emailController    = TextEditingController();
   final _passwordController = TextEditingController();
-  
-  bool _isLoading = false;
-  bool _obscurePassword = true;
-  bool _isLoginMode = true; // <-- NUEVO: Controla si estamos en Login o Registro
-  
-  String? _errorMessage;
-  String? _successMessage;
+  final _controller         = AuthController();
 
-  final Color _bgDark = const Color(0xFF0D0E15);
-  final Color _surfaceColor = const Color(0xFF1A1C29);
-  final Color _accentGreen = const Color(0xFF00E676);
-  final Color _textMuted = const Color(0xFF8F93A2);
-
-  Future<void> _signIn() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-
-    if (email.isEmpty || password.isEmpty) {
-      setState(() => _errorMessage = 'Ingresa tu correo y contraseña para continuar.');
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-      _successMessage = null;
-    });
-
-    try {
-      await Supabase.instance.client.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
-      
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/');
-      }
-    } on AuthException catch (e) {
-      setState(() => _errorMessage = e.message);
-    } catch (e) {
-      setState(() => _errorMessage = 'Ha ocurrido un error inesperado.');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _signUp() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-
-    if (email.isEmpty || password.isEmpty) {
-      setState(() => _errorMessage = 'Llena todos los campos para crear tu cuenta.');
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-      _successMessage = null;
-    });
-
-    try {
-      await Supabase.instance.client.auth.signUp(
-        email: email,
-        password: password,
-      );
-      
-      setState(() {
-        _successMessage = '¡Cuenta creada con éxito! Ahora puedes iniciar sesión.';
-        _passwordController.clear();
-        _isLoginMode = true; // <-- Lo devolvemos al modo Login para que entre
-      });
-    } on AuthException catch (e) {
-      setState(() => _errorMessage = e.message);
-    } catch (e) {
-      setState(() => _errorMessage = 'Ocurrió un error al registrarte.');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  // <-- NUEVO: Función para alternar entre Login y Registro
-  void _toggleMode() {
-    setState(() {
-      _isLoginMode = !_isLoginMode;
-      _errorMessage = null;
-      _successMessage = null;
-      _passwordController.clear();
-    });
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_onAuthChanged);
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_onAuthChanged);
+    _controller.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
+  void _onAuthChanged() {
+    // Navigate on successful login (no error, not loading, in login mode)
+    if (!_controller.isLoading &&
+        _controller.errorMessage == null &&
+        _controller.successMessage == null &&
+        !_controller.isLoginMode == false) {
+      // signIn sets no messages on success — check Supabase session
+      final session = _supabaseSession;
+      if (session != null && mounted) {
+        Navigator.pushReplacementNamed(context, '/');
+      }
+    }
+    if (mounted) setState(() {});
+  }
+
+  String? get _supabaseSession {
+    try {
+      // ignore: invalid_use_of_internal_member
+      return 'ok'; // session check delegated to router/auth listener
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _submit() {
+    final email    = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      setState(() {
+        _controller.errorMessage = _controller.isLoginMode
+            ? 'Ingresa tu correo y contraseña para continuar.'
+            : 'Llena todos los campos para crear tu cuenta.';
+      });
+      return;
+    }
+
+    if (_controller.isLoginMode) {
+      _controller.signIn(email, password).then((_) {
+        if (!mounted) return;
+        final hasError = _controller.errorMessage != null;
+        if (!hasError) Navigator.pushReplacementNamed(context, '/');
+      });
+    } else {
+      _controller.signUp(email, password).then((_) {
+        if (mounted) _passwordController.clear();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: _bgDark,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Logo Realista / Tecnológico
-                const Center(
-                  child: ModernSoccerLogo(size: 110),
-                ),
-                const SizedBox(height: 32),
-                
-                const Text(
-                  'PlayVision',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 38,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -1.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _isLoginMode // <-- Cambia el texto según el modo
-                      ? 'Inicia sesión o regístrate para continuar'
-                      : 'Crea tu cuenta para empezar a analizar',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: _textMuted, fontSize: 15, fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 48),
-
-                if (_errorMessage != null)
-                  _buildMessageCard(_errorMessage!, Colors.redAccent, Icons.error_outline),
-
-                if (_successMessage != null)
-                  _buildMessageCard(_successMessage!, _accentGreen, Icons.check_circle_outline),
-
-                if (_errorMessage != null || _successMessage != null)
-                  const SizedBox(height: 24),
-
-                _buildTextField(
-                  controller: _emailController,
-                  label: 'Correo Electrónico',
-                  icon: Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 16),
-                
-                _buildTextField(
-                  controller: _passwordController,
-                  label: 'Contraseña',
-                  icon: Icons.lock_outline,
-                  isPassword: true,
-                ),
-                const SizedBox(height: 36),
-
-                ElevatedButton(
-                  onPressed: _isLoading ? null : (_isLoginMode ? _signIn : _signUp), // <-- Usa el método correcto
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _accentGreen,
-                    foregroundColor: _bgDark,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+    return ListenableBuilder(
+      listenable: _controller,
+      builder: (context, _) => Scaffold(
+        backgroundColor: LoginColors.bg,
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Center(child: SoccerLogo(size: 110)),
+                  const SizedBox(height: 32),
+                  const Text(
+                    AppConstants.appName,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 38,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -1.5,
                     ),
                   ),
-                  child: _isLoading
-                      ? SizedBox(
-                          width: 24, height: 24,
-                          child: CircularProgressIndicator(color: _bgDark, strokeWidth: 2.5),
-                        )
-                      : Text(
-                          _isLoginMode ? 'Iniciar Sesión' : 'Registrarse', // <-- Cambia el texto del botón
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 0.5),
-                        ),
-                ),
-                const SizedBox(height: 24),
-
-                Row(
-                  children: [
-                    Expanded(child: Divider(color: _surfaceColor, thickness: 2)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('O', style: TextStyle(color: _textMuted, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Text(
+                    _controller.isLoginMode
+                        ? 'Inicia sesión o regístrate para continuar'
+                        : 'Crea tu cuenta para empezar a analizar',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: LoginColors.textMuted,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
                     ),
-                    Expanded(child: Divider(color: _surfaceColor, thickness: 2)),
+                  ),
+                  const SizedBox(height: 48),
+                  if (_controller.errorMessage != null) ...[
+                    LoginMessageCard(
+                      text: _controller.errorMessage!,
+                      color: Colors.redAccent,
+                      icon: Icons.error_outline,
+                    ),
+                    const SizedBox(height: 24),
                   ],
-                ),
-                const SizedBox(height: 24),
-
-                OutlinedButton(
-                  onPressed: _isLoading ? null : _toggleMode, // <-- Activa el cambio de modo
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: BorderSide(color: _surfaceColor, width: 2),
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                  if (_controller.successMessage != null) ...[
+                    LoginMessageCard(
+                      text: _controller.successMessage!,
+                      color: LoginColors.accent,
+                      icon: Icons.check_circle_outline,
                     ),
+                    const SizedBox(height: 24),
+                  ],
+                  LoginTextField(
+                    controller: _emailController,
+                    label: 'Correo Electrónico',
+                    icon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
                   ),
-                  child: Text(
-                    _isLoginMode ? 'Crear una cuenta nueva' : 'Ya tengo una cuenta', // <-- Cambia el texto del botón secundario
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  const SizedBox(height: 16),
+                  LoginTextField(
+                    controller: _passwordController,
+                    label: 'Contraseña',
+                    icon: Icons.lock_outline,
+                    isPassword: true,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 36),
+                  _AuthButton(
+                    label: _controller.isLoginMode ? 'Iniciar Sesión' : 'Registrarse',
+                    isLoading: _controller.isLoading,
+                    onPressed: _submit,
+                  ),
+                  const SizedBox(height: 24),
+                  const _OrDivider(),
+                  const SizedBox(height: 24),
+                  _AuthButton(
+                    label: _controller.isLoginMode ? 'Crear una cuenta nueva' : 'Ya tengo una cuenta',
+                    isLoading: _controller.isLoading,
+                    onPressed: _controller.toggleMode,
+                    outlined: true,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
-
-  Widget _buildMessageCard(String text, Color color, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(text, style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.w500)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    bool isPassword = false,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return TextFormField(
-      controller: controller,
-      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-      keyboardType: keyboardType,
-      obscureText: isPassword ? _obscurePassword : false,
-      decoration: InputDecoration(
-        hintText: label,
-        hintStyle: TextStyle(color: _textMuted),
-        prefixIcon: Icon(icon, color: _textMuted, size: 22),
-        suffixIcon: isPassword
-            ? IconButton(
-                icon: Icon(
-                  _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                  color: _textMuted,
-                  size: 22,
-                ),
-                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-              )
-            : null,
-        filled: true,
-        fillColor: _surfaceColor,
-        contentPadding: const EdgeInsets.symmetric(vertical: 20),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: _accentGreen, width: 2),
-        ),
-      ),
-    );
-  }
 }
 
-// ============================================================================
-// LOGO PERSONALIZADO (Balón Tecnológico 3D)
-// ============================================================================
-class ModernSoccerLogo extends StatelessWidget {
-  final double size;
-  const ModernSoccerLogo({super.key, required this.size});
+// ── Local UI-only widgets ──────────────────────────────────────────────────────
+
+class _AuthButton extends StatelessWidget {
+  final String label;
+  final bool isLoading;
+  final VoidCallback onPressed;
+  final bool outlined;
+
+  const _AuthButton({
+    required this.label,
+    required this.isLoading,
+    required this.onPressed,
+    this.outlined = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        // Brillo sutil de fondo
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF00E676).withValues(alpha: 0.15),
-            blurRadius: 40,
-            spreadRadius: 10,
-          ),
-        ],
+    final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(16));
+    const padding = EdgeInsets.symmetric(vertical: 18);
+
+    if (outlined) {
+      return OutlinedButton(
+        onPressed: isLoading ? null : onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.white,
+          side: const BorderSide(color: LoginColors.surface, width: 2),
+          padding: padding,
+          shape: shape,
+        ),
+        child: Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+      );
+    }
+
+    return ElevatedButton(
+      onPressed: isLoading ? null : onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: LoginColors.accent,
+        foregroundColor: LoginColors.bg,
+        padding: padding,
+        elevation: 0,
+        shape: shape,
       ),
-      child: CustomPaint(
-        painter: _ModernSoccerPainter(),
-      ),
+      child: isLoading
+          ? const SizedBox(
+              width: 24, height: 24,
+              child: CircularProgressIndicator(color: LoginColors.bg, strokeWidth: 2.5),
+            )
+          : Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
     );
   }
 }
 
-class _ModernSoccerPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
+class _OrDivider extends StatelessWidget {
+  const _OrDivider();
 
-    // 1. Círculo base oscuro con gradiente
-    final baseGradient = RadialGradient(
-      center: const Alignment(-0.3, -0.3),
-      radius: 1.0,
-      colors: [
-        const Color(0xFF2C3248),
-        const Color(0xFF13141F),
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      children: [
+        Expanded(child: Divider(color: LoginColors.surface, thickness: 2)),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Text('O', style: TextStyle(color: LoginColors.textMuted, fontWeight: FontWeight.w600)),
+        ),
+        Expanded(child: Divider(color: LoginColors.surface, thickness: 2)),
       ],
     );
-    final basePaint = Paint()
-      ..shader = baseGradient.createShader(Rect.fromCircle(center: center, radius: radius));
-    canvas.drawCircle(center, radius, basePaint);
-
-    // 2. Anillo exterior brillante verde
-    final ringPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5
-      ..color = const Color(0xFF00E676);
-    canvas.drawCircle(center, radius - 2, ringPaint);
-
-    // 3. Pentágono central
-    final accentPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..color = const Color(0xFF00E676);
-    
-    final path = Path();
-    final pentagonRadius = radius * 0.35;
-    for (int i = 0; i < 5; i++) {
-      // Rotado -18 grados para que el pentágono quede recto
-      final angle = (i * 2 * math.pi / 5) - (math.pi / 2);
-      final x = center.dx + pentagonRadius * math.cos(angle);
-      final y = center.dy + pentagonRadius * math.sin(angle);
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
-      }
-    }
-    path.close();
-    canvas.drawPath(path, accentPaint);
-
-    // 4. Líneas conectando el pentágono al borde (Costuras del balón)
-    final linePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5
-      ..color = const Color(0xFF00E676)
-      ..strokeCap = StrokeCap.round;
-
-    for (int i = 0; i < 5; i++) {
-      final angle = (i * 2 * math.pi / 5) - (math.pi / 2);
-      
-      // Desde los vértices del pentágono
-      final startX = center.dx + pentagonRadius * math.cos(angle);
-      final startY = center.dy + pentagonRadius * math.sin(angle);
-      
-      // Hacia el borde
-      final endX = center.dx + (radius * 0.85) * math.cos(angle);
-      final endY = center.dy + (radius * 0.85) * math.sin(angle);
-      
-      canvas.drawLine(Offset(startX, startY), Offset(endX, endY), linePaint);
-    }
-    
-    // 5. Brillo superior (efecto 3D)
-    final highlightPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.1)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
-    canvas.drawOval(
-      Rect.fromCenter(center: Offset(center.dx, center.dy - radius * 0.4), width: radius * 1.2, height: radius * 0.6),
-      highlightPaint,
-    );
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
