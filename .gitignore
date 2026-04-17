@@ -1,0 +1,21 @@
+# Environment
+.env
+venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Videos / large files
+*.mp4
+*.avi
+*.mov
+annotated_videos/
+
+# macOS
+.DS_Store
+
+# YOLO model (descargado automáticamente en runtime)
+*.pt
