@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_color_tokens.dart';
 import '../controller/analysis_controller.dart';
 import 'widgets/field_map_tab.dart';
 import 'widgets/players_tab.dart';
@@ -36,6 +36,7 @@ class _AnalysisPageState extends State<AnalysisPage>
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return ListenableBuilder(
       listenable: _controller,
       builder: (context, _) {
@@ -45,12 +46,12 @@ class _AnalysisPageState extends State<AnalysisPage>
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(msg, style: const TextStyle(color: AppColors.text)),
-              backgroundColor: AppColors.elevated,
+              content: Text(msg, style: TextStyle(color: c.text)),
+              backgroundColor: c.elevated,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
-                side: const BorderSide(color: AppColors.border2),
+                side: BorderSide(color: c.border2),
               ),
             ));
           });
@@ -59,21 +60,20 @@ class _AnalysisPageState extends State<AnalysisPage>
         final hasResult = _controller.result != null;
 
         return Scaffold(
-          backgroundColor: AppColors.bg,
+          backgroundColor: c.bg,
           body: SafeArea(
             child: Column(children: [
-              // ── Header ─────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                 child: Row(children: [
-                  const Expanded(
+                  Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text('Analysis',
-                          style: TextStyle(color: AppColors.text, fontSize: 24,
+                          style: TextStyle(color: c.text, fontSize: 24,
                               fontWeight: FontWeight.w800, letterSpacing: -0.3)),
-                      SizedBox(height: 3),
+                      const SizedBox(height: 3),
                       Text('AI-powered performance',
-                          style: TextStyle(color: AppColors.dim, fontSize: 13)),
+                          style: TextStyle(color: c.dim, fontSize: 13)),
                     ]),
                   ),
                   if (!hasResult)
@@ -82,15 +82,15 @@ class _AnalysisPageState extends State<AnalysisPage>
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
-                          color: AppColors.elevated,
+                          color: c.elevated,
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.border2),
+                          border: Border.all(color: c.border2),
                         ),
                         child: Row(children: [
-                          const Icon(Icons.upload_file_outlined, color: AppColors.accent, size: 16),
+                          Icon(Icons.upload_file_outlined, color: c.accent, size: 16),
                           const SizedBox(width: 6),
                           Text(_controller.videoFile != null ? 'Ready' : 'Upload video',
-                              style: const TextStyle(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.w500)),
+                              style: TextStyle(color: c.text, fontSize: 13, fontWeight: FontWeight.w500)),
                         ]),
                       ),
                     ),
@@ -100,11 +100,11 @@ class _AnalysisPageState extends State<AnalysisPage>
                       child: Container(
                         width: 38, height: 38,
                         decoration: BoxDecoration(
-                          color: AppColors.elevated,
+                          color: c.elevated,
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.border),
+                          border: Border.all(color: c.border),
                         ),
-                        child: const Icon(Icons.refresh_outlined, color: AppColors.accent, size: 18),
+                        child: Icon(Icons.refresh_outlined, color: c.accent, size: 18),
                       ),
                     ),
                 ]),
@@ -114,15 +114,15 @@ class _AnalysisPageState extends State<AnalysisPage>
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                   child: Container(
-                    decoration: const BoxDecoration(
-                      border: Border(bottom: BorderSide(color: AppColors.border)),
+                    decoration: BoxDecoration(
+                      border: Border(bottom: BorderSide(color: c.border)),
                     ),
                     child: TabBar(
                       controller: _tabs,
-                      indicatorColor: AppColors.textHi,
+                      indicatorColor: c.textHi,
                       indicatorWeight: 1,
-                      labelColor: AppColors.textHi,
-                      unselectedLabelColor: AppColors.dim,
+                      labelColor: c.textHi,
+                      unselectedLabelColor: c.dim,
                       labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11, letterSpacing: 1.5),
                       dividerColor: Colors.transparent,
                       tabs: const [

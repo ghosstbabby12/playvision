@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../../core/constants/app_constants.dart';
-import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_color_tokens.dart';
 import '../../controller/home_controller.dart';
 
 class HomeSearchDelegate extends SearchDelegate<void> {
@@ -14,36 +14,45 @@ class HomeSearchDelegate extends SearchDelegate<void> {
   String get searchFieldLabel => 'Search teams or matches…';
 
   @override
-  ThemeData appBarTheme(BuildContext context) => Theme.of(context).copyWith(
-    scaffoldBackgroundColor: AppColors.bg,
-    appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.surface,
-      elevation: 0,
-      iconTheme: IconThemeData(color: AppColors.muted),
-    ),
-    inputDecorationTheme: const InputDecorationTheme(
-      hintStyle: TextStyle(color: AppColors.dim),
-      border: InputBorder.none,
-    ),
-    textTheme: const TextTheme(
-      titleLarge: TextStyle(color: AppColors.text, fontSize: 16),
-    ),
-  );
-
-  @override
-  List<Widget> buildActions(BuildContext context) => [
-    if (query.isNotEmpty)
-      IconButton(
-        icon: const Icon(Icons.clear_rounded, color: AppColors.muted),
-        onPressed: () => query = '',
+  ThemeData appBarTheme(BuildContext context) {
+    final c = context.colors;
+    return Theme.of(context).copyWith(
+      scaffoldBackgroundColor: c.bg,
+      appBarTheme: AppBarTheme(
+        backgroundColor: c.surface,
+        elevation: 0,
+        iconTheme: IconThemeData(color: c.muted),
       ),
-  ];
+      inputDecorationTheme: InputDecorationTheme(
+        hintStyle: TextStyle(color: c.dim),
+        border: InputBorder.none,
+      ),
+      textTheme: TextTheme(
+        titleLarge: TextStyle(color: c.text, fontSize: 16),
+      ),
+    );
+  }
 
   @override
-  Widget buildLeading(BuildContext context) => IconButton(
-    icon: const Icon(Icons.arrow_back_rounded, color: AppColors.muted),
-    onPressed: () => close(context, null),
-  );
+  List<Widget> buildActions(BuildContext context) {
+    final c = context.colors;
+    return [
+      if (query.isNotEmpty)
+        IconButton(
+          icon: Icon(Icons.clear_rounded, color: c.muted),
+          onPressed: () => query = '',
+        ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    final c = context.colors;
+    return IconButton(
+      icon: Icon(Icons.arrow_back_rounded, color: c.muted),
+      onPressed: () => close(context, null),
+    );
+  }
 
   @override
   Widget buildResults(BuildContext context) => _buildBody(context);
@@ -52,6 +61,7 @@ class HomeSearchDelegate extends SearchDelegate<void> {
   Widget buildSuggestions(BuildContext context) => _buildBody(context);
 
   Widget _buildBody(BuildContext context) {
+    final c = context.colors;
     final q = query.toLowerCase().trim();
 
     final teams = q.isEmpty
@@ -74,16 +84,16 @@ class HomeSearchDelegate extends SearchDelegate<void> {
       return Center(child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.search_off_rounded, color: AppColors.dim, size: 40),
+          Icon(Icons.search_off_rounded, color: c.dim, size: 40),
           const SizedBox(height: 12),
           Text('No results for "$query"',
-              style: const TextStyle(color: AppColors.muted, fontSize: 14)),
+              style: TextStyle(color: c.muted, fontSize: 14)),
         ],
       ));
     }
 
     return Container(
-      color: AppColors.bg,
+      color: c.bg,
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -109,20 +119,21 @@ class HomeSearchDelegate extends SearchDelegate<void> {
   }
 }
 
-// ── Helpers ──────────────────────────────────────────────────
-
 class _SectionLabel extends StatelessWidget {
   final String text;
   const _SectionLabel(this.text);
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 10, top: 4),
-    child: Text(text.toUpperCase(),
-        style: const TextStyle(
-            color: AppColors.dim, fontSize: 11,
-            fontWeight: FontWeight.w700, letterSpacing: 1.2)),
-  );
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10, top: 4),
+      child: Text(text.toUpperCase(),
+          style: TextStyle(
+              color: c.dim, fontSize: 11,
+              fontWeight: FontWeight.w700, letterSpacing: 1.2)),
+    );
+  }
 }
 
 class _TeamResult extends StatelessWidget {
@@ -133,6 +144,7 @@ class _TeamResult extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c    = context.colors;
     final name    = team['name'] as String? ?? '—';
     final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
 
@@ -142,24 +154,24 @@ class _TeamResult extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: c.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: c.border),
         ),
         child: Row(children: [
           Container(
             width: 40, height: 40,
-            decoration: const BoxDecoration(color: AppColors.accentLo, shape: BoxShape.circle),
+            decoration: BoxDecoration(color: c.accentLo, shape: BoxShape.circle),
             child: Center(child: Text(initial,
-                style: const TextStyle(color: AppColors.accent, fontSize: 16, fontWeight: FontWeight.w700))),
+                style: TextStyle(color: c.accent, fontSize: 16, fontWeight: FontWeight.w700))),
           ),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             _Highlight(text: name, query: query),
             Text('${team['club'] ?? '—'} · ${team['category'] ?? '—'}',
-                style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                style: TextStyle(color: c.muted, fontSize: 12)),
           ])),
-          const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.dim, size: 13),
+          Icon(Icons.arrow_forward_ios_rounded, color: c.dim, size: 13),
         ]),
       ),
     );
@@ -173,6 +185,7 @@ class _MatchResult extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c      = context.colors;
     final status   = match['status'] as String? ?? AppConstants.statusUploaded;
     final opponent = match['opponent'] as String? ?? '—';
     final teamName = (match['teams'] as Map?)?['name'] as String? ?? '—';
@@ -183,33 +196,33 @@ class _MatchResult extends StatelessWidget {
     }
 
     final (Color col, String lbl) = switch (status) {
-      AppConstants.statusDone       => (AppColors.success, 'Finalizado'),
-      AppConstants.statusProcessing => (AppColors.warning, 'En curso'),
-      _                             => (AppColors.muted,   'Programado'),
+      AppConstants.statusDone       => (c.success, 'Finalizado'),
+      AppConstants.statusProcessing => (c.warning, 'En curso'),
+      _                             => (c.muted,   'Programado'),
     };
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: c.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: c.border),
       ),
       child: Row(children: [
         Container(
           width: 40, height: 40,
-          decoration: BoxDecoration(color: AppColors.elevated, borderRadius: BorderRadius.circular(10)),
-          child: const Icon(Icons.sports_soccer_outlined, color: AppColors.accent, size: 18),
+          decoration: BoxDecoration(color: c.elevated, borderRadius: BorderRadius.circular(10)),
+          child: Icon(Icons.sports_soccer_outlined, color: c.accent, size: 18),
         ),
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Text('$teamName  ', style: const TextStyle(color: AppColors.muted, fontSize: 11)),
+            Text('$teamName  ', style: TextStyle(color: c.muted, fontSize: 11)),
             _Highlight(text: 'vs $opponent', query: query),
           ]),
           const SizedBox(height: 2),
-          Text(dateLabel, style: const TextStyle(color: AppColors.dim, fontSize: 11)),
+          Text(dateLabel, style: TextStyle(color: c.dim, fontSize: 11)),
         ])),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -224,7 +237,6 @@ class _MatchResult extends StatelessWidget {
   }
 }
 
-/// Highlights the matched portion of [text] in accent color.
 class _Highlight extends StatelessWidget {
   final String text;
   final String query;
@@ -232,25 +244,26 @@ class _Highlight extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     if (query.isEmpty) {
       return Text(text,
-          style: const TextStyle(color: AppColors.text, fontSize: 14, fontWeight: FontWeight.w600));
+          style: TextStyle(color: c.text, fontSize: 14, fontWeight: FontWeight.w600));
     }
 
     final lower = text.toLowerCase();
     final idx   = lower.indexOf(query.toLowerCase());
     if (idx < 0) {
       return Text(text,
-          style: const TextStyle(color: AppColors.text, fontSize: 14, fontWeight: FontWeight.w600));
+          style: TextStyle(color: c.text, fontSize: 14, fontWeight: FontWeight.w600));
     }
 
     return RichText(
       text: TextSpan(
-        style: const TextStyle(color: AppColors.text, fontSize: 14, fontWeight: FontWeight.w600),
+        style: TextStyle(color: c.text, fontSize: 14, fontWeight: FontWeight.w600),
         children: [
           TextSpan(text: text.substring(0, idx)),
           TextSpan(text: text.substring(idx, idx + query.length),
-              style: const TextStyle(color: AppColors.accent, backgroundColor: AppColors.accentLo)),
+              style: TextStyle(color: c.accent, backgroundColor: c.accentLo)),
           TextSpan(text: text.substring(idx + query.length)),
         ],
       ),

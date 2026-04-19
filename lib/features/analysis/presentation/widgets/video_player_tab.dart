@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_color_tokens.dart';
 
 class VideoPlayerTab extends StatefulWidget {
   final String? videoUrl;
@@ -28,7 +28,6 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
   }
 
   Future<void> _init() async {
-    // 1. Intentar URL de red (video anotado del backend)
     if (widget.videoUrl != null && widget.videoUrl!.isNotEmpty) {
       String finalUrl = widget.videoUrl!;
       if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
@@ -47,7 +46,6 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
       }
     }
 
-    // 2. Fallback: archivo local (solo en mobile/desktop, no en web)
     if (!kIsWeb && widget.localFile != null) {
       final ctrl = VideoPlayerController.file(File(widget.localFile!.path));
       try {
@@ -61,7 +59,7 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
     } else if (kIsWeb && widget.localFile != null) {
       if (mounted) setState(() => _errorMessage = "En web no se pueden reproducir archivos locales directamente.");
     } else {
-        if (mounted) setState(() => _errorMessage = "URL o archivo no proporcionado.");
+      if (mounted) setState(() => _errorMessage = "URL o archivo no proporcionado.");
     }
   }
 
@@ -73,27 +71,29 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
+
     if (_errorMessage != null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            const Icon(Icons.error_outline, color: AppColors.danger, size: 48),
+            Icon(Icons.error_outline, color: c.danger, size: 48),
             const SizedBox(height: 16),
-            const Text('Error al cargar el vídeo',
-                style: TextStyle(color: AppColors.danger, fontSize: 16, fontWeight: FontWeight.w600)),
+            Text('Error al cargar el vídeo',
+                style: TextStyle(color: c.danger, fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             Text(_errorMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                style: TextStyle(color: c.muted, fontSize: 12)),
           ]),
         ),
       );
     }
 
     if (!_initialized) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.accent, strokeWidth: 2),
+      return Center(
+        child: CircularProgressIndicator(color: c.accent, strokeWidth: 2),
       );
     }
 
@@ -113,7 +113,7 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
         ),
       ),
       Container(
-        color: AppColors.surface,
+        color: c.surface,
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
         child: Column(children: [
           ValueListenableBuilder(
@@ -125,18 +125,18 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
                 VideoProgressIndicator(
                   _ctrl!,
                   allowScrubbing: true,
-                  colors: const VideoProgressColors(
-                    playedColor: AppColors.accent,
-                    bufferedColor: AppColors.elevated,
-                    backgroundColor: AppColors.accentLo,
+                  colors: VideoProgressColors(
+                    playedColor: c.accent,
+                    bufferedColor: c.elevated,
+                    backgroundColor: c.accentLo,
                   ),
                 ),
                 const SizedBox(height: 6),
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                   Text(_formatDuration(pos),
-                      style: const TextStyle(color: AppColors.muted, fontSize: 11)),
+                      style: TextStyle(color: c.muted, fontSize: 11)),
                   Text(_formatDuration(total),
-                      style: const TextStyle(color: AppColors.dim, fontSize: 11)),
+                      style: TextStyle(color: c.dim, fontSize: 11)),
                 ]),
               ]);
             },
@@ -157,13 +157,13 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
                 onTap: _togglePlay,
                 child: Container(
                   width: 56, height: 56,
-                  decoration: const BoxDecoration(
-                    color: AppColors.accent,
+                  decoration: BoxDecoration(
+                    color: c.accent,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     value.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                    color: AppColors.bg, size: 30,
+                    color: c.bg, size: 30,
                   ),
                 ),
               ),
@@ -202,16 +202,19 @@ class _CtrlButton extends StatelessWidget {
   const _CtrlButton({required this.icon, required this.onTap});
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      width: 44, height: 44,
-      decoration: BoxDecoration(
-        color: AppColors.elevated,
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColors.border),
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 44, height: 44,
+        decoration: BoxDecoration(
+          color: c.elevated,
+          shape: BoxShape.circle,
+          border: Border.all(color: c.border),
+        ),
+        child: Icon(icon, color: c.muted, size: 22),
       ),
-      child: Icon(icon, color: AppColors.muted, size: 22),
-    ),
-  );
+    );
+  }
 }

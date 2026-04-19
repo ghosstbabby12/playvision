@@ -1,43 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_color_tokens.dart';
+import '../../../../../core/theme/theme_controller.dart';
 
 class SettingsDrawer extends StatelessWidget {
   const SettingsDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
+
     return Drawer(
-      backgroundColor: AppColors.surface,
+      backgroundColor: c.surface,
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header ──────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
               child: Row(children: [
                 Container(
                   width: 40, height: 40,
                   decoration: BoxDecoration(
-                    color: AppColors.accentLo,
+                    color: c.accentLo,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.sports_soccer_outlined, color: AppColors.accent, size: 20),
+                  child: Icon(Icons.sports_soccer_outlined, color: c.accent, size: 20),
                 ),
                 const SizedBox(width: 12),
-                const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text('PlayVision',
-                      style: TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.w700)),
-                  Text('Settings', style: TextStyle(color: AppColors.dim, fontSize: 12)),
+                      style: TextStyle(color: c.text, fontSize: 16, fontWeight: FontWeight.w700)),
+                  Text('Settings', style: TextStyle(color: c.dim, fontSize: 12)),
                 ]),
               ]),
             ),
-            const Divider(color: AppColors.border, height: 1),
+            Divider(color: c.border, height: 1),
             const SizedBox(height: 12),
 
-            // ── Menu items ───────────────────────────────────
             _DrawerItem(
               icon: Icons.settings_outlined,
               label: 'Configuración',
@@ -55,10 +56,40 @@ class SettingsDrawer extends StatelessWidget {
             ),
 
             const SizedBox(height: 8),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+              child: Text('APARIENCIA',
+                  style: TextStyle(color: c.dim, fontSize: 10,
+                      fontWeight: FontWeight.w700, letterSpacing: 1.5)),
+            ),
+
+            ListenableBuilder(
+              listenable: themeController,
+              builder: (context, _) => ListTile(
+                leading: Icon(
+                  themeController.isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+                  color: c.accent, size: 20,
+                ),
+                title: Text(
+                  themeController.isDark ? 'Modo Claro' : 'Modo Oscuro',
+                  style: TextStyle(color: c.text, fontSize: 14),
+                ),
+                trailing: Switch(
+                  value: !themeController.isDark,
+                  onChanged: (_) => themeController.toggle(),
+                  activeThumbColor: c.accent,
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                visualDensity: const VisualDensity(vertical: -1),
+                onTap: themeController.toggle,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
               child: Text('INFORMACIÓN',
-                  style: TextStyle(color: AppColors.dim, fontSize: 10,
+                  style: TextStyle(color: c.dim, fontSize: 10,
                       fontWeight: FontWeight.w700, letterSpacing: 1.5)),
             ),
 
@@ -74,34 +105,28 @@ class SettingsDrawer extends StatelessWidget {
             ),
 
             const Spacer(),
-            
-            // ── Botón de Cerrar Sesión ───────────────────────
-            const Divider(color: AppColors.border, height: 1),
+
+            Divider(color: c.border, height: 1),
             const SizedBox(height: 8),
             ListTile(
-              leading: const Icon(Icons.logout_rounded, color: AppColors.danger, size: 20),
-              title: const Text(
-                'Cerrar Sesión', 
-                style: TextStyle(color: AppColors.danger, fontSize: 14, fontWeight: FontWeight.w600)
+              leading: Icon(Icons.logout_rounded, color: c.danger, size: 20),
+              title: Text(
+                'Cerrar Sesión',
+                style: TextStyle(color: c.danger, fontSize: 14, fontWeight: FontWeight.w600),
               ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 20),
               visualDensity: const VisualDensity(vertical: -1),
               onTap: () async {
-                // 1. Mostrar loading
                 showDialog(
                   context: context,
                   barrierDismissible: false,
-                  builder: (context) => const Center(
-                    child: CircularProgressIndicator(color: AppColors.accent),
+                  builder: (context) => Center(
+                    child: CircularProgressIndicator(color: c.accent),
                   ),
                 );
-
                 try {
-                  // 2. Cerrar sesión en Supabase
                   await Supabase.instance.client.auth.signOut();
-                  
                   if (context.mounted) {
-                    // 3. Quitar loading y redirigir explícitamente al /login
                     Navigator.pop(context);
                     Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
                   }
@@ -111,10 +136,10 @@ class SettingsDrawer extends StatelessWidget {
                 }
               },
             ),
-            
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 8, 20, 20),
-              child: Text('v1.0.0', style: TextStyle(color: AppColors.dim, fontSize: 11)),
+
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+              child: Text('v1.0.0', style: TextStyle(color: c.dim, fontSize: 11)),
             ),
           ],
         ),
@@ -141,11 +166,14 @@ class _DrawerItem extends StatelessWidget {
   const _DrawerItem({required this.icon, required this.label, required this.onTap});
 
   @override
-  Widget build(BuildContext context) => ListTile(
-    leading: Icon(icon, color: AppColors.accentLo, size: 20),
-    title: Text(label, style: const TextStyle(color: AppColors.text, fontSize: 14)),
-    onTap: onTap,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-    visualDensity: const VisualDensity(vertical: -1),
-  );
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return ListTile(
+      leading: Icon(icon, color: c.accentLo, size: 20),
+      title: Text(label, style: TextStyle(color: c.text, fontSize: 14)),
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+      visualDensity: const VisualDensity(vertical: -1),
+    );
+  }
 }

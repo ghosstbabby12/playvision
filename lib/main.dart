@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/theme_controller.dart';
 import 'routes/app_routes.dart';
 
 Future<void> main() async {
@@ -13,16 +15,11 @@ Future<void> main() async {
   if (supabaseUrl == null || supabaseUrl.isEmpty) {
     throw Exception('SUPABASE_URL is missing from the .env file');
   }
-
   if (supabaseAnonKey == null || supabaseAnonKey.isEmpty) {
     throw Exception('SUPABASE_ANON_KEY is missing from the .env file');
   }
 
-  await Supabase.initialize(
-    url: supabaseUrl,
-    anonKey: supabaseAnonKey,
-  );
-
+  await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
   runApp(const PlayVisionApp());
 }
 
@@ -31,17 +28,19 @@ class PlayVisionApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Revisamos si el usuario ya tiene una sesión iniciada
     final session = Supabase.instance.client.auth.currentSession;
 
-    return MaterialApp(
-      title: 'PlayVision',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.green),
-      
-      // Si hay sesión iniciada lo mandamos a "/", si no, lo mandamos a "/login"
-      initialRoute: session != null ? AppRoutes.main : AppRoutes.login,
-      routes: AppRoutes.routes,
+    return ListenableBuilder(
+      listenable: themeController,
+      builder: (context, _) => MaterialApp(
+        title: 'PlayVision',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: themeController.mode,
+        initialRoute: session != null ? AppRoutes.main : AppRoutes.login,
+        routes: AppRoutes.routes,
+      ),
     );
   }
 }

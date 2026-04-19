@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/login_colors.dart';
+import '../../../../core/theme/app_color_tokens.dart';
 
 class LoginTextField extends StatefulWidget {
   final TextEditingController controller;
@@ -27,27 +27,28 @@ class _LoginTextFieldState extends State<LoginTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return TextFormField(
       controller: widget.controller,
       keyboardType: widget.keyboardType,
       obscureText: widget.isPassword && _obscure,
-      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+      style: TextStyle(color: c.textHi, fontWeight: FontWeight.w500),
       decoration: InputDecoration(
         hintText: widget.label,
-        hintStyle: const TextStyle(color: LoginColors.textMuted),
-        prefixIcon: Icon(widget.icon, color: LoginColors.textMuted, size: 22),
+        hintStyle: TextStyle(color: c.muted),
+        prefixIcon: Icon(widget.icon, color: c.muted, size: 22),
         suffixIcon: widget.isPassword
             ? IconButton(
                 icon: Icon(
                   _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                  color: LoginColors.textMuted,
+                  color: c.muted,
                   size: 22,
                 ),
                 onPressed: () => setState(() => _obscure = !_obscure),
               )
             : null,
         filled: true,
-        fillColor: LoginColors.surface,
+        fillColor: c.surface,
         contentPadding: const EdgeInsets.symmetric(vertical: 20),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -55,7 +56,7 @@ class _LoginTextFieldState extends State<LoginTextField> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: LoginColors.accent, width: 2),
+          borderSide: BorderSide(color: c.accent, width: 2),
         ),
       ),
     );

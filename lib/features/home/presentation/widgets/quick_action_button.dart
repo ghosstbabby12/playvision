@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_color_tokens.dart';
 
 class QuickActionButton extends StatelessWidget {
   final IconData icon;
@@ -14,22 +14,25 @@ class QuickActionButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Expanded(
-    child: GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: c.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: c.border),
+          ),
+          child: Column(children: [
+            Icon(icon, color: c.accent, size: 22),
+            const SizedBox(height: 6),
+            Text(label, style: TextStyle(color: c.muted, fontSize: 11)),
+          ]),
         ),
-        child: Column(children: [
-          Icon(icon, color: AppColors.accent, size: 22),
-          const SizedBox(height: 6),
-          Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 11)),
-        ]),
       ),
-    ),
-  );
+    );
+  }
 }

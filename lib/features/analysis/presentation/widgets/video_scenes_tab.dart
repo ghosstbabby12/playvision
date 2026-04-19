@@ -7,12 +7,8 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_color_tokens.dart';
 
-/// Wrapper que combina:
-///   Escena 1 — Video normal
-///   Escena 2 — Heatmap del equipo
-///   Escena 3 — Heatmap por jugador (con selector)
 class VideoScenesTab extends StatefulWidget {
   final String? videoUrl;
   final String? heatmapVideoUrl;
@@ -32,20 +28,20 @@ class VideoScenesTab extends StatefulWidget {
 }
 
 class _VideoScenesTabState extends State<VideoScenesTab> {
-  int _scene = 0; // 0=video, 1=heat video, 2=team heatmap, 3=per-player heatmap
+  int _scene = 0;
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Column(children: [
-      // ── Scene selector ────────────────────────────────────────
       Padding(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
         child: Container(
           padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: c.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: c.border),
           ),
           child: Row(children: [
             _ScenePill(label: 'Video',      icon: Icons.play_circle_outline,       active: _scene == 0, onTap: () => setState(() => _scene = 0)),
@@ -56,7 +52,6 @@ class _VideoScenesTabState extends State<VideoScenesTab> {
         ),
       ),
 
-      // ── Scene content ─────────────────────────────────────────
       Expanded(child: IndexedStack(
         index: _scene,
         children: [
@@ -74,9 +69,6 @@ class _VideoScenesTabState extends State<VideoScenesTab> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Scene pill selector
-// ─────────────────────────────────────────────────────────────────────────────
 class _ScenePill extends StatelessWidget {
   final String label;
   final IconData icon;
@@ -85,34 +77,34 @@ class _ScenePill extends StatelessWidget {
   const _ScenePill({required this.label, required this.icon, required this.active, required this.onTap});
 
   @override
-  Widget build(BuildContext context) => Expanded(
-    child: GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(vertical: 9),
-        decoration: BoxDecoration(
-          color: active ? AppColors.accentLo : Colors.transparent,
-          borderRadius: BorderRadius.circular(9),
-          border: active ? Border.all(color: AppColors.borderGreen) : null,
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 9),
+          decoration: BoxDecoration(
+            color: active ? c.accentLo : Colors.transparent,
+            borderRadius: BorderRadius.circular(9),
+            border: active ? Border.all(color: c.borderGreen) : null,
+          ),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Icon(icon, color: active ? c.accent : c.dim, size: 18),
+            const SizedBox(height: 3),
+            Text(label, style: TextStyle(
+              color: active ? c.accent : c.dim,
+              fontSize: 10,
+              fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+            )),
+          ]),
         ),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, color: active ? AppColors.accent : AppColors.dim, size: 18),
-          const SizedBox(height: 3),
-          Text(label, style: TextStyle(
-            color: active ? AppColors.accent : AppColors.dim,
-            fontSize: 10,
-            fontWeight: active ? FontWeight.w700 : FontWeight.w400,
-          )),
-        ]),
       ),
-    ),
-  );
+    );
+  }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Scene 1 — Video player
-// ─────────────────────────────────────────────────────────────────────────────
 class _VideoScene extends StatefulWidget {
   final String? videoUrl;
   final XFile? localFile;
@@ -187,21 +179,23 @@ class _VideoSceneState extends State<_VideoScene> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
+
     if (_error != null) {
       return Center(child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          const Icon(Icons.videocam_off_outlined, color: AppColors.danger, size: 44),
+          Icon(Icons.videocam_off_outlined, color: c.danger, size: 44),
           const SizedBox(height: 14),
-          const Text('Video not available', style: TextStyle(color: AppColors.danger, fontSize: 15, fontWeight: FontWeight.w600)),
+          Text('Video not available', style: TextStyle(color: c.danger, fontSize: 15, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
-          Text(_error!, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.muted, fontSize: 11, height: 1.5)),
+          Text(_error!, textAlign: TextAlign.center, style: TextStyle(color: c.muted, fontSize: 11, height: 1.5)),
         ]),
       ));
     }
 
     if (!_initialized) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.accent, strokeWidth: 2));
+      return Center(child: CircularProgressIndicator(color: c.accent, strokeWidth: 2));
     }
 
     return Column(children: [
@@ -218,7 +212,7 @@ class _VideoSceneState extends State<_VideoScene> {
         ),
       ),
       Container(
-        color: AppColors.surface,
+        color: c.surface,
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
         child: Column(children: [
           ValueListenableBuilder(
@@ -227,13 +221,13 @@ class _VideoSceneState extends State<_VideoScene> {
               VideoProgressIndicator(_ctrl!,
                   allowScrubbing: true,
                   colors: VideoProgressColors(
-                      playedColor: AppColors.accent,
-                      bufferedColor: AppColors.accentLo,
-                      backgroundColor: AppColors.elevated)),
+                      playedColor: c.accent,
+                      bufferedColor: c.accentLo,
+                      backgroundColor: c.elevated)),
               const SizedBox(height: 6),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Text(_fmt(value.position), style: const TextStyle(color: AppColors.muted, fontSize: 11)),
-                Text(_fmt(value.duration),  style: const TextStyle(color: AppColors.dim,  fontSize: 11)),
+                Text(_fmt(value.position), style: TextStyle(color: c.muted, fontSize: 11)),
+                Text(_fmt(value.duration),  style: TextStyle(color: c.dim,  fontSize: 11)),
               ]),
             ]),
           ),
@@ -250,9 +244,9 @@ class _VideoSceneState extends State<_VideoScene> {
                 onTap: _togglePlay,
                 child: Container(
                   width: 52, height: 52,
-                  decoration: const BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
+                  decoration: BoxDecoration(color: c.accent, shape: BoxShape.circle),
                   child: Icon(value.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                      color: AppColors.bg, size: 28),
+                      color: c.bg, size: 28),
                 ),
               ),
             ),
@@ -275,53 +269,54 @@ class _CtrlBtn extends StatelessWidget {
   const _CtrlBtn({required this.icon, required this.onTap});
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      width: 40, height: 40,
-      decoration: BoxDecoration(
-        color: AppColors.elevated, shape: BoxShape.circle,
-        border: Border.all(color: AppColors.border),
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40, height: 40,
+        decoration: BoxDecoration(
+          color: c.elevated, shape: BoxShape.circle,
+          border: Border.all(color: c.border),
+        ),
+        child: Icon(icon, color: c.muted, size: 20),
       ),
-      child: Icon(icon, color: AppColors.muted, size: 20),
-    ),
-  );
+    );
+  }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Scene 2 — Team heatmap
-// ─────────────────────────────────────────────────────────────────────────────
 class _TeamHeatmapScene extends StatelessWidget {
   final List players;
   const _TeamHeatmapScene({required this.players});
 
   @override
   Widget build(BuildContext context) {
+    final c    = context.colors;
     final cast = players.cast<Map<String, dynamic>>();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Team Heatmap', style: TextStyle(
-            color: AppColors.text, fontSize: 15, fontWeight: FontWeight.w700)),
+        Text('Team Heatmap', style: TextStyle(
+            color: c.text, fontSize: 15, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
-        const Text('Combined movement of all detected players',
-            style: TextStyle(color: AppColors.muted, fontSize: 12)),
+        Text('Combined movement of all detected players',
+            style: TextStyle(color: c.muted, fontSize: 12)),
         const SizedBox(height: 14),
         ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: AspectRatio(
             aspectRatio: 1.5,
             child: CustomPaint(
-              painter: _HeatmapPainter(players: cast, selectedRank: null),
+              painter: _HeatmapPainter(players: cast, selectedRank: null, accentColor: c.accent),
             ),
           ),
         ),
         const SizedBox(height: 14),
         _HeatmapLegend(),
         const SizedBox(height: 20),
-        const Text('Zone Density', style: TextStyle(
-            color: AppColors.text, fontSize: 13, fontWeight: FontWeight.w700)),
+        Text('Zone Density', style: TextStyle(
+            color: c.text, fontSize: 13, fontWeight: FontWeight.w700)),
         const SizedBox(height: 10),
         _ZoneDensityGrid(players: cast),
       ]),
@@ -329,9 +324,6 @@ class _TeamHeatmapScene extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Scene 3 — Per-player heatmap
-// ─────────────────────────────────────────────────────────────────────────────
 class _PlayerHeatmapScene extends StatefulWidget {
   final List players;
   const _PlayerHeatmapScene({required this.players});
@@ -345,8 +337,9 @@ class _PlayerHeatmapSceneState extends State<_PlayerHeatmapScene> {
 
   @override
   Widget build(BuildContext context) {
+    final c    = context.colors;
     final cast = widget.players.cast<Map<String, dynamic>>();
-    if (cast.isEmpty) return const Center(child: Text('No player data', style: TextStyle(color: AppColors.muted)));
+    if (cast.isEmpty) return Center(child: Text('No player data', style: TextStyle(color: c.muted)));
 
     final selected = cast[_selectedIndex];
     final rank     = selected['rank'] as int;
@@ -356,7 +349,6 @@ class _PlayerHeatmapSceneState extends State<_PlayerHeatmapScene> {
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // Player selector
         SizedBox(
           height: 64,
           child: ListView.builder(
@@ -373,16 +365,16 @@ class _PlayerHeatmapSceneState extends State<_PlayerHeatmapScene> {
                   margin: const EdgeInsets.only(right: 10),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: isActive ? AppColors.accentLo : AppColors.surface,
+                    color: isActive ? c.accentLo : c.surface,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: isActive ? AppColors.borderGreen : AppColors.border),
+                    border: Border.all(color: isActive ? c.borderGreen : c.border),
                   ),
                   child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                     Text('P$r', style: TextStyle(
-                        color: isActive ? AppColors.accent : AppColors.text,
+                        color: isActive ? c.accent : c.text,
                         fontSize: 13, fontWeight: FontWeight.w800)),
                     Text(p['zone'] as String? ?? '—',
-                        style: const TextStyle(color: AppColors.dim, fontSize: 9)),
+                        style: TextStyle(color: c.dim, fontSize: 9)),
                   ]),
                 ),
               );
@@ -392,32 +384,30 @@ class _PlayerHeatmapSceneState extends State<_PlayerHeatmapScene> {
 
         const SizedBox(height: 14),
 
-        // Player mini-stats
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.accentLo,
+            color: c.accentLo,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.borderGreen),
+            border: Border.all(color: c.borderGreen),
           ),
           child: Row(children: [
             Container(
               width: 32, height: 32,
-              decoration: const BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
+              decoration: BoxDecoration(color: c.accent, shape: BoxShape.circle),
               child: Center(child: Text('$rank', style: const TextStyle(
                   color: Colors.black, fontSize: 12, fontWeight: FontWeight.w900))),
             ),
             const SizedBox(width: 10),
             Expanded(child: Text('Player $rank · $zone',
-                style: const TextStyle(color: AppColors.textHi, fontSize: 13, fontWeight: FontWeight.w700))),
-            Text('$km km', style: const TextStyle(
-                color: AppColors.accent, fontSize: 12, fontWeight: FontWeight.w700)),
+                style: TextStyle(color: c.textHi, fontSize: 13, fontWeight: FontWeight.w700))),
+            Text('$km km', style: TextStyle(
+                color: c.accent, fontSize: 12, fontWeight: FontWeight.w700)),
           ]),
         ),
 
         const SizedBox(height: 14),
 
-        // Heatmap for selected player only
         ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: AspectRatio(
@@ -426,6 +416,7 @@ class _PlayerHeatmapSceneState extends State<_PlayerHeatmapScene> {
               painter: _HeatmapPainter(
                 players: cast,
                 selectedRank: rank,
+                accentColor: c.accent,
               ),
             ),
           ),
@@ -434,11 +425,10 @@ class _PlayerHeatmapSceneState extends State<_PlayerHeatmapScene> {
         const SizedBox(height: 14),
         _HeatmapLegend(),
 
-        // Per-player heatmap zones if available
         if (selected['heatmap_zones'] != null) ...[
           const SizedBox(height: 20),
-          const Text('Zone distribution', style: TextStyle(
-              color: AppColors.text, fontSize: 13, fontWeight: FontWeight.w700)),
+          Text('Zone distribution', style: TextStyle(
+              color: c.text, fontSize: 13, fontWeight: FontWeight.w700)),
           const SizedBox(height: 10),
           _ZoneBar(zones: Map<String, double>.from(
             (selected['heatmap_zones'] as Map).map((k, v) => MapEntry(k.toString(), (v as num).toDouble()))
@@ -449,30 +439,25 @@ class _PlayerHeatmapSceneState extends State<_PlayerHeatmapScene> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Heatmap painter — draws field + heat spots from positions_sample
-// ─────────────────────────────────────────────────────────────────────────────
 class _HeatmapPainter extends CustomPainter {
   final List<Map<String, dynamic>> players;
-  final int? selectedRank; // null = all players (team heatmap)
+  final int? selectedRank;
+  final Color accentColor;
 
-  const _HeatmapPainter({required this.players, required this.selectedRank});
+  const _HeatmapPainter({required this.players, required this.selectedRank, required this.accentColor});
 
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
 
-    // ── Field background ──────────────────────────────────────
     canvas.drawRect(Rect.fromLTWH(0, 0, w, h), Paint()..color = const Color(0xFF071409));
 
-    // Stripe pattern
     for (int i = 0; i < 8; i++) {
       canvas.drawRect(Rect.fromLTWH(i * w / 8, 0, w / 8, h),
           Paint()..color = i.isEven ? const Color(0xFF091B0C) : const Color(0xFF071409));
     }
 
-    // ── Field lines ───────────────────────────────────────────
     final line = Paint()
       ..color = Colors.white.withValues(alpha: 0.15)
       ..strokeWidth = 1.0
@@ -487,12 +472,10 @@ class _HeatmapPainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(m, pbT, pbW, pbH), line);
     canvas.drawRect(Rect.fromLTWH(w - m - pbW, pbT, pbW, pbH), line);
 
-    // ── Heat spots ────────────────────────────────────────────
     final activePlayers = selectedRank == null
         ? players
         : players.where((p) => p['rank'] == selectedRank).toList();
 
-    // Collect all points first to find density
     final allPoints = <Offset>[];
     for (final p in activePlayers) {
       final positions = p['positions_sample'] as List?;
@@ -505,22 +488,17 @@ class _HeatmapPainter extends CustomPainter {
       }
     }
 
-    // Draw heat blobs in multiple passes for intensity layering
     for (final pt in allPoints) {
-      // Outer warm glow
       canvas.drawCircle(pt, 22, Paint()
         ..color = const Color(0xFFFF4400).withValues(alpha: 0.04)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14));
-      // Inner hot core
       canvas.drawCircle(pt, 10, Paint()
         ..color = const Color(0xFFFFAA00).withValues(alpha: 0.07)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6));
     }
 
-    // Second pass — denser areas get brighter
     for (int i = 0; i < allPoints.length; i++) {
       final pt = allPoints[i];
-      // Count nearby points
       int nearby = 0;
       for (int j = 0; j < allPoints.length; j++) {
         if (i == j) continue;
@@ -533,7 +511,6 @@ class _HeatmapPainter extends CustomPainter {
       }
     }
 
-    // ── Average position marker ───────────────────────────────
     for (final p in activePlayers) {
       final xN = (p['avg_x_norm'] as num).toDouble();
       final yN = (p['avg_y_norm'] as num).toDouble();
@@ -543,8 +520,7 @@ class _HeatmapPainter extends CustomPainter {
 
       canvas.drawCircle(Offset(px, py), 11, Paint()
         ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.15));
-      canvas.drawCircle(Offset(px, py), 10, Paint()
-        ..color = AppColors.accent);
+      canvas.drawCircle(Offset(px, py), 10, Paint()..color = accentColor);
       canvas.drawCircle(Offset(px, py), 10, Paint()
         ..color = Colors.white.withValues(alpha: 0.5)
         ..strokeWidth = 1.2
@@ -560,44 +536,43 @@ class _HeatmapPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _HeatmapPainter old) => old.selectedRank != selectedRank;
+  bool shouldRepaint(covariant _HeatmapPainter old) =>
+      old.selectedRank != selectedRank || old.accentColor != accentColor;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Heatmap gradient legend
-// ─────────────────────────────────────────────────────────────────────────────
 class _HeatmapLegend extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => Row(children: [
-    const Text('Low', style: TextStyle(color: AppColors.dim, fontSize: 10)),
-    const SizedBox(width: 8),
-    Expanded(child: Container(
-      height: 6,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(3),
-        gradient: const LinearGradient(colors: [
-          Color(0xFF071409),
-          Color(0xFF0D3B1A),
-          Color(0xFFFF4400),
-          Color(0xFFFFAA00),
-          Color(0xFFFFFF00),
-        ]),
-      ),
-    )),
-    const SizedBox(width: 8),
-    const Text('High', style: TextStyle(color: AppColors.dim, fontSize: 10)),
-  ]);
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Row(children: [
+      Text('Low', style: TextStyle(color: c.dim, fontSize: 10)),
+      const SizedBox(width: 8),
+      Expanded(child: Container(
+        height: 6,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(3),
+          gradient: const LinearGradient(colors: [
+            Color(0xFF071409),
+            Color(0xFF0D3B1A),
+            Color(0xFFFF4400),
+            Color(0xFFFFAA00),
+            Color(0xFFFFFF00),
+          ]),
+        ),
+      )),
+      const SizedBox(width: 8),
+      Text('High', style: TextStyle(color: c.dim, fontSize: 10)),
+    ]);
+  }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Zone density grid (team)
-// ─────────────────────────────────────────────────────────────────────────────
 class _ZoneDensityGrid extends StatelessWidget {
   final List<Map<String, dynamic>> players;
   const _ZoneDensityGrid({required this.players});
 
   @override
   Widget build(BuildContext context) {
+    final c      = context.colors;
     final counts = <String, int>{};
     for (final p in players) {
       final z = p['zone'] as String? ?? 'Unknown';
@@ -612,18 +587,18 @@ class _ZoneDensityGrid extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 8),
         child: Row(children: [
           SizedBox(width: 100, child: Text(e.key,
-              style: const TextStyle(color: AppColors.muted, fontSize: 12))),
+              style: TextStyle(color: c.muted, fontSize: 12))),
           const SizedBox(width: 8),
           Expanded(child: ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: Stack(children: [
-              Container(height: 18, color: AppColors.surface),
+              Container(height: 18, color: c.surface),
               FractionallySizedBox(
                 widthFactor: max > 0 ? e.value / max : 0,
                 child: Container(
                   height: 18,
                   decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.4),
+                    color: c.accent.withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -631,23 +606,21 @@ class _ZoneDensityGrid extends StatelessWidget {
             ]),
           )),
           const SizedBox(width: 8),
-          Text('${e.value}p', style: const TextStyle(
-              color: AppColors.dim, fontSize: 11, fontWeight: FontWeight.w600)),
+          Text('${e.value}p', style: TextStyle(
+              color: c.dim, fontSize: 11, fontWeight: FontWeight.w600)),
         ]),
       )).toList(),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Zone bar for individual player (uses heatmap_zones from metrics_engine)
-// ─────────────────────────────────────────────────────────────────────────────
 class _ZoneBar extends StatelessWidget {
   final Map<String, double> zones;
   const _ZoneBar({required this.zones});
 
   @override
   Widget build(BuildContext context) {
+    final c      = context.colors;
     final sorted = zones.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
@@ -656,18 +629,18 @@ class _ZoneBar extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 8),
         child: Row(children: [
           SizedBox(width: 100, child: Text(e.key,
-              style: const TextStyle(color: AppColors.muted, fontSize: 11))),
+              style: TextStyle(color: c.muted, fontSize: 11))),
           const SizedBox(width: 8),
           Expanded(child: ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: Stack(children: [
-              Container(height: 16, color: AppColors.surface),
+              Container(height: 16, color: c.surface),
               FractionallySizedBox(
                 widthFactor: (e.value / 100).clamp(0.0, 1.0),
                 child: Container(
                   height: 16,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [AppColors.accentLo, AppColors.accent]),
+                    gradient: LinearGradient(colors: [c.accentLo, c.accent]),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -677,7 +650,7 @@ class _ZoneBar extends StatelessWidget {
           const SizedBox(width: 8),
           SizedBox(width: 36, child: Text('${e.value.toStringAsFixed(0)}%',
               textAlign: TextAlign.right,
-              style: const TextStyle(color: AppColors.accent, fontSize: 11, fontWeight: FontWeight.w700))),
+              style: TextStyle(color: c.accent, fontSize: 11, fontWeight: FontWeight.w700))),
         ]),
       )).toList(),
     );

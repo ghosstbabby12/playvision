@@ -1,7 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_color_tokens.dart';
 import '../../../../../shared/widgets/section_label.dart';
 
 class SummaryTab extends StatelessWidget {
@@ -86,8 +86,6 @@ class SummaryTab extends StatelessWidget {
   }
 }
 
-// ── Sub-widgets ───────────────────────────────────────────────────────────────
-
 class StatCard extends StatelessWidget {
   final String value;
   final String label;
@@ -95,26 +93,29 @@ class StatCard extends StatelessWidget {
   const StatCard(this.value, this.label, this.icon, {super.key});
 
   @override
-  Widget build(BuildContext context) => Expanded(
-    child: Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: c.border),
+        ),
+        child: Row(children: [
+          Icon(icon, color: c.accent, size: 20),
+          const SizedBox(width: 12),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(value,
+                style: TextStyle(color: c.text, fontSize: 18, fontWeight: FontWeight.w800),
+                overflow: TextOverflow.ellipsis),
+            Text(label, style: TextStyle(color: c.dim, fontSize: 11)),
+          ])),
+        ]),
       ),
-      child: Row(children: [
-        Icon(icon, color: AppColors.accent, size: 20),
-        const SizedBox(width: 12),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(value,
-              style: const TextStyle(color: AppColors.text, fontSize: 18, fontWeight: FontWeight.w800),
-              overflow: TextOverflow.ellipsis),
-          Text(label, style: const TextStyle(color: AppColors.dim, fontSize: 11)),
-        ])),
-      ]),
-    ),
-  );
+    );
+  }
 }
 
 class AiInsightCard extends StatelessWidget {
@@ -122,21 +123,24 @@ class AiInsightCard extends StatelessWidget {
   const AiInsightCard({super.key, required this.text});
 
   @override
-  Widget build(BuildContext context) => Container(
-    margin: const EdgeInsets.only(bottom: 8),
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: AppColors.accentLo,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: AppColors.accentLo),
-    ),
-    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Icon(Icons.auto_awesome_outlined, color: AppColors.accent, size: 16),
-      const SizedBox(width: 10),
-      Expanded(child: Text(text,
-          style: const TextStyle(color: AppColors.text, fontSize: 13, height: 1.5))),
-    ]),
-  );
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: c.accentLo,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.accentLo),
+      ),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Icon(Icons.auto_awesome_outlined, color: c.accent, size: 16),
+        const SizedBox(width: 10),
+        Expanded(child: Text(text,
+            style: TextStyle(color: c.text, fontSize: 13, height: 1.5))),
+      ]),
+    );
+  }
 }
 
 class HighlightRow extends StatelessWidget {
@@ -146,21 +150,24 @@ class HighlightRow extends StatelessWidget {
   const HighlightRow({super.key, required this.icon, required this.label, required this.value});
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-    decoration: BoxDecoration(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: AppColors.border),
-    ),
-    child: Row(children: [
-      Icon(icon, color: AppColors.accent, size: 18),
-      const SizedBox(width: 12),
-      Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
-      const Spacer(),
-      Text(value, style: const TextStyle(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.w600)),
-    ]),
-  );
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: c.border),
+      ),
+      child: Row(children: [
+        Icon(icon, color: c.accent, size: 18),
+        const SizedBox(width: 12),
+        Text(label, style: TextStyle(color: c.muted, fontSize: 13)),
+        const Spacer(),
+        Text(value, style: TextStyle(color: c.text, fontSize: 13, fontWeight: FontWeight.w600)),
+      ]),
+    );
+  }
 }
 
 class DistanceBarChart extends StatelessWidget {
@@ -171,30 +178,34 @@ class DistanceBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (players.isEmpty || maxKm == 0) return const SizedBox();
+    final c = context.colors;
     final bars = players.map((p) {
       final km    = (p['distance_km'] as num?)?.toDouble() ?? 0;
       final rank  = p['rank'] as int;
       final ratio = maxKm > 0 ? km / maxKm : 0.0;
-      final color = ratio > 0.66 ? AppColors.textHi : ratio > 0.33 ? AppColors.accent : AppColors.accentLo;
+      final color = ratio > 0.66 ? c.textHi : ratio > 0.33 ? c.accent : c.accentLo;
       return BarChartGroupData(x: rank, barRods: [BarChartRodData(
         toY: km, color: color, width: 12,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
       )]);
     }).toList();
 
+    final borderColor = c.border;
+    final dimColor    = c.dim;
+
     return Container(
       height: 160,
       padding: const EdgeInsets.fromLTRB(8, 12, 8, 4),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: c.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: c.border),
       ),
       child: BarChart(BarChartData(
         maxY: maxKm * 1.2,
         gridData: FlGridData(
           show: true, drawVerticalLine: false,
-          getDrawingHorizontalLine: (_) => const FlLine(color: AppColors.border, strokeWidth: 1),
+          getDrawingHorizontalLine: (_) => FlLine(color: borderColor, strokeWidth: 1),
         ),
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
@@ -205,8 +216,7 @@ class DistanceBarChart extends StatelessWidget {
             showTitles: true,
             getTitlesWidget: (v, _) => Padding(
               padding: const EdgeInsets.only(top: 4),
-              child: Text('${v.toInt()}',
-                  style: const TextStyle(color: AppColors.dim, fontSize: 10)),
+              child: Text('${v.toInt()}', style: TextStyle(color: dimColor, fontSize: 10)),
             ),
           )),
         ),

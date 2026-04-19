@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_color_tokens.dart';
 
 class MatchCard extends StatelessWidget {
   final String rival;
@@ -21,45 +21,48 @@ class MatchCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: AppColors.border),
-    ),
-    child: Row(children: [
-      Container(
-        width: 44, height: 44,
-        decoration: BoxDecoration(
-          color: statusColor.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(10),
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.border),
+      ),
+      child: Row(children: [
+        Container(
+          width: 44, height: 44,
+          decoration: BoxDecoration(
+            color: statusColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(Icons.sports_soccer_outlined, color: c.accent, size: 20),
         ),
-        child: const Icon(Icons.sports_soccer_outlined, color: AppColors.accent, size: 20),
-      ),
-      const SizedBox(width: 14),
-      Expanded(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(rival,
-              style: const TextStyle(color: AppColors.text, fontSize: 14, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 4),
-          Text('$team · $date',
-              style: const TextStyle(color: AppColors.dim, fontSize: 11)),
-          const SizedBox(height: 2),
-          Text(source,
-              style: const TextStyle(color: AppColors.accentLo, fontSize: 10)),
-        ]),
-      ),
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: statusColor.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(6),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(rival,
+                style: TextStyle(color: c.text, fontSize: 14, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 4),
+            Text('$team · $date',
+                style: TextStyle(color: c.dim, fontSize: 11)),
+            const SizedBox(height: 2),
+            Text(source,
+                style: TextStyle(color: c.accentLo, fontSize: 10)),
+          ]),
         ),
-        child: Text(statusText,
-            style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.w600)),
-      ),
-    ]),
-  );
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: statusColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(statusText,
+              style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.w600)),
+        ),
+      ]),
+    );
+  }
 }

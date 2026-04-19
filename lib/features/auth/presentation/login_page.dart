@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_constants.dart';
-import '../../../core/theme/login_colors.dart';
+import '../../../core/theme/app_color_tokens.dart';
 import '../../../shared/widgets/soccer_logo.dart';
 import '../controller/auth_controller.dart';
 import 'widgets/login_message_card.dart';
@@ -35,27 +35,13 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _onAuthChanged() {
-    // Navigate on successful login (no error, not loading, in login mode)
     if (!_controller.isLoading &&
         _controller.errorMessage == null &&
         _controller.successMessage == null &&
         !_controller.isLoginMode == false) {
-      // signIn sets no messages on success — check Supabase session
-      final session = _supabaseSession;
-      if (session != null && mounted) {
-        Navigator.pushReplacementNamed(context, '/');
-      }
+      if (mounted) Navigator.pushReplacementNamed(context, '/');
     }
     if (mounted) setState(() {});
-  }
-
-  String? get _supabaseSession {
-    try {
-      // ignore: invalid_use_of_internal_member
-      return 'ok'; // session check delegated to router/auth listener
-    } catch (_) {
-      return null;
-    }
   }
 
   void _submit() {
@@ -74,8 +60,7 @@ class _LoginPageState extends State<LoginPage> {
     if (_controller.isLoginMode) {
       _controller.signIn(email, password).then((_) {
         if (!mounted) return;
-        final hasError = _controller.errorMessage != null;
-        if (!hasError) Navigator.pushReplacementNamed(context, '/');
+        if (_controller.errorMessage == null) Navigator.pushReplacementNamed(context, '/');
       });
     } else {
       _controller.signUp(email, password).then((_) {
@@ -86,10 +71,11 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return ListenableBuilder(
       listenable: _controller,
       builder: (context, _) => Scaffold(
-        backgroundColor: LoginColors.bg,
+        backgroundColor: c.bg,
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -100,11 +86,11 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   const Center(child: SoccerLogo(size: 110)),
                   const SizedBox(height: 32),
-                  const Text(
+                  Text(
                     AppConstants.appName,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: c.textHi,
                       fontSize: 38,
                       fontWeight: FontWeight.w900,
                       letterSpacing: -1.5,
@@ -116,8 +102,8 @@ class _LoginPageState extends State<LoginPage> {
                         ? 'Inicia sesión o regístrate para continuar'
                         : 'Crea tu cuenta para empezar a analizar',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: LoginColors.textMuted,
+                    style: TextStyle(
+                      color: c.muted,
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
                     ),
@@ -134,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
                   if (_controller.successMessage != null) ...[
                     LoginMessageCard(
                       text: _controller.successMessage!,
-                      color: LoginColors.accent,
+                      color: c.accent,
                       icon: Icons.check_circle_outline,
                     ),
                     const SizedBox(height: 24),
@@ -177,8 +163,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-// ── Local UI-only widgets ──────────────────────────────────────────────────────
-
 class _AuthButton extends StatelessWidget {
   final String label;
   final bool isLoading;
@@ -194,6 +178,7 @@ class _AuthButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c     = context.colors;
     final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(16));
     const padding = EdgeInsets.symmetric(vertical: 18);
 
@@ -201,8 +186,8 @@ class _AuthButton extends StatelessWidget {
       return OutlinedButton(
         onPressed: isLoading ? null : onPressed,
         style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.white,
-          side: const BorderSide(color: LoginColors.surface, width: 2),
+          foregroundColor: c.text,
+          side: BorderSide(color: c.surface, width: 2),
           padding: padding,
           shape: shape,
         ),
@@ -213,16 +198,16 @@ class _AuthButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: isLoading ? null : onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: LoginColors.accent,
-        foregroundColor: LoginColors.bg,
+        backgroundColor: c.accent,
+        foregroundColor: c.bg,
         padding: padding,
         elevation: 0,
         shape: shape,
       ),
       child: isLoading
-          ? const SizedBox(
+          ? SizedBox(
               width: 24, height: 24,
-              child: CircularProgressIndicator(color: LoginColors.bg, strokeWidth: 2.5),
+              child: CircularProgressIndicator(color: c.bg, strokeWidth: 2.5),
             )
           : Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
     );
@@ -234,14 +219,15 @@ class _OrDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    final c = context.colors;
+    return Row(
       children: [
-        Expanded(child: Divider(color: LoginColors.surface, thickness: 2)),
+        Expanded(child: Divider(color: c.surface, thickness: 2)),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Text('O', style: TextStyle(color: LoginColors.textMuted, fontWeight: FontWeight.w600)),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text('O', style: TextStyle(color: c.muted, fontWeight: FontWeight.w600)),
         ),
-        Expanded(child: Divider(color: LoginColors.surface, thickness: 2)),
+        Expanded(child: Divider(color: c.surface, thickness: 2)),
       ],
     );
   }

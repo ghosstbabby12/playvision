@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../core/theme/app_colors.dart';
+import '../core/theme/app_color_tokens.dart';
 import '../features/home/presentation/home_page.dart';
 import '../features/analysis/presentation/analyses_history_page.dart';
 import '../features/matches/presentation/matches_page.dart';
@@ -25,8 +25,9 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: c.bg,
       extendBody: true,
       body: _pages[_currentIndex],
       bottomNavigationBar: _GlassNavBar(
@@ -52,6 +53,7 @@ class _GlassNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.fromLTRB(32, 0, 32, 28),
       child: ClipRRect(
@@ -61,9 +63,9 @@ class _GlassNavBar extends StatelessWidget {
           child: Container(
             height: 68,
             decoration: BoxDecoration(
-              color: AppColors.navBg,
+              color: c.navBg,
               borderRadius: BorderRadius.circular(40),
-              border: Border.all(color: AppColors.navBorder),
+              border: Border.all(color: c.navBorder),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
@@ -79,12 +81,12 @@ class _GlassNavBar extends StatelessWidget {
                     curve: Curves.easeInOut,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: active ? AppColors.navActive : Colors.transparent,
+                      color: active ? c.navActive : Colors.transparent,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Icon(
                       active ? item.activeIcon : item.icon,
-                      color: active ? AppColors.accent : AppColors.muted,
+                      color: active ? c.accent : c.muted,
                       size: 22,
                     ),
                   ),

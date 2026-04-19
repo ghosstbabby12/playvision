@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_color_tokens.dart';
 
 class SectionLabel extends StatelessWidget {
   final String text;
@@ -9,8 +9,8 @@ class SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
     text,
-    style: const TextStyle(
-      color: AppColors.dim,
+    style: TextStyle(
+      color: context.colors.dim,
       fontSize: 10,
       fontWeight: FontWeight.w700,
       letterSpacing: 2,
