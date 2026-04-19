@@ -89,6 +89,22 @@ def upload_video(local_path: str, file_name: str) -> Optional[str]:
         return None
 
 
+def get_match_players(match_id: int) -> list:
+    """Fetch the players array from match_reports.summary_json for a given match."""
+    result = (
+        _db()
+        .table("match_reports")
+        .select("summary_json")
+        .eq("match_id", match_id)
+        .order("created_at", desc=True)
+        .limit(1)
+        .execute()
+    )
+    if not result.data:
+        return []
+    return result.data[0].get("summary_json", {}).get("players", [])
+
+
 def save_player_stats(match_id: int, players: list) -> None:
     """
     Insert one row per player into player_match_stats.

@@ -24,9 +24,9 @@ load_dotenv(dotenv_path=BASE_DIR / ".env", override=True)
 from analysis.detector        import detect_frame
 from analysis.tracker         import PlayerTracker
 from analysis.metrics_engine  import compute_metrics
-from analysis.exporter        import create_or_update_match, save_match_report, save_player_stats, upload_video
+from analysis.exporter        import create_or_update_match, save_match_report, save_player_stats, upload_video, get_match_players
 from analysis.heatmap_engine  import heatmap_from_positions_sample, encode_heatmap_png
-from analysis.video_heatmap   import VideoHeatmapOverlay
+from analysis.video_heatmap   import VideoHeatmapOverlay, overlay_positions_on_frame
 from analysis.team_classifier  import TeamClassifier
 from analysis.ar_renderer      import render_frame as ar_render
 from analysis.detector         import reset_state as reset_detector
@@ -143,9 +143,9 @@ def _run_pipeline(
     frame_count     = 0
     analyzed        = 0
     prev_owner: int | None = None
-    # Maps raw ByteTrack IDs → sequential display numbers (1, 2, 3 … NUM_PLAYERS)
     id_map: dict[int, int] = {}
-    _next_id = [0]   # mutable so the inner loop can increment it
+    _next_id = [0]
+    frame_data: list[tuple[int, dict]] = []  # (frame_count, frame_players) for per-player heatmaps
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -160,6 +160,7 @@ def _run_pipeline(
         frame_players, ball_detected, raw_result = detect_frame(
             frame, conf_threshold=CONF_THRESHOLD
         )
+        frame_data.append((frame_count, dict(frame_players)))
         team_classifier.update(frame, raw_result)
 
         # ── Assign stable display numbers (1…N) to new track IDs ─────────────
@@ -239,6 +240,40 @@ def _run_pipeline(
         min_presence   = MIN_PRESENCE,
     )
 
+    # ── Per-player heatmap videos (second pass — no YOLO, just overlay) ─────────
+    fd_lookup = {fc: fp for fc, fp in frame_data}
+    p_overlays: dict[int, VideoHeatmapOverlay] = {}
+    p_writers:  dict[int, cv2.VideoWriter]     = {}
+    p_paths:    dict[int, str]                 = {}
+
+    for p in players_out:
+        pid  = p["track_id"]
+        rank = p["rank"]
+        path = os.path.join(VIDEOS_DIR, f"heat_p{rank}_{video_id}.mp4")
+        p_paths[pid]    = path
+        p_overlays[pid] = VideoHeatmapOverlay(width=out_w, height=out_h)
+        p_writers[pid]  = _open_writer(path, out_fps, out_w, out_h)
+
+    cap2 = cv2.VideoCapture(video_path)
+    fc2  = 0
+    while cap2.isOpened():
+        ret, frame = cap2.read()
+        if not ret:
+            break
+        fc2 += 1
+        if fc2 % FRAME_SKIP != 0:
+            continue
+        frame    = _resize_frame(frame, TARGET_WIDTH)
+        fplayers = fd_lookup.get(fc2, {})
+        for pid in p_paths:
+            single = {pid: fplayers[pid]} if pid in fplayers else {}
+            p_overlays[pid].update(single)
+            p_writers[pid].write(p_overlays[pid].apply(frame))
+    cap2.release()
+    for pid in p_paths:
+        p_writers[pid].release()
+    print(f"[debug] per-player heatmap videos generated: {len(p_paths)}")
+
     base_url = (
         f"{os.getenv('API_HOST', 'http://127.0.0.1')}:"
         f"{os.getenv('API_PORT', '8000')}/videos"
@@ -248,6 +283,14 @@ def _run_pipeline(
 
     storage_url      = upload_video(out_path,  ann_file)
     heat_storage_url = upload_video(heat_path, heat_file)
+
+    # Upload per-player heatmap videos and attach URL to each player
+    for p in players_out:
+        pid   = p["track_id"]
+        rank  = p["rank"]
+        fname = f"heat_p{rank}_{video_id}.mp4"
+        url   = upload_video(p_paths[pid], fname) if pid in p_paths else None
+        p["heatmap_video_url"] = url or f"{base_url}/{fname}"
 
     video_url      = storage_url      or f"{base_url}/{ann_file}"
     heat_video_url = heat_storage_url or f"{base_url}/{heat_file}"
@@ -419,6 +462,68 @@ async def generate_heatmap(
     rank = int(player_rank) if player_rank and player_rank.isdigit() else None
     image = heatmap_from_positions_sample(players, selected_rank=rank)
     return Response(content=encode_heatmap_png(image), media_type="image/png")
+
+
+@app.get("/heatmap/{match_id}")
+def heatmap_by_match(match_id: int, player_rank: Optional[int] = None):
+    """
+    Generate heatmap PNG for a match stored in Supabase.
+    - No player_rank → heatmap de todo el equipo
+    - player_rank=3   → solo el jugador #3
+    """
+    players = get_match_players(match_id)
+    if not players:
+        raise HTTPException(status_code=404, detail="Match not found or no player data")
+    image = heatmap_from_positions_sample(players, selected_rank=player_rank)
+    return Response(content=encode_heatmap_png(image), media_type="image/png")
+
+
+@app.get("/heatmap/{match_id}/overlay")
+def heatmap_overlay_by_player(match_id: int, player_rank: Optional[int] = None):
+    """
+    Genera un heatmap estilo video (overlay sobre campo) filtrado por jugador.
+    - player_rank omitido → todos los jugadores
+    - player_rank=2       → solo jugador #2
+    Devuelve PNG.
+    """
+    CANVAS_W, CANVAS_H = 1050, 680
+
+    players = get_match_players(match_id)
+    if not players:
+        raise HTTPException(status_code=404, detail="Match not found or no player data")
+
+    positions: list[tuple[float, float]] = []
+    for p in players:
+        if player_rank is not None and p.get("rank") != player_rank:
+            continue
+        for pos in p.get("positions_sample", []):
+            positions.append((pos["x"] * CANVAS_W, pos["y"] * CANVAS_H))
+
+    # Campo verde sintético como base
+    from analysis.heatmap_engine import draw_pitch
+    base = draw_pitch(CANVAS_W, CANVAS_H)
+    result = overlay_positions_on_frame(base, positions)
+    return Response(content=encode_heatmap_png(result), media_type="image/png")
+
+
+@app.get("/heatmap/{match_id}/players")
+def list_match_players(match_id: int):
+    """Returns the list of players (rank, zone, distance, speed) for a match."""
+    players = get_match_players(match_id)
+    if not players:
+        raise HTTPException(status_code=404, detail="Match not found or no player data")
+    return [
+        {
+            "rank":           p["rank"],
+            "track_id":       p["track_id"],
+            "zone":           p["zone"],
+            "distance_km":    p["distance_km"],
+            "speed_kmh":      p["speed_kmh"],
+            "possession_pct": p["possession_pct"],
+            "presence_pct":   p["presence_pct"],
+        }
+        for p in players
+    ]
 
 
 @app.get("/api/live-matches")
