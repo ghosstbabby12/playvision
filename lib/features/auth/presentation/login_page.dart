@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_color_tokens.dart';
+import '../../../core/theme/theme_controller.dart';
 import '../../../shared/widgets/soccer_logo.dart';
 import '../controller/auth_controller.dart';
 import 'widgets/login_message_card.dart';
@@ -76,88 +77,100 @@ class _LoginPageState extends State<LoginPage> {
       listenable: _controller,
       builder: (context, _) => Scaffold(
         backgroundColor: c.bg,
-        body: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Center(child: SoccerLogo(size: 110)),
-                  const SizedBox(height: 32),
-                  Text(
-                    AppConstants.appName,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: c.textHi,
-                      fontSize: 38,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1.5,
+        body: Stack(children: [
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Center(child: SoccerLogo(size: 110)),
+                    const SizedBox(height: 32),
+                    Text(
+                      AppConstants.appName,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: c.textHi,
+                        fontSize: 38,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -1.5,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _controller.isLoginMode
-                        ? 'Inicia sesión o regístrate para continuar'
-                        : 'Crea tu cuenta para empezar a analizar',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: c.muted,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
+                    const SizedBox(height: 8),
+                    Text(
+                      _controller.isLoginMode
+                          ? 'Inicia sesión o regístrate para continuar'
+                          : 'Crea tu cuenta para empezar a analizar',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: c.muted,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 48),
-                  if (_controller.errorMessage != null) ...[
-                    LoginMessageCard(
-                      text: _controller.errorMessage!,
-                      color: Colors.redAccent,
-                      icon: Icons.error_outline,
+                    const SizedBox(height: 48),
+                    if (_controller.errorMessage != null) ...[
+                      LoginMessageCard(
+                        text: _controller.errorMessage!,
+                        color: Colors.redAccent,
+                        icon: Icons.error_outline,
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                    if (_controller.successMessage != null) ...[
+                      LoginMessageCard(
+                        text: _controller.successMessage!,
+                        color: c.accent,
+                        icon: Icons.check_circle_outline,
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                    LoginTextField(
+                      controller: _emailController,
+                      label: 'Correo Electrónico',
+                      icon: Icons.email_outlined,
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 16),
+                    LoginTextField(
+                      controller: _passwordController,
+                      label: 'Contraseña',
+                      icon: Icons.lock_outline,
+                      isPassword: true,
+                    ),
+                    const SizedBox(height: 36),
+                    _AuthButton(
+                      label: _controller.isLoginMode ? 'Iniciar Sesión' : 'Registrarse',
+                      isLoading: _controller.isLoading,
+                      onPressed: _submit,
                     ),
                     const SizedBox(height: 24),
-                  ],
-                  if (_controller.successMessage != null) ...[
-                    LoginMessageCard(
-                      text: _controller.successMessage!,
-                      color: c.accent,
-                      icon: Icons.check_circle_outline,
-                    ),
+                    const _OrDivider(),
                     const SizedBox(height: 24),
+                    _AuthButton(
+                      label: _controller.isLoginMode ? 'Crear una cuenta nueva' : 'Ya tengo una cuenta',
+                      isLoading: _controller.isLoading,
+                      onPressed: _controller.toggleMode,
+                      outlined: true,
+                    ),
                   ],
-                  LoginTextField(
-                    controller: _emailController,
-                    label: 'Correo Electrónico',
-                    icon: Icons.email_outlined,
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 16),
-                  LoginTextField(
-                    controller: _passwordController,
-                    label: 'Contraseña',
-                    icon: Icons.lock_outline,
-                    isPassword: true,
-                  ),
-                  const SizedBox(height: 36),
-                  _AuthButton(
-                    label: _controller.isLoginMode ? 'Iniciar Sesión' : 'Registrarse',
-                    isLoading: _controller.isLoading,
-                    onPressed: _submit,
-                  ),
-                  const SizedBox(height: 24),
-                  const _OrDivider(),
-                  const SizedBox(height: 24),
-                  _AuthButton(
-                    label: _controller.isLoginMode ? 'Crear una cuenta nueva' : 'Ya tengo una cuenta',
-                    isLoading: _controller.isLoading,
-                    onPressed: _controller.toggleMode,
-                    outlined: true,
-                  ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
+          // Theme toggle — top-right corner
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 16, 20, 0),
+                child: _ThemeToggle(),
+              ),
+            ),
+          ),
+        ]),
       ),
     );
   }
@@ -229,6 +242,79 @@ class _OrDivider extends StatelessWidget {
         ),
         Expanded(child: Divider(color: c.surface, thickness: 2)),
       ],
+    );
+  }
+}
+
+class _ThemeToggle extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: themeController,
+      builder: (context, _) {
+        final isDark = themeController.isDark;
+        const w = 64.0;
+        const h = 32.0;
+        const circle = 24.0;
+        const pad = (h - circle) / 2;
+
+        return GestureDetector(
+          onTap: themeController.toggle,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeInOut,
+            width: w,
+            height: h,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1A1A2E) : const Color(0xFFE8E8E8),
+              borderRadius: BorderRadius.circular(h / 2),
+              border: Border.all(
+                color: isDark ? const Color(0xFF3DCF6E) : const Color(0xFFBBBBBB),
+                width: 1.5,
+              ),
+            ),
+            child: Stack(children: [
+              // icon label (moon or sun) — opposite side of the circle
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeInOut,
+                left:  isDark ? w / 2 - 2 : null,
+                right: isDark ? null       : w / 2 - 2,
+                top: 0, bottom: 0,
+                child: Center(
+                  child: Icon(
+                    isDark ? Icons.nightlight_round : Icons.wb_sunny_rounded,
+                    size: 14,
+                    color: isDark ? const Color(0xFF3DCF6E) : const Color(0xFF888888),
+                  ),
+                ),
+              ),
+              // sliding circle
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeInOut,
+                left: isDark ? pad : w - circle - pad,
+                top: pad,
+                child: Container(
+                  width: circle,
+                  height: circle,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white : const Color(0xFF222222),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ]),
+          ),
+        );
+      },
     );
   }
 }

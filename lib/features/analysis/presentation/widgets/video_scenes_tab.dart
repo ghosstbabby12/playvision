@@ -56,10 +56,9 @@ class _VideoScenesTabState extends State<VideoScenesTab> {
         index: _scene,
         children: [
           _VideoScene(videoUrl: widget.videoUrl, localFile: widget.localFile),
-          _VideoScene(
-            videoUrl: widget.heatmapVideoUrl,
-            localFile: null,
-            emptyMessage: 'Heat video not available.\nRe-analyse with the latest backend to generate it.',
+          _HeatVideoScene(
+            teamUrl: widget.heatmapVideoUrl,
+            players: widget.players,
           ),
           _TeamHeatmapScene(players: widget.players),
           _PlayerHeatmapScene(players: widget.players),
@@ -108,8 +107,7 @@ class _ScenePill extends StatelessWidget {
 class _VideoScene extends StatefulWidget {
   final String? videoUrl;
   final XFile? localFile;
-  final String? emptyMessage;
-  const _VideoScene({this.videoUrl, this.localFile, this.emptyMessage});
+  const _VideoScene({super.key, this.videoUrl, this.localFile});
 
   @override
   State<_VideoScene> createState() => _VideoSceneState();
@@ -157,7 +155,7 @@ class _VideoSceneState extends State<_VideoScene> {
       }
     }
 
-    if (mounted) setState(() => _error = widget.emptyMessage ?? (kIsWeb ? 'Local files cannot be played on web. Run the backend to get a network URL.' : 'No video source available.'));
+    if (mounted) setState(() => _error = kIsWeb ? 'Local files cannot be played on web. Run the backend to get a network URL.' : 'No video source available.');
   }
 
   @override
@@ -258,6 +256,95 @@ class _VideoSceneState extends State<_VideoScene> {
             }),
           ]),
         ]),
+      ),
+    ]);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Heat video scene — team heatmap video + per-player selector
+// ─────────────────────────────────────────────────────────────────────────────
+class _HeatVideoScene extends StatefulWidget {
+  final String? teamUrl;
+  final List players;
+  const _HeatVideoScene({required this.teamUrl, required this.players});
+
+  @override
+  State<_HeatVideoScene> createState() => _HeatVideoSceneState();
+}
+
+class _HeatVideoSceneState extends State<_HeatVideoScene> {
+  // null = team video; non-null = player index in list
+  int? _selectedPlayer;
+
+  String? get _currentUrl {
+    if (_selectedPlayer == null) return widget.teamUrl;
+    final p = widget.players[_selectedPlayer!] as Map<String, dynamic>;
+    return p['heatmap_video_url'] as String?;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c       = context.colors;
+    final players = widget.players.cast<Map<String, dynamic>>();
+    final hasPerPlayer = players.any((p) => (p['heatmap_video_url'] as String?) != null);
+
+    return Column(children: [
+      // ── Selector strip ────────────────────────────────────────
+      if (hasPerPlayer)
+        SizedBox(
+          height: 52,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+            itemCount: players.length + 1,
+            itemBuilder: (_, i) {
+              final isTeam   = i == 0;
+              final isActive = isTeam ? _selectedPlayer == null : _selectedPlayer == i - 1;
+              final label    = isTeam ? 'Team' : 'P${players[i - 1]['rank']}';
+
+              return GestureDetector(
+                onTap: () => setState(() => _selectedPlayer = isTeam ? null : i - 1),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  margin: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isActive ? c.accentLo : c.elevated,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: isActive ? c.borderGreen : c.border),
+                  ),
+                  child: Text(label, style: TextStyle(
+                    color: isActive ? c.accent : c.dim,
+                    fontSize: 12,
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
+                  )),
+                ),
+              );
+            },
+          ),
+        ),
+
+      // ── Video player — keyed so it resets when URL changes ────
+      Expanded(
+        child: _currentUrl != null
+            ? _VideoScene(key: ValueKey(_currentUrl), videoUrl: _currentUrl)
+            : Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Icon(Icons.videocam_off_outlined, color: c.dim, size: 40),
+                    const SizedBox(height: 12),
+                    Text(
+                      hasPerPlayer
+                          ? 'Select a player above to view their heat video.'
+                          : 'Heat video not available.\nRe-analyse to generate it.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: c.muted, fontSize: 13, height: 1.5),
+                    ),
+                  ]),
+                ),
+              ),
       ),
     ]);
   }
