@@ -1,6 +1,7 @@
 # Environment
 .env
 venv/
+.venv/
 
 # Python
 __pycache__/
@@ -17,5 +18,5 @@ annotated_videos/
 # macOS
 .DS_Store
 
-# YOLO model (descargado automáticamente en runtime)
+# YOLO model
 *.pt

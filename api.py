@@ -17,9 +17,11 @@ import uuid
 import requests
 from datetime import datetime
 
+
 # ── Load env BEFORE importing analysis modules (they read os.getenv) ─────────
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(dotenv_path=BASE_DIR / ".env", override=True)
+
 
 from analysis.detector        import detect_frame
 from analysis.tracker         import PlayerTracker
@@ -35,6 +37,7 @@ from analysis.possession_engine import PossessionEngine
 from analysis.pass_detector    import PassLog
 from analysis.commentary_engine import CommentaryEngine
 
+
 # ── Config ────────────────────────────────────────────────────────────────────
 NUM_PLAYERS    = int(os.getenv("NUM_PLAYERS",   "22"))
 MIN_PRESENCE   = float(os.getenv("MIN_PRESENCE", "0.01"))
@@ -44,7 +47,9 @@ FPS            = float(os.getenv("FPS",          "30.0"))
 CONF_THRESHOLD = float(os.getenv("CONF_THRESHOLD","0.35"))
 FRAME_SKIP     = int(os.getenv("FRAME_SKIP",    "2"))   
 
+
 TARGET_WIDTH   = 1280
+
 
 # ── Live-match cache ──────────────────────────────────────────────────────────
 _API_KEY_SPORTS       = "5b04f6e82ecd9629ff7b1a495bab699e"
@@ -53,8 +58,10 @@ _cache_partidos       = None
 _ultimo_llamado       = 0
 _CACHE_TTL_SECONDS    = 60
 
+
 # ── App setup ─────────────────────────────────────────────────────────────────
 app = FastAPI(title="PlayVision AI")
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -62,6 +69,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 class CORSMiddlewareStaticFiles(StaticFiles):
     def __init__(self, *args, **kwargs):
@@ -75,10 +83,13 @@ class CORSMiddlewareStaticFiles(StaticFiles):
         response.headers["Access-Control-Expose-Headers"] = "Content-Length, Content-Range"
         return response
 
+
 VIDEOS_DIR = os.path.join(BASE_DIR, "annotated_videos")
 os.makedirs(VIDEOS_DIR, exist_ok=True)
 
+
 app.mount("/videos", CORSMiddlewareStaticFiles(directory=str(VIDEOS_DIR)), name="videos")
+
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def _resize_frame(frame, target_width: int):
@@ -88,6 +99,7 @@ def _resize_frame(frame, target_width: int):
     scale  = target_width / w
     new_h  = int(h * scale)
     return cv2.resize(frame, (target_width, new_h), interpolation=cv2.INTER_LINEAR)
+
 
 def _open_writer(out_path: str, fps: float, width: int, height: int):
     # 1. Intentar 'avc1' (H.264), el codec que Chrome soporta perfectamente
@@ -103,6 +115,7 @@ def _open_writer(out_path: str, fps: float, width: int, height: int):
         return writer
 
     raise RuntimeError("Could not open VideoWriter with any codec")
+
 
 # ── Shared pipeline ───────────────────────────────────────────────────────────
 def _run_pipeline(
@@ -331,6 +344,7 @@ def _run_pipeline(
     return result_payload
 
 
+
 # ── /analyze — upload a local file ───────────────────────────────────────────
 @app.post("/analyze")
 async def analyze_video(
@@ -357,6 +371,7 @@ async def analyze_video(
     finally:
         if os.path.exists(video_path):
             os.remove(video_path)
+
 
 
 # ── URL helpers ───────────────────────────────────────────────────────────────
@@ -404,6 +419,7 @@ def _download_direct(url: str, out_path: str) -> None:
             f.write(chunk)
 
 
+
 # ── /analyze-url — analyze a video from a remote URL ─────────────────────────
 @app.post("/analyze-url")
 async def analyze_video_url(
@@ -441,6 +457,7 @@ async def analyze_video_url(
         if os.path.exists(video_path):
             os.remove(video_path)
 
+
 @app.post("/heatmap")
 async def generate_heatmap(
     players_json: str = Form(...),   # JSON string: list of player dicts
@@ -464,6 +481,7 @@ async def generate_heatmap(
     return Response(content=encode_heatmap_png(image), media_type="image/png")
 
 
+
 @app.get("/heatmap/{match_id}")
 def heatmap_by_match(match_id: int, player_rank: Optional[int] = None):
     """
@@ -476,6 +494,7 @@ def heatmap_by_match(match_id: int, player_rank: Optional[int] = None):
         raise HTTPException(status_code=404, detail="Match not found or no player data")
     image = heatmap_from_positions_sample(players, selected_rank=player_rank)
     return Response(content=encode_heatmap_png(image), media_type="image/png")
+
 
 
 @app.get("/heatmap/{match_id}/overlay")
@@ -504,6 +523,7 @@ def heatmap_overlay_by_player(match_id: int, player_rank: Optional[int] = None):
     base = draw_pitch(CANVAS_W, CANVAS_H)
     result = overlay_positions_on_frame(base, positions)
     return Response(content=encode_heatmap_png(result), media_type="image/png")
+
 
 
 @app.get("/heatmap/{match_id}/players")
@@ -543,7 +563,14 @@ def live_matches():
         if datos.get("errors"):
             return {"error": datos["errors"]}
 
-        _cache_partidos  = datos.get("response", [])
+        # Obtener todos los partidos de la API
+        todos_los_partidos = datos.get("response", [])
+        
+        # Opcional: Podrías ordenarlos para poner los que están "en vivo" primero
+        # Pero lo más sencillo y efectivo es simplemente cortar la lista a los primeros 15
+        partidos_limitados = todos_los_partidos[:15]
+
+        _cache_partidos  = partidos_limitados
         _ultimo_llamado  = time.time()
         return {"origin": "api", "data": _cache_partidos}
 
