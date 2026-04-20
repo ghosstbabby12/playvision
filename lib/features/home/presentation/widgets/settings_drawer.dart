@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../../core/theme/app_color_tokens.dart';
 import '../../../../../core/theme/theme_controller.dart';
+import '../../../../../core/store/locale_provider.dart';
+import '../../../../../l10n/generated/app_localizations.dart'; 
 
 class SettingsDrawer extends StatelessWidget {
   const SettingsDrawer({super.key});
@@ -10,6 +13,10 @@ class SettingsDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
+    
+    // Lo pedimos SIN `listen: true` para que no cause problemas de reconstrucción
+    final themeController = Provider.of<ThemeController?>(context, listen: false);
 
     return Drawer(
       backgroundColor: c.surface,
@@ -30,9 +37,10 @@ class SettingsDrawer extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('PlayVision',
+                  Text(l10n.appTitle, 
                       style: TextStyle(color: c.text, fontSize: 16, fontWeight: FontWeight.w700)),
-                  Text('Settings', style: TextStyle(color: c.dim, fontSize: 12)),
+                  Text(l10n.settingsTitle, 
+                      style: TextStyle(color: c.dim, fontSize: 12)),
                 ]),
               ]),
             ),
@@ -41,66 +49,101 @@ class SettingsDrawer extends StatelessWidget {
 
             _DrawerItem(
               icon: Icons.settings_outlined,
-              label: 'Configuración',
+              label: l10n.settingsTitle, 
               onTap: () => Navigator.pop(context),
             ),
-            _DrawerItem(
-              icon: Icons.language_outlined,
-              label: 'Idioma',
-              onTap: () => Navigator.pop(context),
+            
+            // ==========================================
+            // MENU DESPLEGABLE DE IDIOMAS (POPUP)
+            // ==========================================
+            Theme(
+              data: Theme.of(context).copyWith(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+              ),
+              child: PopupMenuButton<String>(
+                color: c.surface,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 4,
+                position: PopupMenuPosition.under,
+                onSelected: (String result) {
+                  final localeProv = Provider.of<LocaleProvider?>(context, listen: false);
+                  if (localeProv != null) {
+                    localeProv.setLocale(Locale(result));
+                  }
+                  Navigator.pop(context); 
+                },
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  PopupMenuItem<String>(
+                    value: 'es',
+                    child: Text('Español', style: TextStyle(color: c.text)),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'en',
+                    child: Text('English', style: TextStyle(color: c.text)),
+                  ),
+                ],
+                child: _DrawerItemWidgetOnly(
+                  icon: Icons.language_outlined,
+                  label: l10n.languageItem, 
+                ),
+              ),
             ),
+
             _DrawerItem(
               icon: Icons.help_outline_rounded,
-              label: 'Ayuda',
+              label: l10n.helpItem, 
               onTap: () => Navigator.pop(context),
             ),
 
             const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-              child: Text('APARIENCIA',
+              child: Text(l10n.appearanceSection, 
                   style: TextStyle(color: c.dim, fontSize: 10,
                       fontWeight: FontWeight.w700, letterSpacing: 1.5)),
             ),
 
-            ListenableBuilder(
-              listenable: themeController,
-              builder: (context, _) => ListTile(
-                leading: Icon(
-                  themeController.isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-                  color: c.accent, size: 20,
+            // Aseguramos el cambio de tema de forma segura
+            if (themeController != null)
+              ListenableBuilder(
+                listenable: themeController,
+                builder: (context, _) => ListTile(
+                  leading: Icon(
+                    themeController.isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+                    color: c.accent, size: 20,
+                  ),
+                  title: Text(
+                    l10n.lightModeItem, 
+                    style: TextStyle(color: c.text, fontSize: 14),
+                  ),
+                  trailing: Switch(
+                    value: !themeController.isDark,
+                    onChanged: (_) => themeController.toggle(),
+                    activeThumbColor: c.accent,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  visualDensity: const VisualDensity(vertical: -1),
+                  onTap: themeController.toggle,
                 ),
-                title: Text(
-                  themeController.isDark ? 'Modo Claro' : 'Modo Oscuro',
-                  style: TextStyle(color: c.text, fontSize: 14),
-                ),
-                trailing: Switch(
-                  value: !themeController.isDark,
-                  onChanged: (_) => themeController.toggle(),
-                  activeThumbColor: c.accent,
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                visualDensity: const VisualDensity(vertical: -1),
-                onTap: themeController.toggle,
               ),
-            ),
 
             const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-              child: Text('INFORMACIÓN',
+              child: Text(l10n.infoSection, 
                   style: TextStyle(color: c.dim, fontSize: 10,
                       fontWeight: FontWeight.w700, letterSpacing: 1.5)),
             ),
 
             _DrawerItem(
               icon: Icons.people_outline_rounded,
-              label: 'Sobre Nosotros',
+              label: l10n.aboutUsItem, 
               onTap: () => Navigator.pop(context),
             ),
             _DrawerItem(
               icon: Icons.info_outline_rounded,
-              label: 'Sobre PlayVision',
+              label: l10n.aboutAppItem, 
               onTap: () => _showAbout(context),
             ),
 
@@ -111,7 +154,7 @@ class SettingsDrawer extends StatelessWidget {
             ListTile(
               leading: Icon(Icons.logout_rounded, color: c.danger, size: 20),
               title: Text(
-                'Cerrar Sesión',
+                l10n.logoutButton, 
                 style: TextStyle(color: c.danger, fontSize: 14, fontWeight: FontWeight.w600),
               ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 20),
@@ -174,6 +217,28 @@ class _DrawerItem extends StatelessWidget {
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 20),
       visualDensity: const VisualDensity(vertical: -1),
+    );
+  }
+}
+
+class _DrawerItemWidgetOnly extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _DrawerItemWidgetOnly({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Row(
+        children: [
+          Icon(icon, color: c.accentLo, size: 20),
+          const SizedBox(width: 32),
+          Text(label, style: TextStyle(color: c.text, fontSize: 14)),
+        ],
+      ),
     );
   }
 }

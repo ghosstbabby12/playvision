@@ -1,6 +1,7 @@
-// lib/features/live_matches/presentation/live_matches_screen.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
+
+import '../../../l10n/generated/app_localizations.dart'; // IMPORTANTE
 import '../data/match_repository.dart';
 import '../data/match_model.dart';
 
@@ -21,12 +22,8 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchMatches(); // Carga inicial
-    
-    // Polling: Pide datos cada 60 segundos
-    _timer = Timer.periodic(Duration(seconds: 60), (timer) {
-      _fetchMatches();
-    });
+    _fetchMatches();
+    _timer = Timer.periodic(const Duration(seconds: 60), (_) => _fetchMatches());
   }
 
   Future<void> _fetchMatches() async {
@@ -47,72 +44,81 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen> {
 
   @override
   void dispose() {
-    _timer?.cancel(); // Limpia el temporizador al salir de la pantalla
+    _timer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('En Vivo 🔴'),
+        title: Text(l10n.liveTitle),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            tooltip: l10n.liveRefreshTooltip,
+            icon: const Icon(Icons.refresh),
             onPressed: () {
               setState(() => _isLoading = true);
-              _fetchMatches(); // Botón manual por si el usuario no quiere esperar los 60 seg
+              _fetchMatches();
             },
-          )
+          ),
         ],
       ),
-      body: _isLoading 
-          ? Center(child: CircularProgressIndicator())
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
           : _error.isNotEmpty
-              ? Center(child: Text('Hubo un error: $_error\n¿Está corriendo el servidor Python?'))
-              : _matches.isEmpty 
-                  ? Center(child: Text('No hay partidos en vivo en este momento.'))
+              ? Center(child: Text(l10n.liveLoadError(_error)))
+              : _matches.isEmpty
+                  ? Center(child: Text(l10n.liveNoMatches))
                   : ListView.builder(
                       itemCount: _matches.length,
                       itemBuilder: (context, index) {
                         final match = _matches[index];
                         return Card(
-                          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           child: Padding(
-                            padding: EdgeInsets.all(16.0),
+                            padding: const EdgeInsets.all(16.0),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 // Equipo Local
-                                Column(
-                                  children: [
-                                    if (match.homeLogo.isNotEmpty)
-                                      Image.network(match.homeLogo, width: 40, height: 40,
-                                          errorBuilder: (_, __, ___) => const SizedBox(width: 40, height: 40)),
-                                    SizedBox(height: 8),
-                                    Text(match.homeTeam, style: TextStyle(fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
-                                // Marcador y Minuto
-                                Column(
-                                  children: [
-                                    Text(
-                                      '${match.homeGoals} - ${match.awayGoals}',
-                                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                                Column(children: [
+                                  if (match.homeLogo.isNotEmpty)
+                                    Image.network(
+                                      match.homeLogo,
+                                      width: 40, height: 40,
+                                      errorBuilder: (_, __, ___) =>
+                                          const SizedBox(width: 40, height: 40),
                                     ),
-                                    Text('${match.elapsed}\'', style: TextStyle(color: Colors.red)),
-                                  ],
-                                ),
+                                  const SizedBox(height: 8),
+                                  Text(match.homeTeam,
+                                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                                ]),
+                                // Marcador y Minuto
+                                Column(children: [
+                                  Text(
+                                    '${match.homeGoals} - ${match.awayGoals}',
+                                    style: const TextStyle(
+                                        fontSize: 24, fontWeight: FontWeight.bold),
+                                  ),
+                                  Text("${match.elapsed}'",
+                                      style: const TextStyle(color: Colors.red)),
+                                ]),
                                 // Equipo Visitante
-                                Column(
-                                  children: [
-                                    if (match.awayLogo.isNotEmpty)
-                                      Image.network(match.awayLogo, width: 40, height: 40,
-                                          errorBuilder: (_, __, ___) => const SizedBox(width: 40, height: 40)),
-                                    SizedBox(height: 8),
-                                    Text(match.awayTeam, style: TextStyle(fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
+                                Column(children: [
+                                  if (match.awayLogo.isNotEmpty)
+                                    Image.network(
+                                      match.awayLogo,
+                                      width: 40, height: 40,
+                                      errorBuilder: (_, __, ___) =>
+                                          const SizedBox(width: 40, height: 40),
+                                    ),
+                                  const SizedBox(height: 8),
+                                  Text(match.awayTeam,
+                                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                                ]),
                               ],
                             ),
                           ),

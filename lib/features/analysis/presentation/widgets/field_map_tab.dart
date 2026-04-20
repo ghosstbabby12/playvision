@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_color_tokens.dart';
+import '../../../../../l10n/generated/app_localizations.dart'; // IMPORTANTE
 
 class FieldMapTab extends StatefulWidget {
   final List players;
@@ -18,12 +19,13 @@ class _FieldMapTabState extends State<FieldMapTab> {
 
   @override
   Widget build(BuildContext context) {
-    final c       = context.colors;
+    final c    = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final players = widget.players.cast<Map<String, dynamic>>();
+
     if (players.isEmpty) {
-      return Center(
-        child: Text('No player data', style: TextStyle(color: c.muted)),
-      );
+      return Center(child: Text(l10n.fieldNoPlayerData,
+          style: TextStyle(color: c.muted)));
     }
 
     final maxKm    = players.fold<double>(0, (p, e) => math.max(p, (e['distance_km'] as num?)?.toDouble() ?? 0));
@@ -62,32 +64,35 @@ class _FieldMapTabState extends State<FieldMapTab> {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
           child: Row(children: [
-            _InfoChip(label: 'Formation', value: formation),
+            _InfoChip(label: l10n.fieldFormation, value: formation),
             const SizedBox(width: 8),
-            _InfoChip(label: 'Players', value: '${players.length}'),
+            _InfoChip(label: l10n.fieldPlayers, value: '${players.length}'),
             const SizedBox(width: 8),
-            _InfoChip(label: 'Avg speed', value: '${_avgSpeed(players)} km/h'),
+            _InfoChip(label: l10n.fieldAvgSpeed, value: '${_avgSpeed(players)} km/h'),
           ]),
         ),
 
         if (selected != null && selected.isNotEmpty)
-          _PlayerDetailCard(player: selected, onClose: () => setState(() => _selectedRank = null)),
+          _PlayerDetailCard(
+            player: selected,
+            onClose: () => setState(() => _selectedRank = null),
+          ),
 
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            _LegendDot(color: const Color(0xFF7CFC00), label: 'High activity'),
+            _LegendDot(color: const Color(0xFF7CFC00), label: l10n.fieldHighActivity),
             const SizedBox(width: 20),
-            _LegendDot(color: c.accent, label: 'Medium'),
+            _LegendDot(color: c.accent, label: l10n.fieldMedium),
             const SizedBox(width: 20),
-            const _LegendDot(color: Color(0xFF2D5A3D), label: 'Low'),
+            _LegendDot(color: const Color(0xFF2D5A3D), label: l10n.fieldLow),
           ]),
         ),
 
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
           child: Column(children: [
-            const _TableHeader(),
+            _TableHeader(),
             const SizedBox(height: 6),
             ...players.map((p) => _PlayerRow(
               player: p,
@@ -107,21 +112,15 @@ class _FieldMapTabState extends State<FieldMapTab> {
   void _handleTap(Offset local, List<Map<String, dynamic>> players, BuildContext ctx) {
     final box = ctx.findRenderObject() as RenderBox?;
     if (box == null) return;
-
     final screenW = box.size.width - 32;
     final fieldH  = screenW / 1.5;
-
     const topOffset  = 68.0;
     const leftOffset = 16.0;
-
     final fx = (local.dx - leftOffset) / screenW;
     final fy = (local.dy - topOffset) / fieldH;
-
     if (fx < 0 || fx > 1 || fy < 0 || fy > 1) return;
-
     double best = double.infinity;
     int? bestRank;
-
     for (final p in players) {
       final dx = (p['avg_x_norm'] as num).toDouble() - fx;
       final dy = (p['avg_y_norm'] as num).toDouble() - fy;
@@ -131,7 +130,6 @@ class _FieldMapTabState extends State<FieldMapTab> {
         bestRank = p['rank'] as int;
       }
     }
-
     setState(() => _selectedRank = bestRank);
   }
 
@@ -166,6 +164,7 @@ class _PossessionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c       = context.colors;
+    final l10n    = AppLocalizations.of(context)!;
     final teamPct = teamPoss.clamp(0.0, 100.0);
     final oppPct  = oppPoss.clamp(0.0, 100.0);
 
@@ -181,13 +180,15 @@ class _PossessionBar extends StatelessWidget {
         child: Column(children: [
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('YOUR TEAM', style: TextStyle(color: c.accent, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1)),
+              Text(l10n.fieldYourTeam, style: TextStyle(
+                  color: c.accent, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1)),
               Text('${teamPct.toStringAsFixed(0)}%',
                   style: TextStyle(color: c.textHi, fontSize: 22, fontWeight: FontWeight.w900)),
             ]),
-            Text('POSSESSION', style: TextStyle(color: c.muted, fontSize: 11, letterSpacing: 0.5)),
+            Text(l10n.possession, style: TextStyle(color: c.muted, fontSize: 11, letterSpacing: 0.5)),
             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              Text('OPPONENT', style: TextStyle(color: c.dim, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1)),
+              Text(l10n.fieldOpponent, style: TextStyle(
+                  color: c.dim, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1)),
               Text('${oppPct.toStringAsFixed(0)}%',
                   style: TextStyle(color: c.muted, fontSize: 22, fontWeight: FontWeight.w900)),
             ]),
@@ -212,7 +213,7 @@ class _PossessionBar extends StatelessWidget {
   }
 }
 
-// ── Tactical pitch painter ─────────────────────────────────────────────────────
+// ── Tactical pitch painter (sin textos visibles — sin cambios) ─────────────────
 class _TacticalPitchPainter extends CustomPainter {
   final List<Map<String, dynamic>> players;
   final double maxKm;
@@ -230,17 +231,14 @@ class _TacticalPitchPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
-
     final bgRect = Rect.fromLTWH(0, 0, w, h);
     canvas.drawRect(bgRect, Paint()..color = const Color(0xFF0B1A0D));
-
     final stripePaint = Paint()..style = PaintingStyle.fill;
     const stripes = 8;
     for (int i = 0; i < stripes; i++) {
       stripePaint.color = i.isEven ? const Color(0xFF0D1F10) : const Color(0xFF0B1A0D);
       canvas.drawRect(Rect.fromLTWH(i * w / stripes, 0, w / stripes, h), stripePaint);
     }
-
     final vignette = Paint()
       ..shader = RadialGradient(
         center: Alignment.center,
@@ -248,36 +246,30 @@ class _TacticalPitchPainter extends CustomPainter {
         colors: [Colors.transparent, Colors.black.withValues(alpha: 0.25)],
       ).createShader(bgRect);
     canvas.drawRect(bgRect, vignette);
-
     final line = Paint()
       ..color = Colors.white.withValues(alpha: 0.25)
       ..strokeWidth = 1.2
       ..style = PaintingStyle.stroke;
-
     const m = 10.0;
     final fieldRect = Rect.fromLTWH(m, m, w - m * 2, h - m * 2);
     canvas.drawRRect(RRect.fromRectAndRadius(fieldRect, const Radius.circular(3)), line);
     canvas.drawLine(Offset(w / 2, m), Offset(w / 2, h - m), line);
     canvas.drawCircle(Offset(w / 2, h / 2), h * 0.18, line);
     canvas.drawCircle(Offset(w / 2, h / 2), 3, Paint()..color = Colors.white.withValues(alpha: 0.4));
-
     final pbW = w * 0.15;
     final pbH = h * 0.50;
     final pbT = (h - pbH) / 2;
     canvas.drawRect(Rect.fromLTWH(m, pbT, pbW, pbH), line);
     canvas.drawRect(Rect.fromLTWH(w - m - pbW, pbT, pbW, pbH), line);
-
     final gbW = w * 0.06;
     final gbH = h * 0.26;
     final gbT = (h - gbH) / 2;
     canvas.drawRect(Rect.fromLTWH(m, gbT, gbW, gbH), line);
     canvas.drawRect(Rect.fromLTWH(w - m - gbW, gbT, gbW, gbH), line);
-
     final goalH = h * 0.12;
     final goalT = (h - goalH) / 2;
     canvas.drawRect(Rect.fromLTWH(m - 5, goalT, 5, goalH), line..strokeWidth = 1.5);
     canvas.drawRect(Rect.fromLTWH(w - m, goalT, 5, goalH), line..strokeWidth = 1.5);
-
     final cornerLine = Paint()
       ..color = Colors.white.withValues(alpha: 0.2)
       ..strokeWidth = 1.0
@@ -287,17 +279,14 @@ class _TacticalPitchPainter extends CustomPainter {
     canvas.drawArc(Rect.fromCircle(center: Offset(w - m, m), radius: cr), math.pi / 2, math.pi / 2, false, cornerLine);
     canvas.drawArc(Rect.fromCircle(center: Offset(m, h - m), radius: cr), -math.pi / 2, -math.pi / 2, false, cornerLine);
     canvas.drawArc(Rect.fromCircle(center: Offset(w - m, h - m), radius: cr), -math.pi / 2, math.pi / 2, false, cornerLine);
-
     canvas.drawCircle(Offset(m + pbW * 0.75, h / 2), 2.5, Paint()..color = Colors.white.withValues(alpha: 0.35));
     canvas.drawCircle(Offset(w - m - pbW * 0.75, h / 2), 2.5, Paint()..color = Colors.white.withValues(alpha: 0.35));
-
     for (final p in players) {
       final positions = p['positions_sample'] as List?;
       if (positions == null || positions.isEmpty) continue;
       final km    = (p['distance_km'] as num?)?.toDouble() ?? 0;
       final ratio = maxKm > 0 ? km / maxKm : 0.0;
       final color = _playerColor(ratio).withValues(alpha: 0.08);
-
       for (final pos in positions) {
         final px = (pos['x'] as num).toDouble() * w;
         final py = (pos['y'] as num).toDouble() * h;
@@ -305,20 +294,17 @@ class _TacticalPitchPainter extends CustomPainter {
             Paint()..color = color..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4));
       }
     }
-
     for (final p in players) {
       final xN   = (p['avg_x_norm'] as num).toDouble();
       final yN   = (p['avg_y_norm'] as num).toDouble();
       final km   = (p['distance_km'] as num?)?.toDouble() ?? 0;
       final rank = p['rank'] as int;
       final isSelected = selectedRank == rank;
-
       final px    = xN * w;
       final py    = yN * h;
       final ratio  = maxKm > 0 ? km / maxKm : 0.0;
       final color  = _playerColor(ratio);
       final radius = isSelected ? 16.0 : 13.0;
-
       if (isSelected || ratio > 0.5) {
         canvas.drawCircle(
           Offset(px, py), radius + 6,
@@ -327,7 +313,6 @@ class _TacticalPitchPainter extends CustomPainter {
             ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
         );
       }
-
       canvas.drawCircle(Offset(px + 1.5, py + 2), radius,
           Paint()..color = Colors.black.withValues(alpha: 0.5));
       canvas.drawCircle(Offset(px, py), radius, Paint()..color = color);
@@ -338,7 +323,6 @@ class _TacticalPitchPainter extends CustomPainter {
           ..strokeWidth = isSelected ? 2.0 : 1.0
           ..style = PaintingStyle.stroke,
       );
-
       final textColor = ratio > 0.45 ? const Color(0xFF0B1A0D) : Colors.white.withValues(alpha: 0.9);
       final tp = TextPainter(
         text: TextSpan(
@@ -403,6 +387,7 @@ class _PlayerDetailCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c     = context.colors;
+    final l10n  = AppLocalizations.of(context)!;
     final rank  = player['rank'] as int;
     final zone  = player['zone'] as String? ?? '—';
     final km    = (player['distance_km'] as num?)?.toStringAsFixed(2) ?? '—';
@@ -429,20 +414,20 @@ class _PlayerDetailCard extends StatelessWidget {
                   color: Colors.black, fontSize: 14, fontWeight: FontWeight.w900))),
             ),
             const SizedBox(width: 10),
-            Expanded(child: Text('Player $rank · $zone',
+            Expanded(child: Text(l10n.fieldPlayerLabel(rank, zone),
                 style: TextStyle(color: c.textHi, fontSize: 14, fontWeight: FontWeight.w700))),
             GestureDetector(onTap: onClose,
                 child: Icon(Icons.close_rounded, color: c.muted, size: 18)),
           ]),
           const SizedBox(height: 12),
           Row(children: [
-            _StatPill('$km km', 'Distance'),
+            _StatPill('$km km',   l10n.fieldDistance),
             const SizedBox(width: 8),
-            _StatPill('$speed km/h', 'Speed'),
+            _StatPill('$speed km/h', l10n.fieldSpeed),
             const SizedBox(width: 8),
-            _StatPill('$poss%', 'Possession'),
+            _StatPill('$poss%',   l10n.possession),
             const SizedBox(width: 8),
-            _StatPill('$pres%', 'Presence'),
+            _StatPill('$pres%',   l10n.fieldPresence),
           ]),
         ]),
       ),
@@ -474,16 +459,25 @@ class _TableHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
+    final c    = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       child: Row(children: [
-        SizedBox(width: 28, child: Text('#', style: TextStyle(color: c.dim, fontSize: 10, fontWeight: FontWeight.w700))),
+        SizedBox(width: 28, child: Text('#',
+            style: TextStyle(color: c.dim, fontSize: 10, fontWeight: FontWeight.w700))),
         const SizedBox(width: 8),
-        Expanded(child: Text('ZONE', style: TextStyle(color: c.dim, fontSize: 10, fontWeight: FontWeight.w700))),
-        SizedBox(width: 50, child: Text('DIST', textAlign: TextAlign.right, style: TextStyle(color: c.dim, fontSize: 10, fontWeight: FontWeight.w700))),
-        SizedBox(width: 50, child: Text('POSS', textAlign: TextAlign.right, style: TextStyle(color: c.dim, fontSize: 10, fontWeight: FontWeight.w700))),
-        SizedBox(width: 50, child: Text('PRES', textAlign: TextAlign.right, style: TextStyle(color: c.dim, fontSize: 10, fontWeight: FontWeight.w700))),
+        Expanded(child: Text(l10n.tableZone,
+            style: TextStyle(color: c.dim, fontSize: 10, fontWeight: FontWeight.w700))),
+        SizedBox(width: 50, child: Text(l10n.tableDist,
+            textAlign: TextAlign.right,
+            style: TextStyle(color: c.dim, fontSize: 10, fontWeight: FontWeight.w700))),
+        SizedBox(width: 50, child: Text(l10n.tablePoss,
+            textAlign: TextAlign.right,
+            style: TextStyle(color: c.dim, fontSize: 10, fontWeight: FontWeight.w700))),
+        SizedBox(width: 50, child: Text(l10n.tablePres,
+            textAlign: TextAlign.right,
+            style: TextStyle(color: c.dim, fontSize: 10, fontWeight: FontWeight.w700))),
       ]),
     );
   }
@@ -504,7 +498,6 @@ class _PlayerRow extends StatelessWidget {
     final km   = (player['distance_km'] as num?)?.toDouble() ?? 0;
     final poss = (player['possession_pct'] as num?)?.toStringAsFixed(1) ?? '—';
     final pres = (player['presence_pct'] as num?)?.toStringAsFixed(0) ?? '—';
-
     final ratio = maxKm > 0 ? km / maxKm : 0.0;
     final color = ratio > 0.66
         ? const Color(0xFF7CFC00)

@@ -1,0 +1,308 @@
+{
+  "@@locale": "es",
+  "appTitle": "PlayVision",
+  "loginTitle": "Inicia sesión o regístrate para continuar",
+  "emailHint": "Correo Electrónico",
+  "passwordHint": "Contraseña",
+  "loginButton": "Iniciar Sesión",
+  "createAccountButton": "Crear una cuenta nueva",
+  "registerTitle": "Crea tu cuenta para empezar a analizar",
+  "registerButton": "Registrarse",
+  "alreadyHaveAccountButton": "Ya tengo una cuenta",
+  "settingsTitle": "Configuración",
+  "languageItem": "Idioma",
+  "helpItem": "Ayuda",
+  "appearanceSection": "APARIENCIA",
+  "lightModeItem": "Modo Claro",
+  "infoSection": "INFORMACIÓN",
+  "aboutUsItem": "Sobre Nosotros",
+  "aboutAppItem": "Sobre PlayVision",
+  "logoutButton": "Cerrar Sesión",
+  "selectOrCreateTeam": "Selecciona o crea un equipo",
+  "chooseTeamSubtitle": "Elige un equipo para iniciar un nuevo análisis",
+  "resultsTab": "Resultados",
+  "newsTab": "Noticias",
+  "totalMatches": "Partidos totales",
+  "analysed": "analizados",
+  "createTeam": "Crear un equipo",
+  "tapToAddTeam": "Toca aquí para agregar tu primer equipo",
+  "newTeam": "Nuevo",
+  "changeTeam": "Cambiar",
+  "analyseVideo": "Analizar video",
+  "uploadMatchVideo": "Sube un video de partido y obtén estadísticas de IA",
+  "viewAnalysis": "Ver análisis",
+  "teamMatches": "Partidos del equipo",
+  "noAnalysedMatches": "Aún no hay partidos analizados",
+  "noRealMatchesToday": "No hay partidos reales hoy",
+  "liveStatus": "En Vivo",
+  "scheduledStatus": "Programado",
+  "finishedStatus": "Finalizado",
+  "myAnalysesTitle": "Mis Análisis",
+  "allMatchesGrouped": "Todos los partidos agrupados por equipo",
+  "noAnalysisData": "Aún no hay datos de análisis para este partido.",
+  "matchWord": "Partido",
+  "statusAnalysed": "Analizado",
+  "statusProcessing": "Procesando",
+  "statusError": "Error",
+  "statusUploaded": "Subido",
+  "noAnalysesYet": "Sin análisis aún",
+  "selectTeamAndAnalyseDesc": "Selecciona un equipo en la pantalla principal\\ny analiza un video de partido.",
+  "analysisTitle": "Análisis",
+  "aiPoweredPerformance": "Rendimiento impulsado por IA",
+  "uploadVideoBtn": "Subir video",
+  "readyBtn": "Listo",
+  "tabSummary": "RESUMEN",
+  "tabField": "CAMPO",
+  "tabPlayers": "JUGADORES",
+  "tabVideo": "VIDEO",
+  "matchesTitle": "Partidos",
+  "matchHistory": "Historial de partidos",
+  "trainingTitle": "Entrenamiento",
+  "performanceBasedPlan": "Plan basado en rendimiento",
+  "aiRecommendationsTeam": "RECOMENDACIONES DE IA - EQUIPO",
+  "teamAnalysis": "Análisis del equipo",
+  "personalisedPlanByPlayer": "PLAN PERSONALIZADO POR JUGADOR",
+  "totalDist": "Dist. Total",
+  "avgDist": "Dist. Prom.",
+  "possession": "POSESIÓN",
+  "aiInsights": "ANÁLISIS DE IA",
+  "distanceByPlayer": "DISTANCIA POR JUGADOR",
+  "liveTitle": "En Vivo 🔴",
+  "liveRefreshTooltip": "Actualizar",
+  "liveLoadError": "Hubo un error: {error}\\n¿Está corriendo el servidor Python?",
+  "@liveLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "liveNoMatches": "No hay partidos en vivo en este momento.",
+  "fieldNoPlayerData": "Sin datos de jugadores",
+  "fieldYourTeam": "TU EQUIPO",
+  "fieldOpponent": "OPONENTE",
+  "fieldFormation": "Formación",
+  "fieldPlayers": "Jugadores",
+  "fieldAvgSpeed": "Vel. promedio",
+  "fieldHighActivity": "Alta actividad",
+  "fieldMedium": "Media",
+  "fieldLow": "Baja",
+  "fieldPlayerLabel": "Jugador {rank} · {zone}",
+  "@fieldPlayerLabel": {
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      },
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldDistance": "Distancia",
+  "fieldSpeed": "Velocidad",
+  "fieldPresence": "Presencia",
+  "tableZone": "ZONA",
+  "tableDist": "DIST",
+  "tablePoss": "POS",
+  "tablePres": "PRE",
+  "playersSection": "JUGADORES",
+  "playerLabel": "Jugador {rank}",
+  "@playerLabel": {
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      }
+    }
+  },
+  "detailsBtn": "Detalles",
+  "statDistance": "DISTANCIA",
+  "statSpeed": "VELOCIDAD",
+  "statPoss": "POS.",
+  "detailDistanceCovered": "Distancia recorrida",
+  "detailAverageSpeed": "Velocidad promedio",
+  "detailBallPossession": "Posesión del balón",
+  "detailFieldPresence": "Presencia en campo",
+  "detailMainZone": "Zona principal",
+  "insightHighActivity": "Jugador de alta actividad. Recorrió {km} km y alcanzó {spd} m/s de velocidad promedio.",
+  "@insightHighActivity": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      },
+      "spd": {
+        "type": "String"
+      }
+    }
+  },
+  "insightModerateActivity": "Jugador de actividad moderada. Mantuvo posición en la zona {zone}.",
+  "@insightModerateActivity": {
+    "placeholders": {
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryPlayers": "Jugadores",
+  "summaryTotalDist": "Dist. total",
+  "summaryAvgDist": "Dist. prom.",
+  "summaryPossession": "Posesión",
+  "summaryAiInsights": "ANÁLISIS DE IA",
+  "summaryDistByPlayer": "DISTANCIA POR JUGADOR",
+  "summaryHighlights": "DESTACADOS",
+  "summaryMostActive": "Más activo",
+  "summaryMostPossession": "Mayor posesión",
+  "summaryLeastActive": "Menos activo",
+  "summaryPlayerRef": "Jugador {id}",
+  "@summaryPlayerRef": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "insightTotalKm": "El equipo recorrió {km} km en total durante el análisis.",
+  "@insightTotalKm": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "insightPossession": "Posesión del balón: {pct}% del tiempo analizado.",
+  "@insightPossession": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightActivePlayers": "Se detectaron {count} jugadores activos en el campo.",
+  "@insightActivePlayers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "insightFastestPlayer": "El jugador {rank} alcanzó la mayor velocidad: {spd} m/s.",
+  "@insightFastestPlayer": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      },
+      "spd": {
+        "type": "String"
+      }
+    }
+  },
+  "insightTopZone": "El equipo se concentró principalmente en la zona {zone}.",
+  "@insightTopZone": {
+    "placeholders": {
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "videoErrorTitle": "Error al cargar el vídeo",
+  "videoErrorNetwork": "Error de red: {error}\\nURL: {url}",
+  "@videoErrorNetwork": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      },
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "videoErrorLocal": "Error local: {error}",
+  "@videoErrorLocal": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "videoErrorWebLocal": "En web no se pueden reproducir archivos locales directamente.",
+  "videoErrorNoSource": "URL o archivo no proporcionado.",
+  "sceneVideo": "Video",
+  "sceneHeatVideo": "Calor Video",
+  "sceneHeatmap": "Mapa Calor",
+  "scenePlayer": "Jugador",
+  "sceneTeamLabel": "Equipo",
+  "scenePlayerShort": "J{rank}",
+  "@scenePlayerShort": {
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      }
+    }
+  },
+  "sceneVideoNotAvailable": "Video no disponible",
+  "sceneNetworkError": "Error de red: {error}\\n{url}",
+  "@sceneNetworkError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      },
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "sceneLocalError": "Error de archivo local: {error}",
+  "@sceneLocalError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "sceneWebError": "No se pueden reproducir archivos locales en web. Ejecuta el backend para obtener una URL.",
+  "sceneNoSource": "No hay fuente de video disponible.",
+  "sceneSelectPlayerAbove": "Selecciona un jugador arriba para ver su video de calor.",
+  "sceneHeatNotAvailable": "Video de calor no disponible.\\nVuelve a analizar para generarlo.",
+  "sceneTeamHeatmapTitle": "Mapa de Calor del Equipo",
+  "sceneTeamHeatmapSub": "Movimiento combinado de todos los jugadores detectados",
+  "sceneZoneDensity": "Densidad por Zona",
+  "sceneZoneDistribution": "Distribución por zona",
+  "sceneNoPlayerData": "Sin datos de jugadores",
+  "sceneLow": "Bajo",
+  "sceneHigh": "Alto",
+  "scenePlayerInfo": "Jugador {rank} · {zone}",
+  "@scenePlayerInfo": {
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      },
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "scenePlayerKm": "{km} km",
+  "@scenePlayerKm": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadFromDevice": "Desde dispositivo",
+  "uploadFromUrl": "Desde URL",
+  "uploadAnalysing": "Analizando con IA...",
+  "uploadStartAnalysis": "Iniciar análisis",
+  "uploadHowItWorks": "CÓMO FUNCIONA",
+  "uploadStep1Title": "Elige la fuente",
+  "uploadStep1Desc": "Sube desde el dispositivo o pega una URL directa de video",
+  "uploadStep2Title": "La IA analiza",
+  "uploadStep2Desc": "YOLO detecta y rastrea cada jugador en tiempo real",
+  "uploadStep3Title": "Ver resultados",
+  "uploadStep3Desc": "Obtén estadísticas, mapa de campo e insights automáticos de IA",
+  "uploadVideoReady": "Video listo para analizar",
+  "uploadSelectVideo": "Seleccionar video del partido",
+  "uploadTapGallery": "Toca para abrir la galería",
+  "uploadUrlLabel": "URL del video",
+  "uploadUrlHint": "YouTube, .mp4 directo, Vimeo…",
+  "uploadUrlSupports": "Compatible con YouTube, Vimeo y enlaces directos .mp4/.mov"
+}

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../../core/theme/app_color_tokens.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 
 class VideoPlayerTab extends StatefulWidget {
   final String? videoUrl;
@@ -40,7 +41,10 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
         if (mounted) setState(() { _ctrl = ctrl; _initialized = true; });
         return;
       } catch (e) {
-        if (mounted) setState(() => _errorMessage = "Error de red: $e \nURL: $finalUrl");
+        if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
+          setState(() => _errorMessage = l10n.videoErrorNetwork(e.toString(), finalUrl));
+        }
         await ctrl.dispose();
         return;
       }
@@ -53,13 +57,22 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
         if (mounted) setState(() { _ctrl = ctrl; _initialized = true; });
         return;
       } catch (e) {
-        if (mounted) setState(() => _errorMessage = "Error local: $e");
+        if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
+          setState(() => _errorMessage = l10n.videoErrorLocal(e.toString()));
+        }
         await ctrl.dispose();
       }
     } else if (kIsWeb && widget.localFile != null) {
-      if (mounted) setState(() => _errorMessage = "En web no se pueden reproducir archivos locales directamente.");
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        setState(() => _errorMessage = l10n.videoErrorWebLocal);
+      }
     } else {
-      if (mounted) setState(() => _errorMessage = "URL o archivo no proporcionado.");
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        setState(() => _errorMessage = l10n.videoErrorNoSource);
+      }
     }
   }
 
@@ -71,7 +84,8 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
+    final c    = context.colors;
+    final l10n = AppLocalizations.of(context)!;
 
     if (_errorMessage != null) {
       return Center(
@@ -80,7 +94,7 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             Icon(Icons.error_outline, color: c.danger, size: 48),
             const SizedBox(height: 16),
-            Text('Error al cargar el vídeo',
+            Text(l10n.videoErrorTitle,
                 style: TextStyle(color: c.danger, fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             Text(_errorMessage!,
@@ -126,8 +140,8 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
                   _ctrl!,
                   allowScrubbing: true,
                   colors: VideoProgressColors(
-                    playedColor: c.accent,
-                    bufferedColor: c.elevated,
+                    playedColor:     c.accent,
+                    bufferedColor:   c.elevated,
                     backgroundColor: c.accentLo,
                   ),
                 ),
@@ -195,6 +209,8 @@ class _VideoPlayerTabState extends State<VideoPlayerTab> {
     return '$m:$s';
   }
 }
+
+// ─────────────────────────────────────────────
 
 class _CtrlButton extends StatelessWidget {
   final IconData icon;

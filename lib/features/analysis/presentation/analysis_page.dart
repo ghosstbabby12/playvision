@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_color_tokens.dart';
+import '../../../l10n/generated/app_localizations.dart'; // IMPORTANTE
 import '../controller/analysis_controller.dart';
 import 'widgets/field_map_tab.dart';
 import 'widgets/players_tab.dart';
@@ -37,6 +38,8 @@ class _AnalysisPageState extends State<AnalysisPage>
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
+    
     return ListenableBuilder(
       listenable: _controller,
       builder: (context, _) {
@@ -68,11 +71,11 @@ class _AnalysisPageState extends State<AnalysisPage>
                 child: Row(children: [
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('Analysis',
+                      Text(l10n.analysisTitle,
                           style: TextStyle(color: c.text, fontSize: 24,
                               fontWeight: FontWeight.w800, letterSpacing: -0.3)),
                       const SizedBox(height: 3),
-                      Text('AI-powered performance',
+                      Text(l10n.aiPoweredPerformance,
                           style: TextStyle(color: c.dim, fontSize: 13)),
                     ]),
                   ),
@@ -89,7 +92,7 @@ class _AnalysisPageState extends State<AnalysisPage>
                         child: Row(children: [
                           Icon(Icons.upload_file_outlined, color: c.accent, size: 16),
                           const SizedBox(width: 6),
-                          Text(_controller.videoFile != null ? 'Ready' : 'Upload video',
+                          Text(_controller.videoFile != null ? l10n.readyBtn : l10n.uploadVideoBtn,
                               style: TextStyle(color: c.text, fontSize: 13, fontWeight: FontWeight.w500)),
                         ]),
                       ),
@@ -125,11 +128,11 @@ class _AnalysisPageState extends State<AnalysisPage>
                       unselectedLabelColor: c.dim,
                       labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11, letterSpacing: 1.5),
                       dividerColor: Colors.transparent,
-                      tabs: const [
-                        Tab(text: 'SUMMARY'),
-                        Tab(text: 'FIELD'),
-                        Tab(text: 'PLAYERS'),
-                        Tab(text: 'VIDEO'),
+                      tabs: [
+                        Tab(text: l10n.tabSummary),
+                        Tab(text: l10n.tabField),
+                        Tab(text: l10n.tabPlayers),
+                        Tab(text: l10n.tabVideo),
                       ],
                     ),
                   ),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../../../core/constants/app_constants.dart';
-import '../../../core/theme/app_color_tokens.dart';
-import '../../../core/theme/theme_controller.dart';
-import '../../../shared/widgets/soccer_logo.dart';
+import '../../../../../core/theme/app_color_tokens.dart';
+import '../../../../../core/theme/theme_controller.dart';
+import '../../../../../core/store/locale_provider.dart';
+import '../../../../../l10n/generated/app_localizations.dart'; 
+import '../../../../../shared/widgets/soccer_logo.dart';
 import '../controller/auth_controller.dart';
 import 'widgets/login_message_card.dart';
 import 'widgets/login_text_field.dart';
@@ -49,11 +51,13 @@ class _LoginPageState extends State<LoginPage> {
     final email    = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
+    final l10n = AppLocalizations.of(context)!;
+
     if (email.isEmpty || password.isEmpty) {
       setState(() {
         _controller.errorMessage = _controller.isLoginMode
-            ? 'Ingresa tu correo y contraseña para continuar.'
-            : 'Llena todos los campos para crear tu cuenta.';
+            ? l10n.loginTitle 
+            : l10n.registerTitle;
       });
       return;
     }
@@ -65,7 +69,9 @@ class _LoginPageState extends State<LoginPage> {
       });
     } else {
       _controller.signUp(email, password).then((_) {
-        if (mounted) _passwordController.clear();
+        if (mounted) {
+          _passwordController.clear();
+        }
       });
     }
   }
@@ -73,6 +79,8 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
+
     return ListenableBuilder(
       listenable: _controller,
       builder: (context, _) => Scaffold(
@@ -89,7 +97,7 @@ class _LoginPageState extends State<LoginPage> {
                     const Center(child: SoccerLogo(size: 110)),
                     const SizedBox(height: 32),
                     Text(
-                      AppConstants.appName,
+                      l10n.appTitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: c.textHi,
@@ -101,8 +109,8 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 8),
                     Text(
                       _controller.isLoginMode
-                          ? 'Inicia sesión o regístrate para continuar'
-                          : 'Crea tu cuenta para empezar a analizar',
+                          ? l10n.loginTitle
+                          : l10n.registerTitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: c.muted,
@@ -111,6 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 48),
+                    
                     if (_controller.errorMessage != null) ...[
                       LoginMessageCard(
                         text: _controller.errorMessage!,
@@ -127,22 +136,25 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 24),
                     ],
+                    
                     LoginTextField(
                       controller: _emailController,
-                      label: 'Correo Electrónico',
+                      label: l10n.emailHint,
                       icon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: 16),
                     LoginTextField(
                       controller: _passwordController,
-                      label: 'Contraseña',
+                      label: l10n.passwordHint,
                       icon: Icons.lock_outline,
                       isPassword: true,
                     ),
                     const SizedBox(height: 36),
                     _AuthButton(
-                      label: _controller.isLoginMode ? 'Iniciar Sesión' : 'Registrarse',
+                      label: _controller.isLoginMode 
+                          ? l10n.loginButton 
+                          : l10n.registerButton,
                       isLoading: _controller.isLoading,
                       onPressed: _submit,
                     ),
@@ -150,7 +162,9 @@ class _LoginPageState extends State<LoginPage> {
                     const _OrDivider(),
                     const SizedBox(height: 24),
                     _AuthButton(
-                      label: _controller.isLoginMode ? 'Crear una cuenta nueva' : 'Ya tengo una cuenta',
+                      label: _controller.isLoginMode 
+                          ? l10n.createAccountButton 
+                          : l10n.alreadyHaveAccountButton,
                       isLoading: _controller.isLoading,
                       onPressed: _controller.toggleMode,
                       outlined: true,
@@ -160,13 +174,20 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ),
-          // Theme toggle — top-right corner
+          
           SafeArea(
             child: Align(
               alignment: Alignment.topRight,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 16, 20, 0),
-                child: _ThemeToggle(),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const _LanguageToggle(),
+                    const SizedBox(width: 12),
+                    const _ThemeToggle(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -246,75 +267,137 @@ class _OrDivider extends StatelessWidget {
   }
 }
 
-class _ThemeToggle extends StatelessWidget {
+class _LanguageToggle extends StatelessWidget {
+  const _LanguageToggle();
+
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: themeController,
-      builder: (context, _) {
-        final isDark = themeController.isDark;
-        const w = 64.0;
-        const h = 32.0;
-        const circle = 24.0;
-        const pad = (h - circle) / 2;
+    final c = context.colors;
+    
+    // Obtenemos los providers CON `listen: true` explícito para asegurar
+    // que se enteren de cualquier cambio (idioma o tema).
+    final themeController = Provider.of<ThemeController?>(context, listen: true);
+    final localeProvider = Provider.of<LocaleProvider?>(context, listen: true);
 
-        return GestureDetector(
-          onTap: themeController.toggle,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 280),
-            curve: Curves.easeInOut,
-            width: w,
-            height: h,
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1A1A2E) : const Color(0xFFE8E8E8),
-              borderRadius: BorderRadius.circular(h / 2),
-              border: Border.all(
-                color: isDark ? const Color(0xFF3DCF6E) : const Color(0xFFBBBBBB),
-                width: 1.5,
+    final isDark = themeController?.isDark ?? true;
+    final currentLang = localeProvider?.locale?.languageCode ?? 'es';
+    final isEn = currentLang == 'en';
+
+    const h = 32.0;
+
+    return GestureDetector(
+      onTap: () {
+        if (localeProvider != null) {
+          localeProvider.setLocale(Locale(isEn ? 'es' : 'en'));
+        }
+      },
+      child: Container(
+        height: h,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1A1A2E) : const Color(0xFFE8E8E8),
+          borderRadius: BorderRadius.circular(h / 2),
+          border: Border.all(
+            color: isDark ? const Color(0xFF3DCF6E).withValues(alpha: 0.5) : const Color(0xFFBBBBBB),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.language_rounded,
+              size: 16,
+              color: isDark ? const Color(0xFF3DCF6E) : c.text,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              isEn ? 'EN' : 'ES',
+              style: TextStyle(
+                color: isDark ? Colors.white : c.text,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
               ),
             ),
-            child: Stack(children: [
-              // icon label (moon or sun) — opposite side of the circle
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 280),
-                curve: Curves.easeInOut,
-                left:  isDark ? w / 2 - 2 : null,
-                right: isDark ? null       : w / 2 - 2,
-                top: 0, bottom: 0,
-                child: Center(
-                  child: Icon(
-                    isDark ? Icons.nightlight_round : Icons.wb_sunny_rounded,
-                    size: 14,
-                    color: isDark ? const Color(0xFF3DCF6E) : const Color(0xFF888888),
-                  ),
-                ),
-              ),
-              // sliding circle
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 280),
-                curve: Curves.easeInOut,
-                left: isDark ? pad : w - circle - pad,
-                top: pad,
-                child: Container(
-                  width: circle,
-                  height: circle,
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white : const Color(0xFF222222),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 4,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ]),
-          ),
-        );
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeToggle extends StatelessWidget {
+  const _ThemeToggle();
+
+  @override
+  Widget build(BuildContext context) {
+    // Al usar listen: true, este widget y todo su contexto se redibujará
+    // cuando cambie el tema, animando el botón y cambiando los colores de fondo
+    final themeController = Provider.of<ThemeController?>(context, listen: true);
+
+    final isDark = themeController?.isDark ?? true;
+    const w = 64.0;
+    const h = 32.0;
+    const circle = 24.0;
+    const pad = (h - circle) / 2;
+
+    return GestureDetector(
+      onTap: () {
+        if (themeController != null) {
+          themeController.toggle();
+        }
       },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeInOut,
+        width: w,
+        height: h,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1A1A2E) : const Color(0xFFE8E8E8),
+          borderRadius: BorderRadius.circular(h / 2),
+          border: Border.all(
+            color: isDark ? const Color(0xFF3DCF6E) : const Color(0xFFBBBBBB),
+            width: 1.5,
+          ),
+        ),
+        child: Stack(children: [
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeInOut,
+            left:  isDark ? w / 2 - 2 : null,
+            right: isDark ? null      : w / 2 - 2,
+            top: 0, bottom: 0,
+            child: Center(
+              child: Icon(
+                isDark ? Icons.nightlight_round : Icons.wb_sunny_rounded,
+                size: 14,
+                color: isDark ? const Color(0xFF3DCF6E) : const Color(0xFF888888),
+              ),
+            ),
+          ),
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeInOut,
+            left: isDark ? pad : w - circle - pad,
+            top: pad,
+            child: Container(
+              width: circle,
+              height: circle,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white : const Color(0xFF222222),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ]),
+      ),
     );
   }
 }

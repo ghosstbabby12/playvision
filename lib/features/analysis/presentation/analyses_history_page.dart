@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../core/store/analysis_store.dart';
 import '../../../core/supabase/supabase_service.dart';
 import '../../../core/theme/app_color_tokens.dart';
+import '../../../l10n/generated/app_localizations.dart'; // IMPORTANTE
 import 'analysis_page.dart';
 
 class AnalysesHistoryPage extends StatefulWidget {
@@ -52,6 +53,7 @@ class _AnalysesHistoryPageState extends State<AnalysesHistoryPage> {
   @override
   Widget build(BuildContext context) {
     final c       = context.colors;
+    final l10n    = AppLocalizations.of(context)!;
     final grouped = _grouped;
     final teamsWithMatches = _teams
         .where((t) => grouped.containsKey(t['id'] as int?))
@@ -66,11 +68,11 @@ class _AnalysesHistoryPageState extends State<AnalysesHistoryPage> {
             child: Row(children: [
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('My Analyses',
+                  Text(l10n.myAnalysesTitle,
                       style: TextStyle(color: c.text, fontSize: 24,
                           fontWeight: FontWeight.w800, letterSpacing: -0.3)),
                   const SizedBox(height: 3),
-                  Text('All matches grouped by team',
+                  Text(l10n.allMatchesGrouped,
                       style: TextStyle(color: c.dim, fontSize: 13)),
                 ]),
               ),
@@ -133,6 +135,7 @@ class _AnalysesHistoryPageState extends State<AnalysesHistoryPage> {
     final matchId = match['id'] as int?;
     if (matchId == null) return;
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
 
     showDialog(
       context: context,
@@ -151,7 +154,7 @@ class _AnalysesHistoryPageState extends State<AnalysesHistoryPage> {
         Navigator.push(context, MaterialPageRoute(builder: (_) => const AnalysisPage()));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: const Text('No analysis data for this match yet.'),
+          content: Text(l10n.noAnalysisData),
           backgroundColor: c.elevated,
           behavior: SnackBarBehavior.floating,
         ));
@@ -185,6 +188,7 @@ class _TeamSectionState extends State<_TeamSection> {
   @override
   Widget build(BuildContext context) {
     final c       = context.colors;
+    final l10n    = AppLocalizations.of(context)!;
     final name    = widget.team['name']     as String? ?? '—';
     final club    = widget.team['club']     as String?;
     final logoUrl = widget.team['logo_url'] as String?;
@@ -231,7 +235,7 @@ class _TeamSectionState extends State<_TeamSection> {
                   color: c.accentLo,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text('$done / ${widget.matches.length} analysed',
+                child: Text('$done / ${widget.matches.length} ${l10n.analysed}',
                     style: TextStyle(
                         color: c.accent, fontSize: 10, fontWeight: FontWeight.w700)),
               ),
@@ -263,6 +267,7 @@ class _MatchRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c          = context.colors;
+    final l10n       = AppLocalizations.of(context)!;
     final opponent   = match['opponent'] as String?;
     final dateStr    = match['match_date'] as String? ?? '';
     final status     = match['status']   as String? ?? 'uploaded';
@@ -273,10 +278,10 @@ class _MatchRow extends StatelessWidget {
     final dateLabel = dt != null ? DateFormat('d MMM y · HH:mm').format(dt) : '—';
 
     final (statusColor, statusLabel) = switch (status) {
-      'done'       => (c.success, 'Analysed'),
-      'processing' => (c.warning, 'Processing'),
-      'error'      => (c.danger,  'Error'),
-      _            => (c.dim,     'Uploaded'),
+      'done'       => (c.success, l10n.statusAnalysed),
+      'processing' => (c.warning, l10n.statusProcessing),
+      'error'      => (c.danger,  l10n.statusError),
+      _            => (c.dim,     l10n.statusUploaded),
     };
 
     final hasAnalysis = status == 'done' && videoUrl != null;
@@ -303,7 +308,7 @@ class _MatchRow extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(opponent != null && opponent.isNotEmpty ? 'vs $opponent' : 'Match',
+            Text(opponent != null && opponent.isNotEmpty ? 'vs $opponent' : l10n.matchWord,
                 style: TextStyle(color: c.text, fontSize: 13, fontWeight: FontWeight.w600)),
             const SizedBox(height: 2),
             Text(dateLabel, style: TextStyle(color: c.dim, fontSize: 11)),
@@ -331,6 +336,7 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -341,10 +347,10 @@ class _EmptyState extends StatelessWidget {
             child: Icon(Icons.analytics_outlined, color: c.accent, size: 36),
           ),
           const SizedBox(height: 20),
-          Text('No analyses yet', style: TextStyle(
+          Text(l10n.noAnalysesYet, style: TextStyle(
               color: c.text, fontSize: 18, fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
-          Text('Select a team on the home screen\nand analyse a match video.',
+          Text(l10n.selectTeamAndAnalyseDesc,
               textAlign: TextAlign.center,
               style: TextStyle(color: c.muted, fontSize: 13, height: 1.5)),
         ]),

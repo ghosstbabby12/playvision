@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../../core/theme/app_color_tokens.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 
 class VideoScenesTab extends StatefulWidget {
   final String? videoUrl;
@@ -33,6 +34,7 @@ class _VideoScenesTabState extends State<VideoScenesTab> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     return Column(children: [
       Padding(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
@@ -44,22 +46,18 @@ class _VideoScenesTabState extends State<VideoScenesTab> {
             border: Border.all(color: c.border),
           ),
           child: Row(children: [
-            _ScenePill(label: 'Video',      icon: Icons.play_circle_outline,       active: _scene == 0, onTap: () => setState(() => _scene = 0)),
-            _ScenePill(label: 'Heat Video', icon: Icons.local_fire_department,      active: _scene == 1, onTap: () => setState(() => _scene = 1)),
-            _ScenePill(label: 'Heatmap',    icon: Icons.blur_on_rounded,            active: _scene == 2, onTap: () => setState(() => _scene = 2)),
-            _ScenePill(label: 'Player',     icon: Icons.person_pin_circle_outlined, active: _scene == 3, onTap: () => setState(() => _scene = 3)),
+            _ScenePill(label: l10n.sceneVideo, icon: Icons.play_circle_outline, active: _scene == 0, onTap: () => setState(() => _scene = 0)),
+            _ScenePill(label: l10n.sceneHeatVideo, icon: Icons.local_fire_department, active: _scene == 1, onTap: () => setState(() => _scene = 1)),
+            _ScenePill(label: l10n.sceneHeatmap, icon: Icons.blur_on_rounded, active: _scene == 2, onTap: () => setState(() => _scene = 2)),
+            _ScenePill(label: l10n.scenePlayer, icon: Icons.person_pin_circle_outlined, active: _scene == 3, onTap: () => setState(() => _scene = 3)),
           ]),
         ),
       ),
-
       Expanded(child: IndexedStack(
         index: _scene,
         children: [
           _VideoScene(videoUrl: widget.videoUrl, localFile: widget.localFile),
-          _HeatVideoScene(
-            teamUrl: widget.heatmapVideoUrl,
-            players: widget.players,
-          ),
+          _HeatVideoScene(teamUrl: widget.heatmapVideoUrl, players: widget.players),
           _TeamHeatmapScene(players: widget.players),
           _PlayerHeatmapScene(players: widget.players),
         ],
@@ -137,7 +135,10 @@ class _VideoSceneState extends State<_VideoScene> {
         return;
       } catch (e) {
         await ctrl.dispose();
-        if (mounted) setState(() => _error = 'Network error: $e\n$url');
+        if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
+          setState(() => _error = l10n.sceneNetworkError(e.toString(), url));
+        }
         return;
       }
     }
@@ -150,12 +151,18 @@ class _VideoSceneState extends State<_VideoScene> {
         return;
       } catch (e) {
         await ctrl.dispose();
-        if (mounted) setState(() => _error = 'Local file error: $e');
+        if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
+          setState(() => _error = l10n.sceneLocalError(e.toString()));
+        }
         return;
       }
     }
 
-    if (mounted) setState(() => _error = kIsWeb ? 'Local files cannot be played on web. Run the backend to get a network URL.' : 'No video source available.');
+    if (mounted) {
+      final l10n = AppLocalizations.of(context)!;
+      setState(() => _error = kIsWeb ? l10n.sceneWebError : l10n.sceneNoSource);
+    }
   }
 
   @override
@@ -178,6 +185,7 @@ class _VideoSceneState extends State<_VideoScene> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
 
     if (_error != null) {
       return Center(child: Padding(
@@ -185,7 +193,7 @@ class _VideoSceneState extends State<_VideoScene> {
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Icon(Icons.videocam_off_outlined, color: c.danger, size: 44),
           const SizedBox(height: 14),
-          Text('Video not available', style: TextStyle(color: c.danger, fontSize: 15, fontWeight: FontWeight.w600)),
+          Text(l10n.sceneVideoNotAvailable, style: TextStyle(color: c.danger, fontSize: 15, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           Text(_error!, textAlign: TextAlign.center, style: TextStyle(color: c.muted, fontSize: 11, height: 1.5)),
         ]),
@@ -225,7 +233,7 @@ class _VideoSceneState extends State<_VideoScene> {
               const SizedBox(height: 6),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 Text(_fmt(value.position), style: TextStyle(color: c.muted, fontSize: 11)),
-                Text(_fmt(value.duration),  style: TextStyle(color: c.dim,  fontSize: 11)),
+                Text(_fmt(value.duration), style: TextStyle(color: c.dim, fontSize: 11)),
               ]),
             ]),
           ),
@@ -261,9 +269,6 @@ class _VideoSceneState extends State<_VideoScene> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Heat video scene — team heatmap video + per-player selector
-// ─────────────────────────────────────────────────────────────────────────────
 class _HeatVideoScene extends StatefulWidget {
   final String? teamUrl;
   final List players;
@@ -274,7 +279,6 @@ class _HeatVideoScene extends StatefulWidget {
 }
 
 class _HeatVideoSceneState extends State<_HeatVideoScene> {
-  // null = team video; non-null = player index in list
   int? _selectedPlayer;
 
   String? get _currentUrl {
@@ -285,12 +289,12 @@ class _HeatVideoSceneState extends State<_HeatVideoScene> {
 
   @override
   Widget build(BuildContext context) {
-    final c       = context.colors;
+    final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final players = widget.players.cast<Map<String, dynamic>>();
     final hasPerPlayer = players.any((p) => (p['heatmap_video_url'] as String?) != null);
 
     return Column(children: [
-      // ── Selector strip ────────────────────────────────────────
       if (hasPerPlayer)
         SizedBox(
           height: 52,
@@ -299,9 +303,11 @@ class _HeatVideoSceneState extends State<_HeatVideoScene> {
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
             itemCount: players.length + 1,
             itemBuilder: (_, i) {
-              final isTeam   = i == 0;
+              final isTeam = i == 0;
               final isActive = isTeam ? _selectedPlayer == null : _selectedPlayer == i - 1;
-              final label    = isTeam ? 'Team' : 'P${players[i - 1]['rank']}';
+              final label = isTeam
+                  ? l10n.sceneTeamLabel
+                  : l10n.scenePlayerShort(players[i - 1]['rank'] as int);
 
               return GestureDetector(
                 onTap: () => setState(() => _selectedPlayer = isTeam ? null : i - 1),
@@ -324,8 +330,6 @@ class _HeatVideoSceneState extends State<_HeatVideoScene> {
             },
           ),
         ),
-
-      // ── Video player — keyed so it resets when URL changes ────
       Expanded(
         child: _currentUrl != null
             ? _VideoScene(key: ValueKey(_currentUrl), videoUrl: _currentUrl)
@@ -337,8 +341,8 @@ class _HeatVideoSceneState extends State<_HeatVideoScene> {
                     const SizedBox(height: 12),
                     Text(
                       hasPerPlayer
-                          ? 'Select a player above to view their heat video.'
-                          : 'Heat video not available.\nRe-analyse to generate it.',
+                          ? l10n.sceneSelectPlayerAbove
+                          : l10n.sceneHeatNotAvailable,
                       textAlign: TextAlign.center,
                       style: TextStyle(color: c.muted, fontSize: 13, height: 1.5),
                     ),
@@ -378,16 +382,17 @@ class _TeamHeatmapScene extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c    = context.colors;
+    final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final cast = players.cast<Map<String, dynamic>>();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('Team Heatmap', style: TextStyle(
+        Text(l10n.sceneTeamHeatmapTitle, style: TextStyle(
             color: c.text, fontSize: 15, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
-        Text('Combined movement of all detected players',
+        Text(l10n.sceneTeamHeatmapSub,
             style: TextStyle(color: c.muted, fontSize: 12)),
         const SizedBox(height: 14),
         ClipRRect(
@@ -402,7 +407,7 @@ class _TeamHeatmapScene extends StatelessWidget {
         const SizedBox(height: 14),
         _HeatmapLegend(),
         const SizedBox(height: 20),
-        Text('Zone Density', style: TextStyle(
+        Text(l10n.sceneZoneDensity, style: TextStyle(
             color: c.text, fontSize: 13, fontWeight: FontWeight.w700)),
         const SizedBox(height: 10),
         _ZoneDensityGrid(players: cast),
@@ -424,14 +429,15 @@ class _PlayerHeatmapSceneState extends State<_PlayerHeatmapScene> {
 
   @override
   Widget build(BuildContext context) {
-    final c    = context.colors;
+    final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final cast = widget.players.cast<Map<String, dynamic>>();
-    if (cast.isEmpty) return Center(child: Text('No player data', style: TextStyle(color: c.muted)));
+    if (cast.isEmpty) return Center(child: Text(l10n.sceneNoPlayerData, style: TextStyle(color: c.muted)));
 
     final selected = cast[_selectedIndex];
-    final rank     = selected['rank'] as int;
-    final zone     = selected['zone'] as String? ?? '—';
-    final km       = (selected['distance_km'] as num?)?.toStringAsFixed(2) ?? '—';
+    final rank = selected['rank'] as int;
+    final zone = selected['zone'] as String? ?? '—';
+    final km = (selected['distance_km'] as num?)?.toStringAsFixed(2) ?? '—';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
@@ -468,9 +474,7 @@ class _PlayerHeatmapSceneState extends State<_PlayerHeatmapScene> {
             },
           ),
         ),
-
         const SizedBox(height: 14),
-
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
@@ -486,15 +490,13 @@ class _PlayerHeatmapSceneState extends State<_PlayerHeatmapScene> {
                   color: Colors.black, fontSize: 12, fontWeight: FontWeight.w900))),
             ),
             const SizedBox(width: 10),
-            Expanded(child: Text('Player $rank · $zone',
+            Expanded(child: Text(l10n.scenePlayerInfo(rank, zone),
                 style: TextStyle(color: c.textHi, fontSize: 13, fontWeight: FontWeight.w700))),
-            Text('$km km', style: TextStyle(
+            Text(l10n.scenePlayerKm(km), style: TextStyle(
                 color: c.accent, fontSize: 12, fontWeight: FontWeight.w700)),
           ]),
         ),
-
         const SizedBox(height: 14),
-
         ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: AspectRatio(
@@ -508,13 +510,11 @@ class _PlayerHeatmapSceneState extends State<_PlayerHeatmapScene> {
             ),
           ),
         ),
-
         const SizedBox(height: 14),
         _HeatmapLegend(),
-
         if (selected['heatmap_zones'] != null) ...[
           const SizedBox(height: 20),
-          Text('Zone distribution', style: TextStyle(
+          Text(l10n.sceneZoneDistribution, style: TextStyle(
               color: c.text, fontSize: 13, fontWeight: FontWeight.w700)),
           const SizedBox(height: 10),
           _ZoneBar(zones: Map<String, double>.from(
@@ -601,7 +601,7 @@ class _HeatmapPainter extends CustomPainter {
     for (final p in activePlayers) {
       final xN = (p['avg_x_norm'] as num).toDouble();
       final yN = (p['avg_y_norm'] as num).toDouble();
-      final r  = p['rank'] as int;
+      final r = p['rank'] as int;
       final px = xN * w;
       final py = yN * h;
 
@@ -631,8 +631,9 @@ class _HeatmapLegend extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     return Row(children: [
-      Text('Low', style: TextStyle(color: c.dim, fontSize: 10)),
+      Text(l10n.sceneLow, style: TextStyle(color: c.dim, fontSize: 10)),
       const SizedBox(width: 8),
       Expanded(child: Container(
         height: 6,
@@ -648,7 +649,7 @@ class _HeatmapLegend extends StatelessWidget {
         ),
       )),
       const SizedBox(width: 8),
-      Text('High', style: TextStyle(color: c.dim, fontSize: 10)),
+      Text(l10n.sceneHigh, style: TextStyle(color: c.dim, fontSize: 10)),
     ]);
   }
 }
@@ -659,7 +660,7 @@ class _ZoneDensityGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c      = context.colors;
+    final c = context.colors;
     final counts = <String, int>{};
     for (final p in players) {
       final z = p['zone'] as String? ?? 'Unknown';
@@ -707,7 +708,7 @@ class _ZoneBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c      = context.colors;
+    final c = context.colors;
     final sorted = zones.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 

@@ -24,6 +24,9 @@ class HomeController extends ChangeNotifier {
   String? errorMessage;
   String? successMessage;
 
+  // NUEVO: Variable para saber si el controlador ya fue destruido
+  bool _isDisposed = false;
+
   Map<String, dynamic>? get lastResult => AnalysisStore.instance.lastResult;
   bool get hasResult => lastResult != null;
 
@@ -35,23 +38,36 @@ class HomeController extends ChangeNotifier {
     return teamMatches[id] ?? [];
   }
 
+  // NUEVO: Función segura para notificar oyentes solo si no está destruido
+  void _safeNotifyListeners() {
+    if (!_isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true; // Marcamos como destruido
+    super.dispose();
+  }
+
   // ── Team selection ───────────────────────────────────────
   void selectTeam(Map<String, dynamic> team) {
     selectedTeam = team;
     AnalysisStore.instance.selectedTeamId = team['id'] as int?;
-    notifyListeners();
+    _safeNotifyListeners();
     loadMatchesForTeam(team['id'] as int);
   }
 
   void clearTeamSelection() {
     selectedTeam = null;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   // ── Data loading ─────────────────────────────────────────
   Future<void> loadTeams() async {
     isLoading = true;
-    notifyListeners();
+    _safeNotifyListeners();
     try {
       teams = await _service.getTeams();
       // Keep selectedTeam in sync with refreshed data
@@ -64,33 +80,33 @@ class HomeController extends ChangeNotifier {
       errorMessage = 'No se pudieron cargar los equipos: $e';
     } finally {
       isLoading = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
   Future<void> loadRecentMatches() async {
     isLoadingMatches = true;
-    notifyListeners();
+    _safeNotifyListeners();
     try {
       recentMatches = await _service.getMatches();
     } catch (e) {
       errorMessage = 'No se pudieron cargar los partidos: $e';
     } finally {
       isLoadingMatches = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
   Future<void> loadMatchesForTeam(int teamId) async {
     _loadingMatches.add(teamId);
-    notifyListeners();
+    _safeNotifyListeners();
     try {
       teamMatches[teamId] = await _service.getMatchesByTeam(teamId);
     } catch (e) {
       errorMessage = 'Fallo al cargar los partidos de este equipo: $e';
     } finally {
       _loadingMatches.remove(teamId);
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -98,7 +114,7 @@ class HomeController extends ChangeNotifier {
   Future<bool> loadAnalysisForMatch(int matchId) async {
     isLoading = true;
     errorMessage = null;
-    notifyListeners();
+    _safeNotifyListeners();
 
     try {
       final report = await _service.getMatchReport(matchId);
@@ -114,7 +130,7 @@ class HomeController extends ChangeNotifier {
       return false;
     } finally {
       isLoading = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -123,7 +139,7 @@ class HomeController extends ChangeNotifier {
     final teamId = selectedTeam?['id'] as int?;
     if (teamId == null) {
       errorMessage = 'Por favor selecciona un equipo primero.';
-      notifyListeners();
+      _safeNotifyListeners();
       return;
     }
 
@@ -133,7 +149,7 @@ class HomeController extends ChangeNotifier {
     isAnalyzing = true;
     errorMessage = null;
     successMessage = null;
-    notifyListeners();
+    _safeNotifyListeners();
 
     int? matchId;
 
@@ -207,7 +223,7 @@ class HomeController extends ChangeNotifier {
       }
     } finally {
       isAnalyzing = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -237,7 +253,7 @@ class HomeController extends ChangeNotifier {
     } catch(e) {
       errorMessage = "No se pudo crear el equipo: $e";
     }
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   Future<void> updateTeam({
@@ -248,7 +264,7 @@ class HomeController extends ChangeNotifier {
       await loadTeams();
     } catch (e) {
       errorMessage = 'No se pudo actualizar el equipo: $e';
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -259,7 +275,7 @@ class HomeController extends ChangeNotifier {
       await loadTeams();
     } catch (e) {
       errorMessage = 'No se pudo eliminar el equipo: $e';
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 

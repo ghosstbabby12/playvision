@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_color_tokens.dart';
+import '../../../../../l10n/generated/app_localizations.dart'; // IMPORTANTE
 import '../../../../../shared/widgets/section_label.dart';
 
 class PlayersTab extends StatelessWidget {
@@ -8,19 +9,22 @@ class PlayersTab extends StatelessWidget {
   const PlayersTab({super.key, required this.players});
 
   @override
-  Widget build(BuildContext context) => ListView.builder(
-    padding: const EdgeInsets.all(20),
-    itemCount: players.length + 1,
-    itemBuilder: (ctx, i) {
-      if (i == 0) {
-        return const Padding(
-          padding: EdgeInsets.only(bottom: 16),
-          child: SectionLabel('PLAYERS'),
-        );
-      }
-      return PlayerCard(player: players[i - 1] as Map<String, dynamic>);
-    },
-  );
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: players.length + 1,
+      itemBuilder: (ctx, i) {
+        if (i == 0) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: SectionLabel(l10n.playersSection),
+          );
+        }
+        return PlayerCard(player: players[i - 1] as Map<String, dynamic>);
+      },
+    );
+  }
 }
 
 class PlayerCard extends StatelessWidget {
@@ -30,6 +34,7 @@ class PlayerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c        = context.colors;
+    final l10n     = AppLocalizations.of(context)!;
     final rank     = player['rank'] as int;
     final km       = (player['distance_km']    as num?)?.toDouble() ?? 0;
     final spd      = (player['speed_ms']       as num?)?.toDouble() ?? 0;
@@ -61,7 +66,7 @@ class PlayerCard extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Player $rank',
+                Text(l10n.playerLabel(rank),
                     style: TextStyle(color: c.text, fontWeight: FontWeight.w700, fontSize: 14)),
                 Text(player['zone'] as String? ?? '—',
                     style: TextStyle(color: c.dim, fontSize: 12)),
@@ -73,7 +78,7 @@ class PlayerCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: c.border2),
                 ),
-                child: Text('Details',
+                child: Text(l10n.detailsBtn,
                     style: TextStyle(color: c.accent, fontSize: 11, fontWeight: FontWeight.w600)),
               ),
             ]),
@@ -93,11 +98,11 @@ class PlayerCard extends StatelessWidget {
           Container(
             decoration: BoxDecoration(border: Border(top: BorderSide(color: c.border))),
             child: Row(children: [
-              _StatColumn('DISTANCE', '${km.toStringAsFixed(2)} km'),
+              _StatColumn(l10n.statDistance, '${km.toStringAsFixed(2)} km'),
               Container(width: 1, height: 36, color: c.border),
-              _StatColumn('SPEED',    '${spd.toStringAsFixed(1)} m/s'),
+              _StatColumn(l10n.statSpeed,    '${spd.toStringAsFixed(1)} m/s'),
               Container(width: 1, height: 36, color: c.border),
-              _StatColumn('POSS.',    '$poss%'),
+              _StatColumn(l10n.statPoss,     '$poss%'),
             ]),
           ),
         ]),
@@ -107,6 +112,7 @@ class PlayerCard extends StatelessWidget {
 
   void _showPlayerDetail(BuildContext context, Map<String, dynamic> p) {
     final c        = context.colors;
+    final l10n     = AppLocalizations.of(context)!;
     final rank     = p['rank'] as int;
     final km       = (p['distance_km']    as num?)?.toDouble() ?? 0;
     final spd      = (p['speed_ms']       as num?)?.toDouble() ?? 0;
@@ -135,18 +141,18 @@ class PlayerCard extends StatelessWidget {
             ),
             const SizedBox(width: 14),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Player $rank',
+              Text(l10n.playerLabel(rank),
                   style: TextStyle(color: c.text, fontSize: 18, fontWeight: FontWeight.w700)),
               Text(p['zone'] as String? ?? '—',
                   style: TextStyle(color: c.dim, fontSize: 13)),
             ]),
           ]),
           const SizedBox(height: 24),
-          PlayerDetailRow('Distance covered', '${km.toStringAsFixed(2)} km'),
-          PlayerDetailRow('Average speed',    '${spd.toStringAsFixed(1)} m/s'),
-          PlayerDetailRow('Ball possession',  '$poss%'),
-          PlayerDetailRow('Field presence',   '$presence%'),
-          PlayerDetailRow('Main zone',        p['zone'] as String? ?? '—'),
+          PlayerDetailRow(l10n.detailDistanceCovered, '${km.toStringAsFixed(2)} km'),
+          PlayerDetailRow(l10n.detailAverageSpeed,    '${spd.toStringAsFixed(1)} m/s'),
+          PlayerDetailRow(l10n.detailBallPossession,  '$poss%'),
+          PlayerDetailRow(l10n.detailFieldPresence,   '$presence%'),
+          PlayerDetailRow(l10n.detailMainZone,        p['zone'] as String? ?? '—'),
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(14),
@@ -160,8 +166,11 @@ class PlayerCard extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(child: Text(
                 km > 0.5
-                    ? 'High-activity player. Covered ${km.toStringAsFixed(2)} km and reached ${spd.toStringAsFixed(1)} m/s average speed.'
-                    : 'Moderate-activity player. Held position in the ${p['zone'] ?? '—'} zone.',
+                    ? l10n.insightHighActivity(
+                        km.toStringAsFixed(2),
+                        spd.toStringAsFixed(1),
+                      )
+                    : l10n.insightModerateActivity(p['zone'] as String? ?? '—'),
                 style: TextStyle(color: c.text, fontSize: 13, height: 1.5),
               )),
             ]),

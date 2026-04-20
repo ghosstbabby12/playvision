@@ -5,6 +5,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_color_tokens.dart';
 import '../../../shared/widgets/form_text_field.dart';
 import '../../../shared/widgets/section_label.dart';
+import '../../../l10n/generated/app_localizations.dart'; // IMPORTANTE
 import '../controller/matches_controller.dart';
 import 'widgets/match_card.dart';
 
@@ -34,6 +35,8 @@ class _MatchesPageState extends State<MatchesPage> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
+    
     return ListenableBuilder(
       listenable: _controller,
       builder: (context, _) {
@@ -57,11 +60,11 @@ class _MatchesPageState extends State<MatchesPage> {
                 child: Row(children: [
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('Matches',
+                      Text(l10n.matchesTitle,
                           style: TextStyle(color: c.text, fontSize: 24,
                               fontWeight: FontWeight.w800, letterSpacing: -0.3)),
                       const SizedBox(height: 4),
-                      Text('Match history',
+                      Text(l10n.matchHistory,
                           style: TextStyle(color: c.dim, fontSize: 13)),
                     ]),
                   ),
@@ -79,7 +82,7 @@ class _MatchesPageState extends State<MatchesPage> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: _openCreateMatchDialog,
+                    onTap: () => _openCreateMatchDialog(l10n),
                     child: Container(
                       width: 40, height: 40,
                       decoration: BoxDecoration(
@@ -103,12 +106,12 @@ class _MatchesPageState extends State<MatchesPage> {
                             child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                               Icon(Icons.sports_soccer_outlined, color: c.accentLo, size: 48),
                               const SizedBox(height: 14),
-                              Text('No matches registered',
+                              Text('No matches registered', // Idealmente agregarlo al .arb
                                   style: TextStyle(color: c.dim, fontSize: 14)),
                               const SizedBox(height: 8),
                               GestureDetector(
-                                onTap: _openCreateMatchDialog,
-                                child: Text('+ Add match',
+                                onTap: () => _openCreateMatchDialog(l10n),
+                                child: Text('+ Add match', // Idealmente agregarlo al .arb
                                     style: TextStyle(color: c.accent, fontSize: 13, fontWeight: FontWeight.w500)),
                               ),
                             ]),
@@ -116,7 +119,7 @@ class _MatchesPageState extends State<MatchesPage> {
                         : ListView(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             children: [
-                              const SectionLabel('MATCHES'),
+                              SectionLabel(l10n.matchesTitle.toUpperCase()),
                               const SizedBox(height: 14),
                               ..._controller.matches.map((m) {
                                 final teamData = m['teams'];
@@ -126,7 +129,7 @@ class _MatchesPageState extends State<MatchesPage> {
                                   date: _formatDate(m['match_date']),
                                   team: teamName,
                                   source: (m['source_type'] ?? '—').toString(),
-                                  statusText: _matchStatusLabel(m['status']),
+                                  statusText: _matchStatusLabel(m['status'], l10n),
                                   statusColor: _matchStatusColor(m['status']),
                                 );
                               }),
@@ -140,11 +143,11 @@ class _MatchesPageState extends State<MatchesPage> {
     );
   }
 
-  Future<void> _openCreateMatchDialog() async {
+  Future<void> _openCreateMatchDialog(AppLocalizations l10n) async {
     final c = context.colors;
     if (_controller.teams.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text('Create at least one team first.'),
+        content: const Text('Create at least one team first.'), // Idealmente agregarlo al .arb
         backgroundColor: c.elevated,
       ));
       return;
@@ -287,9 +290,9 @@ class _MatchesPageState extends State<MatchesPage> {
     _                             => const Color(0xFF2D6A4F),
   };
 
-  String _matchStatusLabel(String? status) => switch (status) {
-    AppConstants.statusDone       => AppConstants.labelAnalysed,
-    AppConstants.statusProcessing => AppConstants.labelProcessing,
-    _                             => AppConstants.labelUploaded,
+  String _matchStatusLabel(String? status, AppLocalizations l10n) => switch (status) {
+    AppConstants.statusDone       => l10n.statusAnalysed,
+    AppConstants.statusProcessing => l10n.statusProcessing,
+    _                             => l10n.statusUploaded,
   };
 }

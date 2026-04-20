@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_color_tokens.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 import '../../../../../shared/widgets/section_label.dart';
 
 class SummaryTab extends StatelessWidget {
@@ -10,6 +11,7 @@ class SummaryTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n    = AppLocalizations.of(context)!;
     final team    = data['team'] as Map<String, dynamic>;
     final players = data['players'] as List;
     final maxKm   = players.fold<double>(0, (p, e) {
@@ -21,70 +23,93 @@ class SummaryTab extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          StatCard('${data['players_detected']}', 'Players', Icons.groups_outlined),
+          StatCard('${data['players_detected']}', l10n.summaryPlayers, Icons.groups_outlined),
           const SizedBox(width: 10),
-          StatCard('${team['total_distance_km'] ?? '—'} km', 'Total dist.', Icons.route_outlined),
+          StatCard('${team['total_distance_km'] ?? '—'} km', l10n.summaryTotalDist, Icons.route_outlined),
         ]),
         const SizedBox(height: 10),
         Row(children: [
-          StatCard('${team['avg_distance_km'] ?? '—'} km', 'Avg. dist.', Icons.person_pin_outlined),
+          StatCard('${team['avg_distance_km'] ?? '—'} km', l10n.summaryAvgDist, Icons.person_pin_outlined),
           const SizedBox(width: 10),
-          StatCard('${team['possession_pct'] ?? 0}%', 'Possession', Icons.sports_soccer_outlined),
+          StatCard('${team['possession_pct'] ?? 0}%', l10n.summaryPossession, Icons.sports_soccer_outlined),
         ]),
 
         const SizedBox(height: 28),
-        const SectionLabel('AI INSIGHTS'),
+        SectionLabel(l10n.summaryAiInsights),
         const SizedBox(height: 12),
-        ..._buildInsights(team, players, data).map((i) => AiInsightCard(text: i)),
+        ..._buildInsights(context, team, players, data).map((i) => AiInsightCard(text: i)),
 
         const SizedBox(height: 28),
-        const SectionLabel('DISTANCE BY PLAYER'),
+        SectionLabel(l10n.summaryDistByPlayer),
         const SizedBox(height: 12),
         DistanceBarChart(players: players, maxKm: maxKm),
 
         const SizedBox(height: 28),
-        const SectionLabel('HIGHLIGHTS'),
+        SectionLabel(l10n.summaryHighlights),
         const SizedBox(height: 12),
-        HighlightRow(icon: Icons.bolt_outlined,          label: 'Most active',     value: 'Player ${team['most_active'] ?? '—'}'),
+        HighlightRow(
+          icon: Icons.bolt_outlined,
+          label: l10n.summaryMostActive,
+          value: l10n.summaryPlayerRef('${team['most_active'] ?? '—'}'),
+        ),
         const SizedBox(height: 8),
-        HighlightRow(icon: Icons.sports_soccer_outlined, label: 'Most possession', value: 'Player ${team['most_possession'] ?? '—'}'),
+        HighlightRow(
+          icon: Icons.sports_soccer_outlined,
+          label: l10n.summaryMostPossession,
+          value: l10n.summaryPlayerRef('${team['most_possession'] ?? '—'}'),
+        ),
         const SizedBox(height: 8),
-        HighlightRow(icon: Icons.battery_saver_outlined, label: 'Least active',    value: 'Player ${team['least_active'] ?? '—'}'),
+        HighlightRow(
+          icon: Icons.battery_saver_outlined,
+          label: l10n.summaryLeastActive,
+          value: l10n.summaryPlayerRef('${team['least_active'] ?? '—'}'),
+        ),
         const SizedBox(height: 20),
       ]),
     );
   }
 
   static List<String> _buildInsights(
+    BuildContext context,
     Map<String, dynamic> team,
     List players,
     Map<String, dynamic> data,
   ) {
+    final l10n    = AppLocalizations.of(context)!;
     final insights = <String>[];
-    final totalKm = (team['total_distance_km'] as num?)?.toDouble() ?? 0;
-    final poss    = (team['possession_pct']    as num?)?.toDouble() ?? 0;
-    final count   = data['players_detected'] as int? ?? 0;
+    final totalKm  = (team['total_distance_km'] as num?)?.toDouble() ?? 0;
+    final poss     = (team['possession_pct']    as num?)?.toDouble() ?? 0;
+    final count    = data['players_detected'] as int? ?? 0;
 
-    if (totalKm > 0) insights.add('The team covered ${totalKm.toStringAsFixed(2)} km in total during the analysis.');
-    if (poss > 0)    insights.add('Ball possession: ${poss.toStringAsFixed(1)}% of analysed time.');
-    if (count > 0)   insights.add('$count active players were detected on the field.');
+    if (totalKm > 0) { insights.add(l10n.insightTotalKm(totalKm.toStringAsFixed(2))); }
+    if (poss > 0)    { insights.add(l10n.insightPossession(poss.toStringAsFixed(1))); }
+    if (count > 0)   { insights.add(l10n.insightActivePlayers(count)); }
 
     if (players.isNotEmpty) {
       final fastest = players.reduce((a, b) =>
           ((a['speed_ms'] as num?) ?? 0) > ((b['speed_ms'] as num?) ?? 0) ? a : b);
       final spd = (fastest['speed_ms'] as num?)?.toDouble() ?? 0;
-      if (spd > 0) insights.add('Player ${fastest['rank']} reached the highest speed: ${spd.toStringAsFixed(1)} m/s.');
+      if (spd > 0) {
+        insights.add(l10n.insightFastestPlayer(
+          '${fastest['rank']}',
+          spd.toStringAsFixed(1),
+        ));
+      }
 
       final zones     = players.map((p) => p['zone'] as String? ?? '').toList();
       final zoneCount = <String, int>{};
       for (final z in zones) { zoneCount[z] = (zoneCount[z] ?? 0) + 1; }
       final topZone   = zoneCount.entries.reduce((a, b) => a.value > b.value ? a : b).key;
-      if (topZone.isNotEmpty) insights.add('The team was mainly concentrated in the $topZone zone.');
+      if (topZone.isNotEmpty) { insights.add(l10n.insightTopZone(topZone)); }
     }
 
     return insights.take(4).toList();
   }
 }
+
+// ─────────────────────────────────────────────
+// Widgets auxiliares
+// ─────────────────────────────────────────────
 
 class StatCard extends StatelessWidget {
   final String value;
@@ -106,12 +131,14 @@ class StatCard extends StatelessWidget {
         child: Row(children: [
           Icon(icon, color: c.accent, size: 20),
           const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(value,
-                style: TextStyle(color: c.text, fontSize: 18, fontWeight: FontWeight.w800),
-                overflow: TextOverflow.ellipsis),
-            Text(label, style: TextStyle(color: c.dim, fontSize: 11)),
-          ])),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(value,
+                  style: TextStyle(color: c.text, fontSize: 18, fontWeight: FontWeight.w800),
+                  overflow: TextOverflow.ellipsis),
+              Text(label, style: TextStyle(color: c.dim, fontSize: 11)),
+            ]),
+          ),
         ]),
       ),
     );
@@ -136,8 +163,10 @@ class AiInsightCard extends StatelessWidget {
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Icon(Icons.auto_awesome_outlined, color: c.accent, size: 16),
         const SizedBox(width: 10),
-        Expanded(child: Text(text,
-            style: TextStyle(color: c.text, fontSize: 13, height: 1.5))),
+        Expanded(
+          child: Text(text,
+              style: TextStyle(color: c.text, fontSize: 13, height: 1.5)),
+        ),
       ]),
     );
   }
@@ -184,10 +213,14 @@ class DistanceBarChart extends StatelessWidget {
       final rank  = p['rank'] as int;
       final ratio = maxKm > 0 ? km / maxKm : 0.0;
       final color = ratio > 0.66 ? c.textHi : ratio > 0.33 ? c.accent : c.accentLo;
-      return BarChartGroupData(x: rank, barRods: [BarChartRodData(
-        toY: km, color: color, width: 12,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-      )]);
+      return BarChartGroupData(x: rank, barRods: [
+        BarChartRodData(
+          toY: km,
+          color: color,
+          width: 12,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+        ),
+      ]);
     }).toList();
 
     final borderColor = c.border;
@@ -204,7 +237,8 @@ class DistanceBarChart extends StatelessWidget {
       child: BarChart(BarChartData(
         maxY: maxKm * 1.2,
         gridData: FlGridData(
-          show: true, drawVerticalLine: false,
+          show: true,
+          drawVerticalLine: false,
           getDrawingHorizontalLine: (_) => FlLine(color: borderColor, strokeWidth: 1),
         ),
         borderData: FlBorderData(show: false),
@@ -216,7 +250,8 @@ class DistanceBarChart extends StatelessWidget {
             showTitles: true,
             getTitlesWidget: (v, _) => Padding(
               padding: const EdgeInsets.only(top: 4),
-              child: Text('${v.toInt()}', style: TextStyle(color: dimColor, fontSize: 10)),
+              child: Text('${v.toInt()}',
+                  style: TextStyle(color: dimColor, fontSize: 10)),
             ),
           )),
         ),

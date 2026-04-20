@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../../core/theme/app_color_tokens.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 
 class VideoUploadView extends StatefulWidget {
   final XFile?       videoFile;
@@ -41,7 +42,9 @@ class _VideoUploadViewState extends State<VideoUploadView> {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
+    final c    = context.colors;
+    final l10n = AppLocalizations.of(context)!;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(children: [
@@ -52,8 +55,8 @@ class _VideoUploadViewState extends State<VideoUploadView> {
             border: Border.all(color: c.border),
           ),
           child: Row(children: [
-            _ModeTab(label: 'From device', selected: !_useUrl, onTap: () => setState(() => _useUrl = false)),
-            _ModeTab(label: 'From URL',    selected:  _useUrl, onTap: () => setState(() => _useUrl = true)),
+            _ModeTab(label: l10n.uploadFromDevice, selected: !_useUrl, onTap: () => setState(() => _useUrl = false)),
+            _ModeTab(label: l10n.uploadFromUrl,    selected:  _useUrl, onTap: () => setState(() => _useUrl = true)),
           ]),
         ),
         const SizedBox(height: 14),
@@ -84,18 +87,20 @@ class _VideoUploadViewState extends State<VideoUploadView> {
               color: _hasInput && !widget.isAnalyzing ? c.elevated : c.surface,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: _hasInput && !widget.isAnalyzing ? c.border2 : c.border),
+                  color: _hasInput && !widget.isAnalyzing ? c.border2 : c.border),
             ),
             alignment: Alignment.center,
             child: widget.isAnalyzing
                 ? Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    SizedBox(width: 16, height: 16,
-                        child: CircularProgressIndicator(color: c.accent, strokeWidth: 1.5)),
+                    SizedBox(
+                      width: 16, height: 16,
+                      child: CircularProgressIndicator(color: c.accent, strokeWidth: 1.5),
+                    ),
                     const SizedBox(width: 12),
-                    Text('Analysing with AI...', style: TextStyle(color: c.muted, fontSize: 14)),
+                    Text(l10n.uploadAnalysing, style: TextStyle(color: c.muted, fontSize: 14)),
                   ])
                 : Text(
-                    'Start analysis',
+                    l10n.uploadStartAnalysis,
                     style: TextStyle(
                       color: _hasInput ? c.text : c.dim,
                       fontSize: 14, fontWeight: FontWeight.w600,
@@ -107,13 +112,15 @@ class _VideoUploadViewState extends State<VideoUploadView> {
         const SizedBox(height: 32),
         Align(
           alignment: Alignment.centerLeft,
-          child: Text('HOW IT WORKS',
-              style: TextStyle(color: c.dim, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 2)),
+          child: Text(l10n.uploadHowItWorks,
+              style: TextStyle(
+                  color: c.dim, fontSize: 10,
+                  fontWeight: FontWeight.w700, letterSpacing: 2)),
         ),
         const SizedBox(height: 14),
-        const _HowItWorksCard(n: '1', title: 'Choose source',  desc: 'Upload from device or paste a direct video URL'),
-        const _HowItWorksCard(n: '2', title: 'AI analyses',    desc: 'YOLO detects and tracks each player in real time'),
-        const _HowItWorksCard(n: '3', title: 'View results',   desc: 'Get stats, field map and automatic AI insights'),
+        _HowItWorksCard(n: '1', title: l10n.uploadStep1Title, desc: l10n.uploadStep1Desc),
+        _HowItWorksCard(n: '2', title: l10n.uploadStep2Title, desc: l10n.uploadStep2Desc),
+        _HowItWorksCard(n: '3', title: l10n.uploadStep3Title, desc: l10n.uploadStep3Desc),
       ]),
     );
   }
@@ -143,7 +150,8 @@ class _ModeTab extends StatelessWidget {
             label,
             style: TextStyle(
               color: selected ? c.text : c.dim,
-              fontSize: 13, fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+              fontSize: 13,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
         ),
@@ -161,6 +169,7 @@ class _FilePickZone extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c       = context.colors;
+    final l10n    = AppLocalizations.of(context)!;
     final hasFile = videoFile != null;
     return GestureDetector(
       onTap: isAnalyzing ? null : onTap,
@@ -182,12 +191,12 @@ class _FilePickZone extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            hasFile ? 'Video ready to analyse' : 'Select match video',
+            hasFile ? l10n.uploadVideoReady : l10n.uploadSelectVideo,
             style: TextStyle(color: c.text, fontSize: 15, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
           Text(
-            hasFile ? videoFile!.name : 'Tap to open gallery',
+            hasFile ? videoFile!.name : l10n.uploadTapGallery,
             style: TextStyle(color: c.dim, fontSize: 12),
             textAlign: TextAlign.center,
           ),
@@ -212,6 +221,7 @@ class _UrlInputZone extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c      = context.colors;
+    final l10n   = AppLocalizations.of(context)!;
     final hasUrl = videoUrl != null && videoUrl!.isNotEmpty;
     return Container(
       decoration: BoxDecoration(
@@ -221,14 +231,17 @@ class _UrlInputZone extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('Video URL', style: TextStyle(color: c.dim, fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 1)),
+        Text(l10n.uploadUrlLabel,
+            style: TextStyle(
+                color: c.dim, fontSize: 11,
+                fontWeight: FontWeight.w600, letterSpacing: 1)),
         const SizedBox(height: 10),
         TextField(
           controller: controller,
           enabled: !isAnalyzing,
           style: TextStyle(color: c.text, fontSize: 13),
           decoration: InputDecoration(
-            hintText: 'YouTube, direct .mp4, Vimeo…',
+            hintText: l10n.uploadUrlHint,
             hintStyle: TextStyle(color: c.muted, fontSize: 13),
             filled: true,
             fillColor: c.bg,
@@ -258,14 +271,14 @@ class _UrlInputZone extends StatelessWidget {
             Icon(Icons.check_circle_rounded, color: c.accent, size: 16),
             const SizedBox(width: 6),
             Expanded(
-              child: Text(videoUrl!, style: TextStyle(color: c.dim, fontSize: 11),
+              child: Text(videoUrl!,
+                  style: TextStyle(color: c.dim, fontSize: 11),
                   overflow: TextOverflow.ellipsis),
             ),
           ]),
         ],
         const SizedBox(height: 8),
-        Text('Supports YouTube, Vimeo and direct .mp4/.mov links',
-            style: TextStyle(color: c.muted, fontSize: 11)),
+        Text(l10n.uploadUrlSupports, style: TextStyle(color: c.muted, fontSize: 11)),
       ]),
     );
   }
@@ -293,13 +306,15 @@ class _HowItWorksCard extends StatelessWidget {
           width: 32, height: 32,
           decoration: BoxDecoration(color: c.accentLo, shape: BoxShape.circle),
           alignment: Alignment.center,
-          child: Text(n, style: TextStyle(color: c.accent, fontWeight: FontWeight.w800, fontSize: 14)),
+          child: Text(n, style: TextStyle(
+              color: c.accent, fontWeight: FontWeight.w800, fontSize: 14)),
         ),
         const SizedBox(width: 14),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, style: TextStyle(color: c.text, fontSize: 13, fontWeight: FontWeight.w600)),
+          Text(title, style: TextStyle(
+              color: c.text, fontSize: 13, fontWeight: FontWeight.w600)),
           const SizedBox(height: 3),
-          Text(desc,  style: TextStyle(color: c.dim, fontSize: 12)),
+          Text(desc, style: TextStyle(color: c.dim, fontSize: 12)),
         ])),
       ]),
     );

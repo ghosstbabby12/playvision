@@ -16,6 +16,9 @@ import '../../analysis/presentation/analysis_page.dart';
 import 'widgets/home_search_delegate.dart';
 import 'widgets/settings_drawer.dart';
 
+// NUEVO: Importación para el idioma
+import '../../../../../l10n/generated/app_localizations.dart';
+
 class HomePage extends StatefulWidget {
   final void Function(int)? onTabChange;
   const HomePage({super.key, this.onTabChange});
@@ -162,7 +165,7 @@ class _HomePageState extends State<HomePage> {
                 )
               else
                 const SliverToBoxAdapter(child: _NoticiasSection()),
-
+              
               const SliverToBoxAdapter(child: SizedBox(height: 120)),
             ],
           ),
@@ -259,7 +262,7 @@ class _HomePageState extends State<HomePage> {
                     logoUrl = await _controller.uploadLogo(
                         teamId: tmpId, bytes: logoBytes!, extension: ext);
                   }
-
+                  
                   if (isEdit) {
                     await _controller.updateTeam(
                       id: team['id'] as int,
@@ -326,6 +329,8 @@ class _HeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!; // TRADUCCION
+
     final total = controller.recentMatches.length;
     final done  = controller.recentMatches
         .where((m) => m['status'] == AppConstants.statusDone).length;
@@ -366,7 +371,7 @@ class _HeroSection extends StatelessWidget {
             const SizedBox(height: 24),
             Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Total matches', style: TextStyle(color: c.muted, fontSize: 13)),
+                Text(l10n.totalMatches, style: TextStyle(color: c.muted, fontSize: 13)), // TRADUCIDO
                 const SizedBox(height: 4),
                 Text('$total',
                   style: TextStyle(
@@ -377,7 +382,7 @@ class _HeroSection extends StatelessWidget {
                 Row(children: [
                   Icon(Icons.check_circle_rounded, color: c.accent, size: 14),
                   const SizedBox(width: 4),
-                  Text('$done analysed',
+                  Text('$done ${l10n.analysed}', // TRADUCIDO
                     style: TextStyle(color: c.accent, fontSize: 12, fontWeight: FontWeight.w600)),
                 ]),
               ])),
@@ -402,13 +407,15 @@ class _TeamSelectorSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!; // TRADUCCION
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('Select or create a team',
+        Text(l10n.selectOrCreateTeam, // TRADUCIDO
             style: TextStyle(color: c.text, fontSize: 18, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
-        Text('Choose a team to start a new analysis',
+        Text(l10n.chooseTeamSubtitle, // TRADUCIDO
             style: TextStyle(color: c.muted, fontSize: 13)),
         const SizedBox(height: 20),
 
@@ -432,10 +439,10 @@ class _TeamSelectorSection extends StatelessWidget {
                   child: Icon(Icons.groups_outlined, color: c.accent, size: 30),
                 ),
                 const SizedBox(height: 14),
-                Text('Create a team',
+                Text(l10n.createTeam, // TRADUCIDO
                     style: TextStyle(color: c.text, fontSize: 16, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 6),
-                Text('Tap here to add your first team',
+                Text(l10n.tapToAddTeam, // TRADUCIDO
                     style: TextStyle(color: c.muted, fontSize: 12)),
               ]),
             ),
@@ -446,7 +453,7 @@ class _TeamSelectorSection extends StatelessWidget {
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
-                _TeamCircleItem(label: 'New', initial: '+', isAdd: true, onTap: onAdd),
+                _TeamCircleItem(label: l10n.newTeam, initial: '+', isAdd: true, onTap: onAdd), // TRADUCIDO
                 const SizedBox(width: 14),
                 ...controller.teams.map((t) => Padding(
                       padding: const EdgeInsets.only(right: 14),
@@ -525,6 +532,7 @@ class _SelectedTeamHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!; // TRADUCCION
     final team    = controller.selectedTeam!;
     final initial = (team['name'] as String?)?.isNotEmpty == true ? (team['name'] as String)[0].toUpperCase() : '?';
     final logoUrl = team['logo_url'] as String?;
@@ -562,7 +570,7 @@ class _SelectedTeamHeader extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(color: c.accentLo, borderRadius: BorderRadius.circular(10)),
-              child: Text('Change',
+              child: Text(l10n.changeTeam, // TRADUCIDO
                   style: TextStyle(color: c.accent, fontSize: 12, fontWeight: FontWeight.w600)),
             ),
           ),
@@ -585,6 +593,8 @@ class _AnalyseButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!; // TRADUCCION
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: GestureDetector(
@@ -608,10 +618,10 @@ class _AnalyseButton extends StatelessWidget {
             ),
             const SizedBox(width: 16),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Analyse video',
+              Text(l10n.analyseVideo, // TRADUCIDO
                   style: TextStyle(color: c.textHi, fontSize: 17, fontWeight: FontWeight.w700)),
               const SizedBox(height: 4),
-              Text('Upload a match video and get AI stats',
+              Text(l10n.uploadMatchVideo, // TRADUCIDO
                   style: TextStyle(color: c.muted, fontSize: 12)),
             ])),
             Icon(Icons.arrow_forward_ios_rounded, color: c.accent, size: 16),
@@ -629,6 +639,8 @@ class _ViewAnalysisButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!; // TRADUCCION
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: GestureDetector(
@@ -643,7 +655,7 @@ class _ViewAnalysisButton extends StatelessWidget {
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             Icon(Icons.analytics_outlined, color: c.bg, size: 20),
             const SizedBox(width: 8),
-            Text('View analysis',
+            Text(l10n.viewAnalysis, // TRADUCIDO
                 style: TextStyle(color: c.bg, fontSize: 15, fontWeight: FontWeight.w700)),
           ]),
         ),
@@ -659,6 +671,8 @@ class _PreviousAnalysesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!; // TRADUCCION
+
     final teamId = controller.selectedTeam?['id'] as int?;
     if (teamId == null) return const SizedBox.shrink();
 
@@ -676,7 +690,7 @@ class _PreviousAnalysesSection extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Team matches',
+          Text(l10n.teamMatches, // TRADUCIDO
               style: TextStyle(color: c.text, fontSize: 16, fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
           Container(
@@ -687,7 +701,7 @@ class _PreviousAnalysesSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: c.border),
             ),
-            child: Center(child: Text('No analysed matches yet',
+            child: Center(child: Text(l10n.noAnalysedMatches, // TRADUCIDO
                 style: TextStyle(color: c.muted, fontSize: 13))),
           ),
         ]),
@@ -699,7 +713,7 @@ class _PreviousAnalysesSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Team matches',
+          Text(l10n.teamMatches, // TRADUCIDO
               style: TextStyle(color: c.text, fontSize: 16, fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
           ...matches.map((m) => _MatchItem(
@@ -885,6 +899,8 @@ class _TabSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!; // TRADUCCION
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
       child: Container(
@@ -895,8 +911,8 @@ class _TabSelector extends StatelessWidget {
           border: Border.all(color: c.border),
         ),
         child: Row(children: [
-          _TabPill(label: 'Resultados', active: selected == 0, onTap: () => onSelect(0)),
-          _TabPill(label: 'Noticias',   active: selected == 1, onTap: () => onSelect(1)),
+          _TabPill(label: l10n.resultsTab, active: selected == 0, onTap: () => onSelect(0)), // TRADUCIDO
+          _TabPill(label: l10n.newsTab,   active: selected == 1, onTap: () => onSelect(1)),  // TRADUCIDO
         ]),
       ),
     );
@@ -944,6 +960,8 @@ class _ResultadosAPISection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!; // TRADUCCION
+
     if (isLoading) {
       return Padding(
         padding: const EdgeInsets.all(32),
@@ -964,7 +982,7 @@ class _ResultadosAPISection extends StatelessWidget {
           child: Center(child: Column(children: [
             Icon(Icons.sports_soccer_outlined, color: c.dim, size: 28),
             const SizedBox(height: 8),
-            Text('No real matches today', style: TextStyle(color: c.muted, fontSize: 13)),
+            Text(l10n.noRealMatchesToday, style: TextStyle(color: c.muted, fontSize: 13)), // TRADUCIDO
           ])),
         ),
       );
@@ -1031,6 +1049,7 @@ class _ResultRowAPI extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!; // TRADUCCION
 
     final homeTeam  = match['teams']?['home']?['name'] ?? 'Local';
     final awayTeam  = match['teams']?['away']?['name'] ?? 'Away';
@@ -1061,16 +1080,16 @@ class _ResultRowAPI extends StatelessWidget {
 
     if (isFinished) {
       statusColor = c.dim;
-      statusLabel = 'Finalizado';
+      statusLabel = l10n.finishedStatus; // TRADUCIDO
       scoreText   = '$homeGoals - $awayGoals';
     } else if (isLive) {
       statusColor = c.success;
-      statusLabel = 'En Vivo';
+      statusLabel = l10n.liveStatus; // TRADUCIDO
       timeLabel   = "$elapsed'";
       scoreText   = '$homeGoals - $awayGoals';
     } else {
       statusColor = c.muted;
-      statusLabel = 'Programado';
+      statusLabel = l10n.scheduledStatus; // TRADUCIDO
       scoreText   = '-';
     }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_color_tokens.dart';
 import '../../../shared/widgets/section_label.dart';
+import '../../../l10n/generated/app_localizations.dart'; // IMPORTANTE
 import '../controller/training_controller.dart';
 import 'widgets/player_plan_card.dart';
 import 'widgets/team_insights_card.dart';
@@ -32,6 +33,8 @@ class _TrainingPageState extends State<TrainingPage> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
+    
     return ListenableBuilder(
       listenable: _controller,
       builder: (context, _) {
@@ -44,11 +47,11 @@ class _TrainingPageState extends State<TrainingPage> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               children: [
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('Training',
+                  Text(l10n.trainingTitle,
                       style: TextStyle(color: c.text, fontSize: 24,
                           fontWeight: FontWeight.w800, letterSpacing: -0.3)),
                   const SizedBox(height: 4),
-                  Text('Performance-based plan',
+                  Text(l10n.performanceBasedPlan,
                       style: TextStyle(color: c.dim, fontSize: 13)),
                 ]),
 
@@ -65,23 +68,23 @@ class _TrainingPageState extends State<TrainingPage> {
                     child: Column(children: [
                       Icon(Icons.auto_awesome_outlined, color: c.accentLo, size: 36),
                       const SizedBox(height: 12),
-                      Text('No analysis available',
+                      Text('No analysis available', // Idealmente agregarlo al .arb
                           style: TextStyle(color: c.dim, fontSize: 14, fontWeight: FontWeight.w500)),
                       const SizedBox(height: 6),
-                      Text('Analyse a match to get\npersonalised recommendations.',
+                      Text('Analyse a match to get\npersonalised recommendations.', // Idealmente agregarlo al .arb
                           textAlign: TextAlign.center,
                           style: TextStyle(color: c.accentLo, fontSize: 12, height: 1.6)),
                     ]),
                   ),
                   const SizedBox(height: 32),
                 ] else ...[
-                  const SectionLabel('AI RECOMMENDATIONS — TEAM'),
+                  SectionLabel(l10n.aiRecommendationsTeam),
                   const SizedBox(height: 12),
                   TeamInsightsCard(insights: _controller.buildTeamInsights()),
                   const SizedBox(height: 28),
 
                   if (_controller.players != null && _controller.players!.isNotEmpty) ...[
-                    const SectionLabel('PERSONALISED PLAN BY PLAYER'),
+                    SectionLabel(l10n.personalisedPlanByPlayer),
                     const SizedBox(height: 12),
                     ..._controller.players!.map((p) {
                       final player = p as Map<String, dynamic>;
@@ -94,7 +97,7 @@ class _TrainingPageState extends State<TrainingPage> {
                   ],
                 ],
 
-                const SectionLabel('SUGGESTED SESSIONS'),
+                const SectionLabel('SUGGESTED SESSIONS'), // Idealmente agregarlo al .arb
                 const SizedBox(height: 14),
                 const TrainingSessionCard(
                   title: 'High press and transitions',
