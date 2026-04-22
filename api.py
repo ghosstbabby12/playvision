@@ -52,7 +52,7 @@ TARGET_WIDTH   = 1280
 
 
 # ── Live-match cache ──────────────────────────────────────────────────────────
-_API_KEY_SPORTS       = "5b04f6e82ecd9629ff7b1a495bab699e"
+_API_KEY_SPORTS       = os.getenv("API_KEY_SPORTS", "")
 _HEADERS_SPORTS       = {"x-apisports-key": _API_KEY_SPORTS}
 _cache_partidos       = None
 _ultimo_llamado       = 0
@@ -288,8 +288,7 @@ def _run_pipeline(
     print(f"[debug] per-player heatmap videos generated: {len(p_paths)}")
 
     base_url = (
-        f"{os.getenv('API_HOST', 'http://127.0.0.1')}:"
-        f"{os.getenv('API_PORT', '8000')}/videos"
+        f"{os.getenv('API_HOST', '')}:{os.getenv('API_PORT', '')}/videos"
     )
     ann_file  = f"annotated_{video_id}.mp4"
     heat_file = f"heatmap_{video_id}.mp4"
