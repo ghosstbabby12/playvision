@@ -58,6 +58,45 @@ _cache_partidos       = None
 _ultimo_llamado       = 0
 _CACHE_TTL_SECONDS    = 60
 
+# ── News cache ────────────────────────────────────────────────────────────────
+_API_KEY_NEWS         = os.getenv("API_KEY_NEWS", "")
+_cache_news:    dict  = {}
+_cache_news_ts: dict  = {}
+_NEWS_TTL             = 1800   # 30 min
+
+_NEWS_TOPICS = [
+    {
+        "id":       "ia_futbol",
+        "etiqueta": "IA Fútbol",
+        "query":    "football artificial intelligence analysis",
+        "lang":     "en",
+    },
+    {
+        "id":       "tactica",
+        "etiqueta": "Táctica",
+        "query":    "táctica fútbol análisis datos",
+        "lang":     "es",
+    },
+    {
+        "id":       "entrenamiento",
+        "etiqueta": "Entrenamiento",
+        "query":    "entrenamiento fútbol rendimiento físico",
+        "lang":     "es",
+    },
+    {
+        "id":       "analisis",
+        "etiqueta": "Análisis",
+        "query":    "video analysis football scouting",
+        "lang":     "en",
+    },
+    {
+        "id":       "posiciones",
+        "etiqueta": "Posiciones",
+        "query":    "heatmap football player tracking",
+        "lang":     "en",
+    },
+]
+
 
 # ── App setup ─────────────────────────────────────────────────────────────────
 app = FastAPI(title="PlayVision AI")
@@ -575,3 +614,188 @@ def live_matches():
 
     except Exception as e:
         return {"error": str(e)}
+
+
+# ── Ligas relevantes ──────────────────────────────────────────────────────────
+_LIGAS = {
+    # Colombia
+    "colombia": [
+        {"id": 239, "nombre": "Liga BetPlay",      "pais": "Colombia"},
+        {"id": 241, "nombre": "Copa Colombia",      "pais": "Colombia"},
+    ],
+    # Europa
+    "europa": [
+        {"id": 140, "nombre": "La Liga",            "pais": "España"},
+        {"id":  39, "nombre": "Premier League",     "pais": "Inglaterra"},
+        {"id": 135, "nombre": "Serie A",            "pais": "Italia"},
+        {"id":  78, "nombre": "Bundesliga",         "pais": "Alemania"},
+        {"id":  61, "nombre": "Ligue 1",            "pais": "Francia"},
+        {"id":   2, "nombre": "Champions League",   "pais": "Europa"},
+    ],
+}
+
+_cache_standings:    dict = {}
+_cache_standings_ts: dict = {}
+_STANDINGS_TTL = 3600   # 1 hora (las tablas no cambian tan seguido)
+
+
+def _fetch_standings(league_id: int, season: int) -> list:
+    """Fetch top-10 teams from a league standing via api-sports.io."""
+    cache_key = f"{league_id}_{season}"
+    if (cache_key in _cache_standings
+            and time.time() - _cache_standings_ts.get(cache_key, 0) < _STANDINGS_TTL):
+        return _cache_standings[cache_key]
+
+    url  = f"https://v3.football.api-sports.io/standings?league={league_id}&season={season}"
+    resp = requests.get(url, headers=_HEADERS_SPORTS, timeout=10)
+    data = resp.json()
+
+    if data.get("errors") or not data.get("response"):
+        return []
+
+    standings = data["response"][0].get("league", {}).get("standings", [[]])[0]
+    equipos = [
+        {
+            "posicion":  e["rank"],
+            "equipo":    e["team"]["name"],
+            "logo":      e["team"]["logo"],
+            "pj":        e["all"]["played"],
+            "pg":        e["all"]["win"],
+            "pe":        e["all"]["draw"],
+            "pp":        e["all"]["lose"],
+            "gf":        e["all"]["goals"]["for"],
+            "gc":        e["all"]["goals"]["against"],
+            "puntos":    e["points"],
+            "forma":     e.get("form", ""),
+        }
+        for e in standings[:10]   # top 10
+    ]
+
+    _cache_standings[cache_key]    = equipos
+    _cache_standings_ts[cache_key] = time.time()
+    return equipos
+
+
+@app.get("/api/standings/{region}")
+def standings_by_region(region: str, season: int = None):
+    """
+    Devuelve tabla de posiciones de las ligas más relevantes de una región.
+    region: 'colombia' | 'europa'
+    season: año (por defecto el actual)
+    """
+    if region not in _LIGAS:
+        raise HTTPException(status_code=400, detail="region debe ser 'colombia' o 'europa'")
+
+    if season is None:
+        season = datetime.now().year
+
+    resultado = []
+    for liga in _LIGAS[region]:
+        try:
+            equipos = _fetch_standings(liga["id"], season)
+            if equipos:
+                resultado.append({
+                    "liga":  liga["nombre"],
+                    "pais":  liga["pais"],
+                    "temporada": season,
+                    "equipos": equipos,
+                })
+        except Exception as e:
+            print(f"[warn] standings {liga['nombre']}: {e}")
+
+    return {"region": region, "ligas": resultado}
+
+
+@app.get("/api/teams/search")
+def search_team(nombre: str, season: int = None):
+    """
+    Busca un equipo por nombre y devuelve info + liga actual.
+    Ej: /api/teams/search?nombre=Nacional
+    """
+    if season is None:
+        season = datetime.now().year
+
+    url  = f"https://v3.football.api-sports.io/teams?search={nombre}"
+    try:
+        resp = requests.get(url, headers=_HEADERS_SPORTS, timeout=10)
+        data = resp.json()
+        teams = data.get("response", [])
+        return {
+            "resultados": [
+                {
+                    "id":     t["team"]["id"],
+                    "nombre": t["team"]["name"],
+                    "pais":   t["team"]["country"],
+                    "logo":   t["team"]["logo"],
+                    "fundado": t["team"].get("founded"),
+                }
+                for t in teams[:10]
+            ]
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+# ── News helpers ──────────────────────────────────────────────────────────────
+def _fetch_news_topic(topic: dict) -> list:
+    cache_key = topic["id"]
+    if (cache_key in _cache_news
+            and time.time() - _cache_news_ts.get(cache_key, 0) < _NEWS_TTL):
+        return _cache_news[cache_key]
+
+    url = (
+        "https://newsapi.org/v2/everything"
+        f"?q={requests.utils.quote(topic['query'])}"
+        f"&language={topic['lang']}"
+        "&sortBy=publishedAt"
+        "&pageSize=5"
+        f"&apiKey={_API_KEY_NEWS}"
+    )
+    resp = requests.get(url, timeout=10)
+    data = resp.json()
+
+    articulos = [
+        {
+            "titulo":   a["title"],
+            "resumen":  a.get("description") or "",
+            "imagen":   a.get("urlToImage") or "",
+            "url":      a["url"],
+            "fuente":   a["source"]["name"],
+            "fecha":    a.get("publishedAt", ""),
+            "etiqueta": topic["etiqueta"],
+        }
+        for a in data.get("articles", [])
+        if a.get("title") and "[Removed]" not in a.get("title", "")
+    ]
+
+    _cache_news[cache_key]    = articulos
+    _cache_news_ts[cache_key] = time.time()
+    return articulos
+
+
+@app.get("/api/news")
+def get_news(topic: str = None):
+    """
+    Devuelve noticias reales sobre IA, análisis de video y fútbol.
+    - Sin parámetros: todos los temas mezclados (máx 20)
+    - topic=ia_futbol | tactica | entrenamiento | analisis | posiciones
+    """
+    if not _API_KEY_NEWS:
+        raise HTTPException(status_code=503, detail="API_KEY_NEWS no configurada")
+
+    temas = [t for t in _NEWS_TOPICS if topic is None or t["id"] == topic]
+    if not temas:
+        raise HTTPException(
+            status_code=400,
+            detail=f"topic inválido. Opciones: {[t['id'] for t in _NEWS_TOPICS]}"
+        )
+
+    todas = []
+    for t in temas:
+        try:
+            todas.extend(_fetch_news_topic(t))
+        except Exception as e:
+            print(f"[warn] news topic {t['id']}: {e}")
+
+    todas.sort(key=lambda x: x["fecha"], reverse=True)
+    return {"articulos": todas[:20]}
