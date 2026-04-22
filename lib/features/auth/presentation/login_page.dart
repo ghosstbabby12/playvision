@@ -1,14 +1,12 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../../core/theme/app_color_tokens.dart';
 import '../../../../../core/theme/theme_controller.dart';
 import '../../../../../core/store/locale_provider.dart';
-import '../../../../../l10n/generated/app_localizations.dart'; 
+import '../../../../../l10n/generated/app_localizations.dart';
 import '../../../../../shared/widgets/soccer_logo.dart';
 import '../controller/auth_controller.dart';
-import 'widgets/login_message_card.dart';
-import 'widgets/login_text_field.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -50,13 +48,12 @@ class _LoginPageState extends State<LoginPage> {
   void _submit() {
     final email    = _emailController.text.trim();
     final password = _passwordController.text.trim();
-
-    final l10n = AppLocalizations.of(context)!;
+    final l10n     = AppLocalizations.of(context)!;
 
     if (email.isEmpty || password.isEmpty) {
       setState(() {
         _controller.errorMessage = _controller.isLoginMode
-            ? l10n.loginTitle 
+            ? l10n.loginTitle
             : l10n.registerTitle;
       });
       return;
@@ -65,127 +62,243 @@ class _LoginPageState extends State<LoginPage> {
     if (_controller.isLoginMode) {
       _controller.signIn(email, password).then((_) {
         if (!mounted) return;
-        if (_controller.errorMessage == null) Navigator.pushReplacementNamed(context, '/');
+        if (_controller.errorMessage == null) {
+          Navigator.pushReplacementNamed(context, '/');
+        }
       });
     } else {
       _controller.signUp(email, password).then((_) {
-        if (mounted) {
-          _passwordController.clear();
-        }
+        if (mounted) _passwordController.clear();
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
     final l10n = AppLocalizations.of(context)!;
 
     return ListenableBuilder(
       listenable: _controller,
       builder: (context, _) => Scaffold(
-        backgroundColor: c.bg,
+        backgroundColor: Colors.black,
         body: Stack(children: [
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Center(child: SoccerLogo(size: 110)),
-                    const SizedBox(height: 32),
-                    Text(
-                      l10n.appTitle,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: c.textHi,
-                        fontSize: 38,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -1.5,
-                      ),
+
+          // ── Full-screen football/AI background ─────────────────
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/login_bg.jpg',
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Image.network(
+                'https://images.unsplash.com/photo-1518604964608-5ad2e5a2dcb9?w=900&q=80',
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF0A0F1E), Color(0xFF061020)],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _controller.isLoginMode
-                          ? l10n.loginTitle
-                          : l10n.registerTitle,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: c.muted,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-                    
-                    if (_controller.errorMessage != null) ...[
-                      LoginMessageCard(
-                        text: _controller.errorMessage!,
-                        color: Colors.redAccent,
-                        icon: Icons.error_outline,
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-                    if (_controller.successMessage != null) ...[
-                      LoginMessageCard(
-                        text: _controller.successMessage!,
-                        color: c.accent,
-                        icon: Icons.check_circle_outline,
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-                    
-                    LoginTextField(
-                      controller: _emailController,
-                      label: l10n.emailHint,
-                      icon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    const SizedBox(height: 16),
-                    LoginTextField(
-                      controller: _passwordController,
-                      label: l10n.passwordHint,
-                      icon: Icons.lock_outline,
-                      isPassword: true,
-                    ),
-                    const SizedBox(height: 36),
-                    _AuthButton(
-                      label: _controller.isLoginMode 
-                          ? l10n.loginButton 
-                          : l10n.registerButton,
-                      isLoading: _controller.isLoading,
-                      onPressed: _submit,
-                    ),
-                    const SizedBox(height: 24),
-                    const _OrDivider(),
-                    const SizedBox(height: 24),
-                    _AuthButton(
-                      label: _controller.isLoginMode 
-                          ? l10n.createAccountButton 
-                          : l10n.alreadyHaveAccountButton,
-                      isLoading: _controller.isLoading,
-                      onPressed: _controller.toggleMode,
-                      outlined: true,
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
-          
+
+          // ── Gradient overlay ───────────────────────────────────
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.40),
+                    Colors.black.withValues(alpha: 0.65),
+                    Colors.black.withValues(alpha: 0.93),
+                  ],
+                  stops: const [0.0, 0.40, 1.0],
+                ),
+              ),
+            ),
+          ),
+
+          // ── Main scrollable content ────────────────────────────
+          SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(24, 56, 24, 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Logo + title
+                  const SoccerLogo(size: 80),
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.appTitle,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 36,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // AI badge pill
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3DCF6E).withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                          color: const Color(0xFF3DCF6E).withValues(alpha: 0.45), width: 1.2),
+                    ),
+                    child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                      Icon(Icons.auto_awesome_rounded, color: Color(0xFF3DCF6E), size: 12),
+                      SizedBox(width: 6),
+                      Text(
+                        'AI Football Analysis',
+                        style: TextStyle(
+                          color: Color(0xFF3DCF6E),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ]),
+                  ),
+                  const SizedBox(height: 44),
+
+                  // ── Glass card ─────────────────────────────────
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(28),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+                      child: Container(
+                        padding: const EdgeInsets.all(28),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.07),
+                          borderRadius: BorderRadius.circular(28),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.13),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Card subtitle
+                            Text(
+                              _controller.isLoginMode
+                                  ? l10n.loginTitle
+                                  : l10n.registerTitle,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 22),
+
+                            // Error banner
+                            if (_controller.errorMessage != null) ...[
+                              _GlassBanner(
+                                text: _controller.errorMessage!,
+                                color: const Color(0xFFE53935),
+                                icon: Icons.error_outline_rounded,
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                            // Success banner
+                            if (_controller.successMessage != null) ...[
+                              _GlassBanner(
+                                text: _controller.successMessage!,
+                                color: const Color(0xFF3DCF6E),
+                                icon: Icons.check_circle_outline_rounded,
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+
+                            // Email
+                            _GlassField(
+                              controller: _emailController,
+                              label: l10n.emailHint,
+                              icon: Icons.email_outlined,
+                              keyboardType: TextInputType.emailAddress,
+                            ),
+                            const SizedBox(height: 14),
+
+                            // Password
+                            _GlassField(
+                              controller: _passwordController,
+                              label: l10n.passwordHint,
+                              icon: Icons.lock_outline_rounded,
+                              isPassword: true,
+                            ),
+                            const SizedBox(height: 28),
+
+                            // Primary button
+                            _GreenButton(
+                              label: _controller.isLoginMode
+                                  ? l10n.loginButton
+                                  : l10n.registerButton,
+                              isLoading: _controller.isLoading,
+                              onPressed: _submit,
+                            ),
+                            const SizedBox(height: 20),
+
+                            // "O" divider
+                            Row(children: [
+                              Expanded(
+                                  child: Divider(
+                                      color: Colors.white.withValues(alpha: 0.18),
+                                      thickness: 1)),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(
+                                  'O',
+                                  style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.45),
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                              Expanded(
+                                  child: Divider(
+                                      color: Colors.white.withValues(alpha: 0.18),
+                                      thickness: 1)),
+                            ]),
+                            const SizedBox(height: 20),
+
+                            // Secondary toggle button
+                            _GlassOutlineButton(
+                              label: _controller.isLoginMode
+                                  ? l10n.createAccountButton
+                                  : l10n.alreadyHaveAccountButton,
+                              isLoading: _controller.isLoading,
+                              onPressed: _controller.toggleMode,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // ── Top-right: language + theme toggles ───────────────
           SafeArea(
             child: Align(
               alignment: Alignment.topRight,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 16, 20, 0),
-                child: Row(
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const _LanguageToggle(),
-                    const SizedBox(width: 12),
-                    const _ThemeToggle(),
+                    _LanguageToggle(),
+                    SizedBox(width: 10),
+                    _ThemeToggle(),
                   ],
                 ),
               ),
@@ -197,144 +310,227 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-class _AuthButton extends StatelessWidget {
-  final String label;
-  final bool isLoading;
-  final VoidCallback onPressed;
-  final bool outlined;
+// ── Glass field ───────────────────────────────────────────────────────────────
 
-  const _AuthButton({
+class _GlassField extends StatefulWidget {
+  final TextEditingController controller;
+  final String label;
+  final IconData icon;
+  final bool isPassword;
+  final TextInputType keyboardType;
+
+  const _GlassField({
+    required this.controller,
     required this.label,
-    required this.isLoading,
-    required this.onPressed,
-    this.outlined = false,
+    required this.icon,
+    this.isPassword = false,
+    this.keyboardType = TextInputType.text,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final c     = context.colors;
-    final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(16));
-    const padding = EdgeInsets.symmetric(vertical: 18);
-
-    if (outlined) {
-      return OutlinedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: c.text,
-          side: BorderSide(color: c.surface, width: 2),
-          padding: padding,
-          shape: shape,
-        ),
-        child: Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-      );
-    }
-
-    return ElevatedButton(
-      onPressed: isLoading ? null : onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: c.accent,
-        foregroundColor: c.bg,
-        padding: padding,
-        elevation: 0,
-        shape: shape,
-      ),
-      child: isLoading
-          ? SizedBox(
-              width: 24, height: 24,
-              child: CircularProgressIndicator(color: c.bg, strokeWidth: 2.5),
-            )
-          : Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
-    );
-  }
+  State<_GlassField> createState() => _GlassFieldState();
 }
 
-class _OrDivider extends StatelessWidget {
-  const _OrDivider();
+class _GlassFieldState extends State<_GlassField> {
+  bool _obscure = true;
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
-    return Row(
-      children: [
-        Expanded(child: Divider(color: c.surface, thickness: 2)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text('O', style: TextStyle(color: c.muted, fontWeight: FontWeight.w600)),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+      ),
+      child: TextField(
+        controller: widget.controller,
+        keyboardType: widget.keyboardType,
+        obscureText: widget.isPassword && _obscure,
+        style: const TextStyle(color: Colors.white, fontSize: 15),
+        decoration: InputDecoration(
+          hintText: widget.label,
+          hintStyle:
+              TextStyle(color: Colors.white.withValues(alpha: 0.40), fontSize: 14),
+          prefixIcon: Icon(widget.icon,
+              color: Colors.white.withValues(alpha: 0.45), size: 20),
+          suffixIcon: widget.isPassword
+              ? GestureDetector(
+                  onTap: () => setState(() => _obscure = !_obscure),
+                  child: Icon(
+                    _obscure
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: Colors.white.withValues(alpha: 0.38),
+                    size: 18,
+                  ),
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
-        Expanded(child: Divider(color: c.surface, thickness: 2)),
-      ],
+      ),
     );
   }
 }
+
+// ── Buttons ───────────────────────────────────────────────────────────────────
+
+class _GreenButton extends StatelessWidget {
+  final String label;
+  final bool isLoading;
+  final VoidCallback onPressed;
+
+  const _GreenButton(
+      {required this.label, required this.isLoading, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: isLoading ? null : onPressed,
+      child: Container(
+        height: 54,
+        decoration: BoxDecoration(
+          color: const Color(0xFF3DCF6E),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF3DCF6E).withValues(alpha: 0.38),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Center(
+          child: isLoading
+              ? const SizedBox(
+                  width: 22, height: 22,
+                  child: CircularProgressIndicator(
+                      color: Colors.black, strokeWidth: 2.5))
+              : Text(label,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5,
+                  )),
+        ),
+      ),
+    );
+  }
+}
+
+class _GlassOutlineButton extends StatelessWidget {
+  final String label;
+  final bool isLoading;
+  final VoidCallback onPressed;
+
+  const _GlassOutlineButton(
+      {required this.label, required this.isLoading, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: isLoading ? null : onPressed,
+      child: Container(
+        height: 54,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+        ),
+        child: Center(
+          child: Text(label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              )),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Banner ────────────────────────────────────────────────────────────────────
+
+class _GlassBanner extends StatelessWidget {
+  final String text;
+  final Color color;
+  final IconData icon;
+
+  const _GlassBanner(
+      {required this.text, required this.color, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.30)),
+      ),
+      child: Row(children: [
+        Icon(icon, color: color, size: 18),
+        const SizedBox(width: 10),
+        Expanded(
+            child: Text(text,
+                style: TextStyle(
+                    color: color,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500))),
+      ]),
+    );
+  }
+}
+
+// ── Language toggle ───────────────────────────────────────────────────────────
 
 class _LanguageToggle extends StatelessWidget {
   const _LanguageToggle();
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
-    
-    // Obtenemos los providers CON `listen: true` explícito para asegurar
-    // que se enteren de cualquier cambio (idioma o tema).
-    final themeController = Provider.of<ThemeController?>(context, listen: true);
     final localeProvider = Provider.of<LocaleProvider?>(context, listen: true);
-
-    final isDark = themeController?.isDark ?? true;
-    final currentLang = localeProvider?.locale?.languageCode ?? 'es';
-    final isEn = currentLang == 'en';
-
+    final isEn = (localeProvider?.locale?.languageCode ?? 'es') == 'en';
     const h = 32.0;
 
     return GestureDetector(
-      onTap: () {
-        if (localeProvider != null) {
-          localeProvider.setLocale(Locale(isEn ? 'es' : 'en'));
-        }
-      },
+      onTap: () => localeProvider?.setLocale(Locale(isEn ? 'es' : 'en')),
       child: Container(
         height: h,
         padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1A1A2E) : const Color(0xFFE8E8E8),
+          color: Colors.white.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(h / 2),
           border: Border.all(
-            color: isDark ? const Color(0xFF3DCF6E).withValues(alpha: 0.5) : const Color(0xFFBBBBBB),
-            width: 1.5,
-          ),
+              color: const Color(0xFF3DCF6E).withValues(alpha: 0.5), width: 1.5),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.language_rounded,
-              size: 16,
-              color: isDark ? const Color(0xFF3DCF6E) : c.text,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              isEn ? 'EN' : 'ES',
-              style: TextStyle(
-                color: isDark ? Colors.white : c.text,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(Icons.language_rounded,
+              size: 16, color: Color(0xFF3DCF6E)),
+          const SizedBox(width: 6),
+          Text(isEn ? 'EN' : 'ES',
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700)),
+        ]),
       ),
     );
   }
 }
+
+// ── Theme toggle ──────────────────────────────────────────────────────────────
 
 class _ThemeToggle extends StatelessWidget {
   const _ThemeToggle();
 
   @override
   Widget build(BuildContext context) {
-    // Al usar listen: true, este widget y todo su contexto se redibujará
-    // cuando cambie el tema, animando el botón y cambiando los colores de fondo
-    final themeController = Provider.of<ThemeController?>(context, listen: true);
-
+    final themeController =
+        Provider.of<ThemeController?>(context, listen: true);
     final isDark = themeController?.isDark ?? true;
     const w = 64.0;
     const h = 32.0;
@@ -342,21 +538,18 @@ class _ThemeToggle extends StatelessWidget {
     const pad = (h - circle) / 2;
 
     return GestureDetector(
-      onTap: () {
-        if (themeController != null) {
-          themeController.toggle();
-        }
-      },
+      onTap: () => themeController?.toggle(),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 280),
         curve: Curves.easeInOut,
-        width: w,
-        height: h,
+        width: w, height: h,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1A1A2E) : const Color(0xFFE8E8E8),
+          color: Colors.white.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(h / 2),
           border: Border.all(
-            color: isDark ? const Color(0xFF3DCF6E) : const Color(0xFFBBBBBB),
+            color: isDark
+                ? const Color(0xFF3DCF6E)
+                : const Color(0xFFBBBBBB),
             width: 1.5,
           ),
         ),
@@ -364,14 +557,16 @@ class _ThemeToggle extends StatelessWidget {
           AnimatedPositioned(
             duration: const Duration(milliseconds: 280),
             curve: Curves.easeInOut,
-            left:  isDark ? w / 2 - 2 : null,
-            right: isDark ? null      : w / 2 - 2,
+            left: isDark ? w / 2 - 2 : null,
+            right: isDark ? null : w / 2 - 2,
             top: 0, bottom: 0,
             child: Center(
               child: Icon(
                 isDark ? Icons.nightlight_round : Icons.wb_sunny_rounded,
                 size: 14,
-                color: isDark ? const Color(0xFF3DCF6E) : const Color(0xFF888888),
+                color: isDark
+                    ? const Color(0xFF3DCF6E)
+                    : const Color(0xFF888888),
               ),
             ),
           ),
@@ -381,14 +576,13 @@ class _ThemeToggle extends StatelessWidget {
             left: isDark ? pad : w - circle - pad,
             top: pad,
             child: Container(
-              width: circle,
-              height: circle,
+              width: circle, height: circle,
               decoration: BoxDecoration(
                 color: isDark ? Colors.white : const Color(0xFF222222),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
+                    color: Colors.black.withValues(alpha: 0.25),
                     blurRadius: 4,
                     offset: const Offset(0, 1),
                   ),
