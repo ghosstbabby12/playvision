@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/theme/app_color_tokens.dart';
-import '../../controller/home_controller.dart';
+import '../home_controller.dart';
 
 class HomeSearchDelegate extends SearchDelegate<void> {
   final HomeController controller;

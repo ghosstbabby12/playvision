@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../core/store/analysis_store.dart';
+import 'package:playvision/features/analysis/data/analysis_store.dart';
 import '../../../core/supabase/supabase_service.dart';
 import '../../../core/theme/app_color_tokens.dart';
 import '../../../l10n/generated/app_localizations.dart'; // IMPORTANTE

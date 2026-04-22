@@ -6,7 +6,7 @@ import '../../../core/theme/app_color_tokens.dart';
 import '../../../shared/widgets/form_text_field.dart';
 import '../../../shared/widgets/section_label.dart';
 import '../../../l10n/generated/app_localizations.dart'; // IMPORTANTE
-import '../controller/matches_controller.dart';
+import 'matches_controller.dart';
 import 'widgets/match_card.dart';
 
 class MatchesPage extends StatefulWidget {

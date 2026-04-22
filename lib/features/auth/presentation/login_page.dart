@@ -6,7 +6,7 @@ import '../../../../../core/theme/theme_controller.dart';
 import '../../../../../core/store/locale_provider.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
 import '../../../../../shared/widgets/soccer_logo.dart';
-import '../controller/auth_controller.dart';
+import 'login_controller.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -75,15 +75,17 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n            = AppLocalizations.of(context)!;
+    final themeController = Provider.of<ThemeController?>(context, listen: true);
+    final isDark          = themeController?.isDark ?? true;
 
     return ListenableBuilder(
       listenable: _controller,
       builder: (context, _) => Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: isDark ? Colors.black : const Color(0xFFF0F4F0),
         body: Stack(children: [
 
-          // ── Full-screen football/AI background ─────────────────
+          // ── Background image ───────────────────────────────────
           Positioned.fill(
             child: Image.asset(
               'assets/images/login_bg.jpg',
@@ -92,11 +94,13 @@ class _LoginPageState extends State<LoginPage> {
                 'https://images.unsplash.com/photo-1518604964608-5ad2e5a2dcb9?w=900&q=80',
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF0A0F1E), Color(0xFF061020)],
+                      colors: isDark
+                          ? [const Color(0xFF0A0F1E), const Color(0xFF061020)]
+                          : [const Color(0xFFD6EDD8), const Color(0xFFEAF4EB)],
                     ),
                   ),
                 ),
@@ -104,25 +108,32 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
 
-          // ── Gradient overlay ───────────────────────────────────
+          // ── Animated overlay (dark / light) ───────────────────
           Positioned.fill(
-            child: DecoratedBox(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 400),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.40),
-                    Colors.black.withValues(alpha: 0.65),
-                    Colors.black.withValues(alpha: 0.93),
-                  ],
-                  stops: const [0.0, 0.40, 1.0],
+                  stops: const [0.0, 0.42, 1.0],
+                  colors: isDark
+                      ? [
+                          Colors.black.withValues(alpha: 0.40),
+                          Colors.black.withValues(alpha: 0.65),
+                          Colors.black.withValues(alpha: 0.93),
+                        ]
+                      : [
+                          Colors.white.withValues(alpha: 0.38),
+                          Colors.white.withValues(alpha: 0.62),
+                          Colors.white.withValues(alpha: 0.90),
+                        ],
                 ),
               ),
             ),
           ),
 
-          // ── Main scrollable content ────────────────────────────
+          // ── Scrollable content ─────────────────────────────────
           SafeArea(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -130,30 +141,35 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Logo + title
                   const SoccerLogo(size: 80),
                   const SizedBox(height: 16),
-                  Text(
-                    l10n.appTitle,
-                    style: const TextStyle(
-                      color: Colors.white,
+
+                  // App title
+                  AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 300),
+                    style: TextStyle(
+                      color: isDark ? Colors.white : const Color(0xFF0D1B0D),
                       fontSize: 36,
                       fontWeight: FontWeight.w900,
                       letterSpacing: -1.5,
                     ),
+                    child: Text(l10n.appTitle),
                   ),
                   const SizedBox(height: 8),
-                  // AI badge pill
+
+                  // AI badge
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                     decoration: BoxDecoration(
                       color: const Color(0xFF3DCF6E).withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                          color: const Color(0xFF3DCF6E).withValues(alpha: 0.45), width: 1.2),
+                          color: const Color(0xFF3DCF6E).withValues(alpha: 0.50),
+                          width: 1.2),
                     ),
                     child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                      Icon(Icons.auto_awesome_rounded, color: Color(0xFF3DCF6E), size: 12),
+                      Icon(Icons.auto_awesome_rounded,
+                          color: Color(0xFF3DCF6E), size: 12),
                       SizedBox(width: 6),
                       Text(
                         'AI Football Analysis',
@@ -168,34 +184,51 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 44),
 
-                  // ── Glass card ─────────────────────────────────
+                  // ── Glass card ───────────────────────────────────
                   ClipRRect(
                     borderRadius: BorderRadius.circular(28),
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-                      child: Container(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 350),
                         padding: const EdgeInsets.all(28),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.07),
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : Colors.white.withValues(alpha: 0.87),
                           borderRadius: BorderRadius.circular(28),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.13),
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.13)
+                                : Colors.black.withValues(alpha: 0.07),
                             width: 1.5,
                           ),
+                          boxShadow: isDark
+                              ? []
+                              : [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.10),
+                                    blurRadius: 28,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Card subtitle
-                            Text(
-                              _controller.isLoginMode
-                                  ? l10n.loginTitle
-                                  : l10n.registerTitle,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Colors.white,
+                            // Card title
+                            AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 300),
+                              style: TextStyle(
+                                color: isDark ? Colors.white : const Color(0xFF111111),
                                 fontSize: 17,
                                 fontWeight: FontWeight.w700,
+                              ),
+                              child: Text(
+                                _controller.isLoginMode
+                                    ? l10n.loginTitle
+                                    : l10n.registerTitle,
+                                textAlign: TextAlign.center,
                               ),
                             ),
                             const SizedBox(height: 22),
@@ -219,25 +252,23 @@ class _LoginPageState extends State<LoginPage> {
                               const SizedBox(height: 16),
                             ],
 
-                            // Email
                             _GlassField(
                               controller: _emailController,
                               label: l10n.emailHint,
                               icon: Icons.email_outlined,
                               keyboardType: TextInputType.emailAddress,
+                              isDark: isDark,
                             ),
                             const SizedBox(height: 14),
-
-                            // Password
                             _GlassField(
                               controller: _passwordController,
                               label: l10n.passwordHint,
                               icon: Icons.lock_outline_rounded,
                               isPassword: true,
+                              isDark: isDark,
                             ),
                             const SizedBox(height: 28),
 
-                            // Primary button
                             _GreenButton(
                               label: _controller.isLoginMode
                                   ? l10n.loginButton
@@ -247,35 +278,45 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             const SizedBox(height: 20),
 
-                            // "O" divider
+                            // Divider
                             Row(children: [
                               Expanded(
-                                  child: Divider(
-                                      color: Colors.white.withValues(alpha: 0.18),
-                                      thickness: 1)),
+                                child: Divider(
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.18)
+                                      : Colors.black.withValues(alpha: 0.12),
+                                ),
+                              ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
                                 child: Text(
                                   'O',
                                   style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.45),
-                                      fontWeight: FontWeight.w600),
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.45)
+                                        : Colors.black.withValues(alpha: 0.35),
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                               Expanded(
-                                  child: Divider(
-                                      color: Colors.white.withValues(alpha: 0.18),
-                                      thickness: 1)),
+                                child: Divider(
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.18)
+                                      : Colors.black.withValues(alpha: 0.12),
+                                ),
+                              ),
                             ]),
                             const SizedBox(height: 20),
 
-                            // Secondary toggle button
                             _GlassOutlineButton(
                               label: _controller.isLoginMode
                                   ? l10n.createAccountButton
                                   : l10n.alreadyHaveAccountButton,
                               isLoading: _controller.isLoading,
                               onPressed: _controller.toggleMode,
+                              isDark: isDark,
                             ),
                           ],
                         ),
@@ -287,18 +328,18 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
 
-          // ── Top-right: language + theme toggles ───────────────
+          // ── Top-right: language + theme toggles ────────────────
           SafeArea(
             child: Align(
               alignment: Alignment.topRight,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 16, 20, 0),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _LanguageToggle(),
-                    SizedBox(width: 10),
-                    _ThemeToggle(),
+                    _LanguageToggle(isDark: isDark),
+                    const SizedBox(width: 10),
+                    _ThemeToggle(isDark: isDark, onToggle: themeController?.toggle),
                   ],
                 ),
               ),
@@ -310,7 +351,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-// ── Glass field ───────────────────────────────────────────────────────────────
+// ── Glass text field ──────────────────────────────────────────────────────────
 
 class _GlassField extends StatefulWidget {
   final TextEditingController controller;
@@ -318,11 +359,13 @@ class _GlassField extends StatefulWidget {
   final IconData icon;
   final bool isPassword;
   final TextInputType keyboardType;
+  final bool isDark;
 
   const _GlassField({
     required this.controller,
     required this.label,
     required this.icon,
+    required this.isDark,
     this.isPassword = false,
     this.keyboardType = TextInputType.text,
   });
@@ -336,23 +379,43 @@ class _GlassFieldState extends State<_GlassField> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final d = widget.isDark;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.09),
+        color: d
+            ? Colors.white.withValues(alpha: 0.09)
+            : Colors.black.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+        border: Border.all(
+          color: d
+              ? Colors.white.withValues(alpha: 0.18)
+              : Colors.black.withValues(alpha: 0.12),
+        ),
       ),
       child: TextField(
         controller: widget.controller,
         keyboardType: widget.keyboardType,
         obscureText: widget.isPassword && _obscure,
-        style: const TextStyle(color: Colors.white, fontSize: 15),
+        style: TextStyle(
+          color: d ? Colors.white : const Color(0xFF111111),
+          fontSize: 15,
+        ),
         decoration: InputDecoration(
           hintText: widget.label,
-          hintStyle:
-              TextStyle(color: Colors.white.withValues(alpha: 0.40), fontSize: 14),
-          prefixIcon: Icon(widget.icon,
-              color: Colors.white.withValues(alpha: 0.45), size: 20),
+          hintStyle: TextStyle(
+            color: d
+                ? Colors.white.withValues(alpha: 0.40)
+                : Colors.black.withValues(alpha: 0.32),
+            fontSize: 14,
+          ),
+          prefixIcon: Icon(
+            widget.icon,
+            color: d
+                ? Colors.white.withValues(alpha: 0.45)
+                : Colors.black.withValues(alpha: 0.32),
+            size: 20,
+          ),
           suffixIcon: widget.isPassword
               ? GestureDetector(
                   onTap: () => setState(() => _obscure = !_obscure),
@@ -360,7 +423,9 @@ class _GlassFieldState extends State<_GlassField> {
                     _obscure
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
-                    color: Colors.white.withValues(alpha: 0.38),
+                    color: d
+                        ? Colors.white.withValues(alpha: 0.38)
+                        : Colors.black.withValues(alpha: 0.28),
                     size: 18,
                   ),
                 )
@@ -382,7 +447,9 @@ class _GreenButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   const _GreenButton(
-      {required this.label, required this.isLoading, required this.onPressed});
+      {required this.label,
+      required this.isLoading,
+      required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -404,7 +471,8 @@ class _GreenButton extends StatelessWidget {
         child: Center(
           child: isLoading
               ? const SizedBox(
-                  width: 22, height: 22,
+                  width: 22,
+                  height: 22,
                   child: CircularProgressIndicator(
                       color: Colors.black, strokeWidth: 2.5))
               : Text(label,
@@ -424,25 +492,36 @@ class _GlassOutlineButton extends StatelessWidget {
   final String label;
   final bool isLoading;
   final VoidCallback onPressed;
+  final bool isDark;
 
   const _GlassOutlineButton(
-      {required this.label, required this.isLoading, required this.onPressed});
+      {required this.label,
+      required this.isLoading,
+      required this.onPressed,
+      required this.isDark});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: isLoading ? null : onPressed,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
         height: 54,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.06),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.06)
+              : Colors.black.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+          border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.22)
+                : Colors.black.withValues(alpha: 0.14),
+          ),
         ),
         child: Center(
           child: Text(label,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF111111),
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               )),
@@ -488,34 +567,41 @@ class _GlassBanner extends StatelessWidget {
 // ── Language toggle ───────────────────────────────────────────────────────────
 
 class _LanguageToggle extends StatelessWidget {
-  const _LanguageToggle();
+  final bool isDark;
+  const _LanguageToggle({required this.isDark});
 
   @override
   Widget build(BuildContext context) {
-    final localeProvider = Provider.of<LocaleProvider?>(context, listen: true);
+    final localeProvider =
+        Provider.of<LocaleProvider?>(context, listen: true);
     final isEn = (localeProvider?.locale?.languageCode ?? 'es') == 'en';
     const h = 32.0;
 
     return GestureDetector(
       onTap: () => localeProvider?.setLocale(Locale(isEn ? 'es' : 'en')),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
         height: h,
         padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.12),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.12)
+              : Colors.black.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(h / 2),
           border: Border.all(
-              color: const Color(0xFF3DCF6E).withValues(alpha: 0.5), width: 1.5),
+              color: const Color(0xFF3DCF6E).withValues(alpha: 0.55),
+              width: 1.5),
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           const Icon(Icons.language_rounded,
               size: 16, color: Color(0xFF3DCF6E)),
           const SizedBox(width: 6),
           Text(isEn ? 'EN' : 'ES',
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700)),
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF111111),
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              )),
         ]),
       ),
     );
@@ -525,31 +611,33 @@ class _LanguageToggle extends StatelessWidget {
 // ── Theme toggle ──────────────────────────────────────────────────────────────
 
 class _ThemeToggle extends StatelessWidget {
-  const _ThemeToggle();
+  final bool isDark;
+  final VoidCallback? onToggle;
+  const _ThemeToggle({required this.isDark, this.onToggle});
 
   @override
   Widget build(BuildContext context) {
-    final themeController =
-        Provider.of<ThemeController?>(context, listen: true);
-    final isDark = themeController?.isDark ?? true;
     const w = 64.0;
     const h = 32.0;
     const circle = 24.0;
     const pad = (h - circle) / 2;
 
     return GestureDetector(
-      onTap: () => themeController?.toggle(),
+      onTap: onToggle,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 280),
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        width: w, height: h,
+        width: w,
+        height: h,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.12),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.12)
+              : Colors.black.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(h / 2),
           border: Border.all(
             color: isDark
                 ? const Color(0xFF3DCF6E)
-                : const Color(0xFFBBBBBB),
+                : const Color(0xFF3DCF6E).withValues(alpha: 0.70),
             width: 1.5,
           ),
         ),
@@ -559,14 +647,15 @@ class _ThemeToggle extends StatelessWidget {
             curve: Curves.easeInOut,
             left: isDark ? w / 2 - 2 : null,
             right: isDark ? null : w / 2 - 2,
-            top: 0, bottom: 0,
+            top: 0,
+            bottom: 0,
             child: Center(
               child: Icon(
                 isDark ? Icons.nightlight_round : Icons.wb_sunny_rounded,
                 size: 14,
                 color: isDark
                     ? const Color(0xFF3DCF6E)
-                    : const Color(0xFF888888),
+                    : const Color(0xFFF59E0B),
               ),
             ),
           ),
@@ -576,13 +665,14 @@ class _ThemeToggle extends StatelessWidget {
             left: isDark ? pad : w - circle - pad,
             top: pad,
             child: Container(
-              width: circle, height: circle,
+              width: circle,
+              height: circle,
               decoration: BoxDecoration(
-                color: isDark ? Colors.white : const Color(0xFF222222),
+                color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.25),
+                    color: Colors.black.withValues(alpha: 0.22),
                     blurRadius: 4,
                     offset: const Offset(0, 1),
                   ),

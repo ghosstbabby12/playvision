@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_color_tokens.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../controller/training_controller.dart';
+import 'training_controller.dart';
 
 class TrainingPage extends StatefulWidget {
   const TrainingPage({super.key});

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_color_tokens.dart';
 import '../../../l10n/generated/app_localizations.dart'; // IMPORTANTE
-import '../controller/analysis_controller.dart';
+import 'analysis_controller.dart';
 import 'widgets/field_map_tab.dart';
 import 'widgets/players_tab.dart';
 import 'widgets/summary_tab.dart';

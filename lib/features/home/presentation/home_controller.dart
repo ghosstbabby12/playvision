@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/constants/app_constants.dart';
-import '../../../core/store/analysis_store.dart';
+import 'package:playvision/features/analysis/data/analysis_store.dart';
 import '../../../core/supabase/supabase_service.dart';
 
 class HomeController extends ChangeNotifier {

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import '../../../core/store/analysis_store.dart';
+import 'package:playvision/features/analysis/data/analysis_store.dart';
 
 class TrainingController extends ChangeNotifier {
   Map<String, dynamic>? get result => AnalysisStore.instance.lastResult;

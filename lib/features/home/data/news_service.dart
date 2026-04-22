@@ -1,24 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:playvision/core/constants/app_constants.dart';
+import 'package:playvision/features/home/domain/news_article.dart';
 
-class NewsArticle {
-  final String title;
-  final String category;
-  final String timeAgo;
-  final String? imageUrl;
-  final String link;
-  final String? summary;
-
-  const NewsArticle({
-    required this.title,
-    required this.category,
-    required this.timeAgo,
-    required this.link,
-    this.imageUrl,
-    this.summary,
-  });
-}
+export 'package:playvision/features/home/domain/news_article.dart';
 
 class NewsService {
   NewsService._();
