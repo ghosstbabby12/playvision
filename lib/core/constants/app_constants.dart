@@ -4,8 +4,9 @@ class AppConstants {
   AppConstants._();
 
   // ── Backend ────────────────────────────────────────────────────────────────
+  // Tu celular usará esta IP para conectarse a tu computadora a través del Wi-Fi
   static String get apiBase =>
-      dotenv.env['API_BASE_URL'] ?? 'http://127.0.0.1:8000';
+      dotenv.env['API_BASE_URL'] ?? 'http://172.162.1.216:8000';
 
   static const Duration analysisTimeout = Duration(minutes: 10);
 

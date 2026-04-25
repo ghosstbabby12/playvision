@@ -46,6 +46,7 @@ class _HomePageState extends State<HomePage> {
     _timer = Timer.periodic(const Duration(minutes: 1), (_) => _fetchLiveMatches());
   }
 
+  // Se conecta a tu backend en Python de forma segura
   Future<void> _fetchLiveMatches() async {
     List<dynamic> matches = [];
     try {
