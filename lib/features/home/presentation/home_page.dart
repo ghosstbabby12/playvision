@@ -9,9 +9,7 @@ import 'package:playvision/core/theme/app_color_tokens.dart';
 import 'package:playvision/shared/widgets/form_text_field.dart';
 import 'package:playvision/features/analysis/presentation/analysis_page.dart';
 
-// ✅ Import del nuevo servicio — reemplaza el http directo
 import '../data/live_matches_service.dart';
-
 import 'home_controller.dart';
 import 'widgets/hero_section.dart';
 import 'widgets/home_tab_bar.dart';
@@ -32,8 +30,19 @@ class _HomePageState extends State<HomePage> {
   late final HomeController _controller;
   int _selectedTab = 0;
 
+  // ── Live matches ──────────────────────────────────────────────────────────
   List<dynamic> _liveMatches = [];
   bool _isLoadingLiveMatches = true;
+
+  // ── Featured matches ──────────────────────────────────────────────────────
+  Map<String, List<dynamic>> _featuredSections = {};
+  bool _isLoadingFeatured = true;
+
+  // ── Team search ───────────────────────────────────────────────────────────
+  Map<String, dynamic>? _searchedTeam;
+  List<dynamic> _searchedMatches = [];
+  bool _isSearching = false;
+
   Timer? _timer;
 
   @override
@@ -43,13 +52,16 @@ class _HomePageState extends State<HomePage> {
     _controller.loadTeams();
     _controller.loadRecentMatches();
     _fetchLiveMatches();
+    _fetchFeaturedMatches();
     _timer = Timer.periodic(
       const Duration(minutes: 1),
-      (_) => _fetchLiveMatches(),
+      (_) {
+        _fetchLiveMatches();
+        _fetchFeaturedMatches();
+      },
     );
   }
 
-  // ✅ FIX: usa LiveMatchesService — prueba emulador, PC y .env automáticamente
   Future<void> _fetchLiveMatches() async {
     try {
       final matches = await LiveMatchesService.instance.fetchLiveMatches();
@@ -61,13 +73,44 @@ class _HomePageState extends State<HomePage> {
       }
     } catch (e) {
       debugPrint('[HomePage._fetchLiveMatches] $e');
+      if (mounted) setState(() => _isLoadingLiveMatches = false);
+    }
+  }
+
+  Future<void> _fetchFeaturedMatches() async {
+    try {
+      final sections =
+          await LiveMatchesService.instance.fetchFeaturedMatches();
       if (mounted) {
         setState(() {
-          _liveMatches = [];
-          _isLoadingLiveMatches = false;
+          _featuredSections = sections;
+          _isLoadingFeatured = false;
         });
       }
+    } catch (e) {
+      debugPrint('[HomePage._fetchFeaturedMatches] $e');
+      if (mounted) setState(() => _isLoadingFeatured = false);
     }
+  }
+
+  Future<void> _searchTeam(String name) async {
+    if (name.trim().length < 2) return;
+    setState(() => _isSearching = true);
+    final result = await LiveMatchesService.instance.searchTeam(name.trim());
+    if (mounted) {
+      setState(() {
+        _searchedTeam    = result?['team'] as Map<String, dynamic>?;
+        _searchedMatches = (result?['matches'] as List?) ?? [];
+        _isSearching     = false;
+      });
+    }
+  }
+
+  void _clearSearch() {
+    setState(() {
+      _searchedTeam    = null;
+      _searchedMatches = [];
+    });
   }
 
   @override
@@ -81,7 +124,7 @@ class _HomePageState extends State<HomePage> {
     final session = Supabase.instance.client.auth.currentSession;
     if (session == null) return;
 
-    final error = _controller.errorMessage;
+    final error   = _controller.errorMessage;
     final success = _controller.successMessage;
 
     if (error != null || success != null) {
@@ -93,7 +136,8 @@ class _HomePageState extends State<HomePage> {
           content: Text(error ?? success!),
           backgroundColor: error != null ? c.danger : c.accentMid,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ));
       });
     }
@@ -128,7 +172,8 @@ class _HomePageState extends State<HomePage> {
                 SliverToBoxAdapter(
                   child: SelectedTeamHeader(
                     controller: _controller,
-                    onEdit: () => _openTeamDialog(team: _controller.selectedTeam),
+                    onEdit: () =>
+                        _openTeamDialog(team: _controller.selectedTeam),
                     onDelete: () => _deleteTeam(_controller.selectedTeam!),
                   ),
                 ),
@@ -145,7 +190,8 @@ class _HomePageState extends State<HomePage> {
                     child: ViewAnalysisButton(
                       onTap: () => Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const AnalysisPage()),
+                        MaterialPageRoute(
+                            builder: (_) => const AnalysisPage()),
                       ),
                     ),
                   ),
@@ -170,8 +216,18 @@ class _HomePageState extends State<HomePage> {
               if (_selectedTab == 0)
                 SliverToBoxAdapter(
                   child: MatchScheduleSection(
+                    // Live
                     isLoading: _isLoadingLiveMatches,
                     matches: _liveMatches,
+                    // Featured
+                    featuredSections: _featuredSections,
+                    isLoadingFeatured: _isLoadingFeatured,
+                    // Search
+                    onSearchTeam: _searchTeam,
+                    onClearSearch: _clearSearch,
+                    isSearching: _isSearching,
+                    searchedTeam: _searchedTeam,
+                    searchedMatches: _searchedMatches,
                   ),
                 )
               else
@@ -186,7 +242,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _openTeamDialog({Map<String, dynamic>? team}) async {
-    final nameCtrl = TextEditingController(text: team?['name'] as String? ?? '');
+    final nameCtrl =
+        TextEditingController(text: team?['name'] as String? ?? '');
     final categoryCtrl =
         TextEditingController(text: team?['category'] as String? ?? '');
     final clubCtrl =
@@ -208,8 +265,7 @@ class _HomePageState extends State<HomePage> {
                 borderRadius: BorderRadius.circular(20)),
             title: Text(
               isEdit ? 'Edit team' : 'New team',
-              style:
-                  TextStyle(color: c.text, fontWeight: FontWeight.w700),
+              style: TextStyle(color: c.text, fontWeight: FontWeight.w700),
             ),
             content: SingleChildScrollView(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -225,7 +281,7 @@ class _HomePageState extends State<HomePage> {
                     final bytes = await file.readAsBytes();
                     setDlg(() {
                       pickedLogo = file;
-                      logoBytes = bytes;
+                      logoBytes  = bytes;
                     });
                   },
                   child: Stack(alignment: Alignment.bottomRight, children: [
@@ -269,11 +325,11 @@ class _HomePageState extends State<HomePage> {
                   style: TextStyle(color: c.muted, fontSize: 11),
                 ),
                 const SizedBox(height: 16),
-                FormTextField(controller: nameCtrl, label: 'Name'),
+                FormTextField(controller: nameCtrl,     label: 'Name'),
                 const SizedBox(height: 10),
                 FormTextField(controller: categoryCtrl, label: 'Category'),
                 const SizedBox(height: 10),
-                FormTextField(controller: clubCtrl, label: 'Club'),
+                FormTextField(controller: clubCtrl,     label: 'Club'),
               ]),
             ),
             actions: [
@@ -335,8 +391,7 @@ class _HomePageState extends State<HomePage> {
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: context.colors.accent))
+                            strokeWidth: 2, color: context.colors.accent))
                     : Text(
                         isEdit ? 'Save' : 'Create',
                         style: TextStyle(
@@ -361,8 +416,7 @@ class _HomePageState extends State<HomePage> {
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20)),
           title: Text('Delete team',
-              style:
-                  TextStyle(color: c.text, fontWeight: FontWeight.w700)),
+              style: TextStyle(color: c.text, fontWeight: FontWeight.w700)),
           content: Text(
             'Delete team "${team['name']}"? This cannot be undone.',
             style: TextStyle(color: c.muted, fontSize: 13, height: 1.5),
