@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/theme/app_color_tokens.dart';
 import '../features/home/presentation/home_page.dart';
 import '../features/analysis/presentation/analyses_history_page.dart';
+import '../features/coaching_board/presentation/coaching_board_page.dart';
 import '../features/matches/presentation/matches_page.dart';
 import '../features/training/presentation/training_page.dart';
 
@@ -21,6 +22,7 @@ class _MainScreenState extends State<MainScreen> {
     const AnalysesHistoryPage(),
     const MatchesPage(),
     const TrainingPage(),
+    const CoachingBoardPage(),
   ];
 
   @override
@@ -45,10 +47,11 @@ class _GlassNavBar extends StatelessWidget {
   const _GlassNavBar({required this.currentIndex, required this.onTap});
 
   static const _items = [
-    (icon: Icons.home_outlined,            activeIcon: Icons.home_rounded),
-    (icon: Icons.analytics_outlined,       activeIcon: Icons.analytics_rounded),
-    (icon: Icons.sports_soccer_outlined,   activeIcon: Icons.sports_soccer),
-    (icon: Icons.fitness_center_outlined,  activeIcon: Icons.fitness_center),
+    (icon: Icons.home_outlined,              activeIcon: Icons.home_rounded),
+    (icon: Icons.analytics_outlined,         activeIcon: Icons.analytics_rounded),
+    (icon: Icons.sports_soccer_outlined,     activeIcon: Icons.sports_soccer),
+    (icon: Icons.fitness_center_outlined,    activeIcon: Icons.fitness_center),
+    (icon: Icons.space_dashboard_outlined,   activeIcon: Icons.space_dashboard_rounded),
   ];
 
   @override
