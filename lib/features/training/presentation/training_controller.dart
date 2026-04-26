@@ -1,12 +1,57 @@
 import 'package:flutter/foundation.dart';
 
+import 'package:playvision/core/supabase/supabase_service.dart';
 import 'package:playvision/features/analysis/data/analysis_store.dart';
+import '../domain/training_session.dart';
 
 class TrainingController extends ChangeNotifier {
+  // ── Analysis result (from video analysis flow) ─────────────────────────────
   Map<String, dynamic>? get result => AnalysisStore.instance.lastResult;
   List? get players => result?['players'] as List?;
   Map<String, dynamic>? get team => result?['team'] as Map<String, dynamic>?;
 
+  // ── Training sessions ──────────────────────────────────────────────────────
+  List<TrainingSession> _sessions = [];
+  bool _loadingSessions = false;
+
+  List<TrainingSession> get sessions => List.unmodifiable(_sessions);
+  bool get loadingSessions => _loadingSessions;
+
+  Future<void> loadSessions() async {
+    _loadingSessions = true;
+    notifyListeners();
+    try {
+      final data = await SupabaseService.instance.getTrainingSessions();
+      _sessions = data.map(TrainingSession.fromJson).toList();
+    } catch (_) {
+      _sessions = [];
+    }
+    _loadingSessions = false;
+    notifyListeners();
+  }
+
+  Future<void> createSession({
+    required String title,
+    required String category,
+    required int durationMinutes,
+    String? description,
+  }) async {
+    await SupabaseService.instance.createTrainingSession(
+      title: title,
+      category: category,
+      durationMinutes: durationMinutes,
+      description: description,
+    );
+    await loadSessions();
+  }
+
+  Future<void> deleteSession(int id) async {
+    await SupabaseService.instance.deleteTrainingSession(id);
+    _sessions = _sessions.where((s) => s.id != id).toList();
+    notifyListeners();
+  }
+
+  // ── Team/player insights (derived from analysis result) ────────────────────
   List<String> buildTeamInsights() {
     final insights = <String>[];
     if (team == null || players == null || players!.isEmpty) return insights;
@@ -46,10 +91,10 @@ class TrainingController extends ChangeNotifier {
 
   List<String> buildPlayerRecommendations(Map<String, dynamic> player) {
     final recs     = <String>[];
-    final km       = (player['distance_km']   as num?)?.toDouble() ?? 0;
-    final speed    = (player['speed_ms']      as num?)?.toDouble() ?? 0;
+    final km       = (player['distance_km']    as num?)?.toDouble() ?? 0;
+    final speed    = (player['speed_ms']       as num?)?.toDouble() ?? 0;
     final poss     = (player['possession_pct'] as num?)?.toDouble() ?? 0;
-    final presence = (player['presence_pct']  as num?)?.toDouble() ?? 0;
+    final presence = (player['presence_pct']   as num?)?.toDouble() ?? 0;
     final zone     = player['zone'] as String? ?? '';
 
     if (km < 0.5)       recs.add('Increase endurance: short distance covered. Add interval runs.');

@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_color_tokens.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../domain/training_session.dart';
 import 'training_controller.dart';
+import 'training_session_detail_page.dart';
 
 class TrainingPage extends StatefulWidget {
   const TrainingPage({super.key});
@@ -21,12 +23,166 @@ class _TrainingPageState extends State<TrainingPage> {
   void initState() {
     super.initState();
     _controller = TrainingController();
+    _controller.loadSessions();
   }
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void _showCreateSessionDialog(BuildContext context, TrainingController ctrl) {
+    final titleCtrl    = TextEditingController();
+    final descCtrl     = TextEditingController();
+    String category    = TrainingSession.categories.first;
+    int durationMinutes = 60;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF141414),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        final c = ctx.colors;
+        return StatefulBuilder(
+          builder: (ctx, setModal) => Padding(
+            padding: EdgeInsets.fromLTRB(
+                20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 24),
+            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Expanded(child: Text('New Session',
+                    style: TextStyle(color: c.textHi, fontSize: 18, fontWeight: FontWeight.w800))),
+                GestureDetector(
+                  onTap: () => Navigator.of(ctx).pop(),
+                  child: Icon(Icons.close_rounded, color: c.muted),
+                ),
+              ]),
+              const SizedBox(height: 20),
+
+              TextField(
+                controller: titleCtrl,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Session title',
+                  hintStyle: TextStyle(color: c.muted),
+                  filled: true,
+                  fillColor: c.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: c.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: c.border),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              TextField(
+                controller: descCtrl,
+                style: const TextStyle(color: Colors.white),
+                maxLines: 2,
+                decoration: InputDecoration(
+                  hintText: 'Description (optional)',
+                  hintStyle: TextStyle(color: c.muted),
+                  filled: true,
+                  fillColor: c.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: c.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: c.border),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Category chips
+              Wrap(spacing: 8, children: TrainingSession.categories.map((cat) {
+                final selected = cat == category;
+                return GestureDetector(
+                  onTap: () => setModal(() => category = cat),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: selected ? TrainingSession.categoryColor(cat) : c.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: selected ? TrainingSession.categoryColor(cat) : c.border,
+                      ),
+                    ),
+                    child: Text(cat,
+                        style: TextStyle(
+                          color: selected ? Colors.white : c.muted,
+                          fontSize: 12, fontWeight: FontWeight.w600,
+                        )),
+                  ),
+                );
+              }).toList()),
+              const SizedBox(height: 12),
+
+              // Duration picker
+              Row(children: [
+                Text('Duration:', style: TextStyle(color: c.muted, fontSize: 13)),
+                const SizedBox(width: 12),
+                ...([30, 45, 60, 75, 90].map((min) {
+                  final sel = durationMinutes == min;
+                  return GestureDetector(
+                    onTap: () => setModal(() => durationMinutes = min),
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: sel ? c.accentLo : c.surface,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: sel ? c.borderGreen : c.border),
+                      ),
+                      child: Text('${min}m',
+                          style: TextStyle(
+                            color: sel ? c.accent : c.muted,
+                            fontSize: 12, fontWeight: FontWeight.w700,
+                          )),
+                    ),
+                  );
+                })),
+              ]),
+              const SizedBox(height: 20),
+
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () async {
+                    final title = titleCtrl.text.trim();
+                    if (title.isEmpty) return;
+                    Navigator.of(ctx).pop();
+                    await ctrl.createSession(
+                      title: title,
+                      category: category,
+                      durationMinutes: durationMinutes,
+                      description: descCtrl.text.trim().isEmpty ? null : descCtrl.text.trim(),
+                    );
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: context.colors.accent,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: const Text('Create Session',
+                      style: TextStyle(fontWeight: FontWeight.w800)),
+                ),
+              ),
+            ]),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -94,12 +250,26 @@ class _TrainingPageState extends State<TrainingPage> {
                   Expanded(child: Text('SUGGESTED SESSIONS',
                       style: TextStyle(color: c.muted, fontSize: 11,
                           fontWeight: FontWeight.w700, letterSpacing: 1.4))),
-                  Text('View all',
-                      style: TextStyle(color: c.accent, fontSize: 12, fontWeight: FontWeight.w600)),
+                  GestureDetector(
+                    onTap: () => _showCreateSessionDialog(context, _controller),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: c.accentLo,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: c.borderGreen),
+                      ),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Icon(Icons.add_rounded, color: c.accent, size: 14),
+                        const SizedBox(width: 4),
+                        Text('New', style: TextStyle(color: c.accent, fontSize: 12, fontWeight: FontWeight.w700)),
+                      ]),
+                    ),
+                  ),
                 ]),
               )),
 
-              SliverToBoxAdapter(child: _SessionCarousel()),
+              SliverToBoxAdapter(child: _DynamicSessionCarousel(controller: _controller)),
 
               const SliverToBoxAdapter(child: SizedBox(height: 120)),
             ],
@@ -514,111 +684,164 @@ class _ProgressBar extends StatelessWidget {
   ]);
 }
 
-// ── Session carousel ──────────────────────────────────────────────────────────
+// ── Dynamic session carousel ──────────────────────────────────────────────────
 
-class _SessionCarousel extends StatelessWidget {
-  static const _sessions = [
-    (
-      title: 'High press & transitions',
-      duration: '90 min',
-      category: 'Tactical',
-      color: Color(0xFF2D6A4F),
-      imageUrl: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80',
-    ),
-    (
-      title: 'Positional play 4-3-3',
-      duration: '75 min',
-      category: 'Technical',
-      color: Color(0xFF1D5A8A),
-      imageUrl: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=400&q=80',
-    ),
-    (
-      title: 'Physical prep — endurance',
-      duration: '60 min',
-      category: 'Physical',
-      color: Color(0xFF7A5A1D),
-      imageUrl: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&q=80',
-    ),
-    (
-      title: 'Set pieces — corners',
-      duration: '45 min',
-      category: 'Set piece',
-      color: Color(0xFF5A2D7A),
-      imageUrl: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=400&q=80',
-    ),
-  ];
+class _DynamicSessionCarousel extends StatelessWidget {
+  final TrainingController controller;
+  const _DynamicSessionCarousel({required this.controller});
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
+
+    if (controller.loadingSessions) {
+      return SizedBox(
+        height: 200,
+        child: Center(child: CircularProgressIndicator(color: c.accent, strokeWidth: 1.5)),
+      );
+    }
+
+    if (controller.sessions.isEmpty) {
+      return Container(
+        height: 140,
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: c.border),
+        ),
+        child: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Icon(Icons.fitness_center_rounded, color: c.dim, size: 32),
+          const SizedBox(height: 10),
+          Text('No sessions yet', style: TextStyle(color: c.text, fontSize: 14, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 4),
+          Text('Tap "New" to create your first session', style: TextStyle(color: c.muted, fontSize: 12)),
+        ])),
+      );
+    }
+
     return SizedBox(
       height: 200,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: _sessions.length,
-        itemBuilder: (_, i) => _SessionCard(session: _sessions[i]),
+        itemCount: controller.sessions.length,
+        itemBuilder: (_, i) => _SessionCard(
+          session: controller.sessions[i],
+          onDelete: () => controller.deleteSession(controller.sessions[i].id),
+        ),
       ),
     );
   }
 }
 
 class _SessionCard extends StatelessWidget {
-  final ({String title, String duration, String category, Color color, String imageUrl}) session;
-  const _SessionCard({required this.session});
+  final TrainingSession session;
+  final VoidCallback onDelete;
+  const _SessionCard({required this.session, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
-    return Container(
-      width: 170,
-      margin: const EdgeInsets.only(right: 12),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(18)),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: Stack(fit: StackFit.expand, children: [
-          Image.network(
-            session.imageUrl,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => Container(color: c.surface),
-          ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.black.withValues(alpha: 0.88)],
-              ),
+    final c        = context.colors;
+    final catColor = TrainingSession.categoryColor(session.category);
+    final imageUrl = session.imageUrl ?? TrainingSession.categoryImage(session.category);
+
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => TrainingSessionDetailPage(session: session, onDelete: onDelete),
+      )),
+      child: Container(
+        width: 170,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(18)),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: Stack(fit: StackFit.expand, children: [
+            Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(color: c.surface),
             ),
-          ),
-          Positioned(
-            top: 12, left: 12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            DecoratedBox(
               decoration: BoxDecoration(
-                color: session.color,
-                borderRadius: BorderRadius.circular(6),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Colors.black.withValues(alpha: 0.88)],
+                ),
               ),
-              child: Text(session.category,
-                  style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800)),
             ),
-          ),
-          Positioned(
-            left: 12, right: 12, bottom: 12,
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(session.title,
-                  maxLines: 2, overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white, fontSize: 13,
-                      fontWeight: FontWeight.w700, height: 1.3)),
-              const SizedBox(height: 6),
-              Row(children: [
-                const Icon(Icons.timer_outlined, color: Colors.white60, size: 12),
-                const SizedBox(width: 4),
-                Text(session.duration,
-                    style: const TextStyle(color: Colors.white60, fontSize: 11)),
+            Positioned(
+              top: 12, left: 12,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: catColor,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(session.category,
+                    style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800)),
+              ),
+            ),
+            // Delete button
+            Positioned(
+              top: 8, right: 8,
+              child: GestureDetector(
+                onTap: () => _confirmDelete(context),
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.close_rounded, color: Colors.white70, size: 13),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 12, right: 12, bottom: 12,
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(session.title,
+                    maxLines: 2, overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white, fontSize: 13,
+                        fontWeight: FontWeight.w700, height: 1.3)),
+                const SizedBox(height: 6),
+                Row(children: [
+                  const Icon(Icons.timer_outlined, color: Colors.white60, size: 12),
+                  const SizedBox(width: 4),
+                  Text('${session.durationMinutes} min',
+                      style: const TextStyle(color: Colors.white60, fontSize: 11)),
+                ]),
               ]),
-            ]),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        title: const Text('Remove session?',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+        content: Text('"${session.title}" will be deleted.',
+            style: const TextStyle(color: Colors.white60)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white60)),
           ),
-        ]),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              onDelete();
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
       ),
     );
   }

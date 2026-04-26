@@ -401,4 +401,54 @@ class SupabaseService {
       'next_match_notes': nextMatchNotes,
     }).timeout(_kTimeout);
   }
+
+  // ── Training sessions ──────────────────────────────────────────────────────
+
+  Future<List<Map<String, dynamic>>> getTrainingSessions({int? teamId}) async {
+    if (teamId != null) {
+      final res = await client
+          .from('training_sessions')
+          .select()
+          .eq('user_id', _currentUserId)
+          .eq('team_id', teamId)
+          .order('created_at', ascending: false)
+          .timeout(_kTimeout);
+      return List<Map<String, dynamic>>.from(res);
+    }
+    final res = await client
+        .from('training_sessions')
+        .select()
+        .eq('user_id', _currentUserId)
+        .order('created_at', ascending: false)
+        .timeout(_kTimeout);
+    return List<Map<String, dynamic>>.from(res);
+  }
+
+  Future<void> createTrainingSession({
+    required String title,
+    required String category,
+    required int durationMinutes,
+    String? description,
+    String? imageUrl,
+    int? teamId,
+  }) async {
+    await client.from('training_sessions').insert({
+      'title': title,
+      'category': category,
+      'duration_minutes': durationMinutes,
+      'user_id': _currentUserId,
+      if (description != null) 'description': description,
+      if (imageUrl != null) 'image_url': imageUrl,
+      if (teamId != null) 'team_id': teamId,
+    }).timeout(_kTimeout);
+  }
+
+  Future<void> deleteTrainingSession(int id) async {
+    await client
+        .from('training_sessions')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', _currentUserId)
+        .timeout(_kTimeout);
+  }
 }
