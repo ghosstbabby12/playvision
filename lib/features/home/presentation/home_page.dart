@@ -1,16 +1,16 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:playvision/core/constants/app_constants.dart';
 import 'package:playvision/core/theme/app_color_tokens.dart';
 import 'package:playvision/shared/widgets/form_text_field.dart';
 import 'package:playvision/features/analysis/presentation/analysis_page.dart';
+
+// ✅ Import del nuevo servicio — reemplaza el http directo
+import '../data/live_matches_service.dart';
 
 import 'home_controller.dart';
 import 'widgets/hero_section.dart';
@@ -43,25 +43,27 @@ class _HomePageState extends State<HomePage> {
     _controller.loadTeams();
     _controller.loadRecentMatches();
     _fetchLiveMatches();
-    _timer = Timer.periodic(const Duration(minutes: 1), (_) => _fetchLiveMatches());
+    _timer = Timer.periodic(
+      const Duration(minutes: 1),
+      (_) => _fetchLiveMatches(),
+    );
   }
 
-  // Se conecta a tu backend en Python de forma segura
+  // ✅ FIX: usa LiveMatchesService — prueba emulador, PC y .env automáticamente
   Future<void> _fetchLiveMatches() async {
-    List<dynamic> matches = [];
     try {
-      final response = await http.get(
-        Uri.parse('${AppConstants.apiBase}/api/live-matches'),
-      );
-      if (response.statusCode == 200) {
-        matches = (json.decode(response.body) as Map)['data'] ?? [];
-      }
-    } catch (e) {
-      debugPrint('Error API partidos: $e');
-    } finally {
+      final matches = await LiveMatchesService.instance.fetchLiveMatches();
       if (mounted) {
         setState(() {
           _liveMatches = matches;
+          _isLoadingLiveMatches = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('[HomePage._fetchLiveMatches] $e');
+      if (mounted) {
+        setState(() {
+          _liveMatches = [];
           _isLoadingLiveMatches = false;
         });
       }
@@ -79,7 +81,7 @@ class _HomePageState extends State<HomePage> {
     final session = Supabase.instance.client.auth.currentSession;
     if (session == null) return;
 
-    final error   = _controller.errorMessage;
+    final error = _controller.errorMessage;
     final success = _controller.successMessage;
 
     if (error != null || success != null) {
@@ -110,7 +112,9 @@ class _HomePageState extends State<HomePage> {
           endDrawer: const SettingsDrawer(),
           body: CustomScrollView(
             slivers: [
-              SliverToBoxAdapter(child: HeroSection(controller: _controller)),
+              SliverToBoxAdapter(
+                child: HeroSection(controller: _controller),
+              ),
 
               if (!hasTeam)
                 SliverToBoxAdapter(
@@ -182,9 +186,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _openTeamDialog({Map<String, dynamic>? team}) async {
-    final nameCtrl     = TextEditingController(text: team?['name'] as String? ?? '');
-    final categoryCtrl = TextEditingController(text: team?['category'] as String? ?? '');
-    final clubCtrl     = TextEditingController(text: team?['club'] as String? ?? '');
+    final nameCtrl = TextEditingController(text: team?['name'] as String? ?? '');
+    final categoryCtrl =
+        TextEditingController(text: team?['category'] as String? ?? '');
+    final clubCtrl =
+        TextEditingController(text: team?['club'] as String? ?? '');
     final isEdit = team != null;
 
     XFile? pickedLogo;
@@ -198,9 +204,13 @@ class _HomePageState extends State<HomePage> {
           final c = ctx.colors;
           return AlertDialog(
             backgroundColor: c.surface,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: Text(isEdit ? 'Edit team' : 'New team',
-                style: TextStyle(color: c.text, fontWeight: FontWeight.w700)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20)),
+            title: Text(
+              isEdit ? 'Edit team' : 'New team',
+              style:
+                  TextStyle(color: c.text, fontWeight: FontWeight.w700),
+            ),
             content: SingleChildScrollView(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
                 GestureDetector(
@@ -213,37 +223,51 @@ class _HomePageState extends State<HomePage> {
                         imageQuality: 85);
                     if (file == null) return;
                     final bytes = await file.readAsBytes();
-                    setDlg(() { pickedLogo = file; logoBytes = bytes; });
+                    setDlg(() {
+                      pickedLogo = file;
+                      logoBytes = bytes;
+                    });
                   },
                   child: Stack(alignment: Alignment.bottomRight, children: [
                     Container(
-                      width: 80, height: 80,
+                      width: 80,
+                      height: 80,
                       decoration: BoxDecoration(
                         color: c.elevated,
                         shape: BoxShape.circle,
                         border: Border.all(color: c.borderGreen, width: 2),
                         image: logoBytes != null
-                            ? DecorationImage(image: MemoryImage(logoBytes!), fit: BoxFit.cover)
+                            ? DecorationImage(
+                                image: MemoryImage(logoBytes!),
+                                fit: BoxFit.cover)
                             : (team?['logo_url'] as String?)?.isNotEmpty == true
                                 ? DecorationImage(
-                                    image: NetworkImage(team!['logo_url'] as String),
+                                    image: NetworkImage(
+                                        team!['logo_url'] as String),
                                     fit: BoxFit.cover)
                                 : null,
                       ),
-                      child: logoBytes == null && (team?['logo_url'] as String?) == null
-                          ? Icon(Icons.groups_outlined, color: c.accent, size: 32)
+                      child: logoBytes == null &&
+                              (team?['logo_url'] as String?) == null
+                          ? Icon(Icons.groups_outlined,
+                              color: c.accent, size: 32)
                           : null,
                     ),
                     Container(
-                      width: 24, height: 24,
-                      decoration: BoxDecoration(color: c.accent, shape: BoxShape.circle),
-                      child: const Icon(Icons.camera_alt, color: Colors.black, size: 13),
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                          color: c.accent, shape: BoxShape.circle),
+                      child: const Icon(Icons.camera_alt,
+                          color: Colors.black, size: 13),
                     ),
                   ]),
                 ),
                 const SizedBox(height: 6),
-                Text(pickedLogo != null ? 'Logo selected' : 'Tap to add logo',
-                    style: TextStyle(color: c.muted, fontSize: 11)),
+                Text(
+                  pickedLogo != null ? 'Logo selected' : 'Tap to add logo',
+                  style: TextStyle(color: c.muted, fontSize: 11),
+                ),
                 const SizedBox(height: 16),
                 FormTextField(controller: nameCtrl, label: 'Name'),
                 const SizedBox(height: 10),
@@ -258,44 +282,67 @@ class _HomePageState extends State<HomePage> {
                 child: Text('Cancel', style: TextStyle(color: c.muted)),
               ),
               TextButton(
-                onPressed: isSaving ? null : () async {
-                  if (nameCtrl.text.trim().isEmpty) return;
-                  setDlg(() => isSaving = true);
+                onPressed: isSaving
+                    ? null
+                    : () async {
+                        if (nameCtrl.text.trim().isEmpty) return;
+                        setDlg(() => isSaving = true);
 
-                  String? logoUrl;
-                  if (pickedLogo != null && logoBytes != null) {
-                    final tmpId = isEdit
-                        ? (team['id'] as int)
-                        : DateTime.now().millisecondsSinceEpoch;
-                    final ext = pickedLogo!.name.split('.').last.toLowerCase();
-                    logoUrl = await _controller.uploadLogo(
-                        teamId: tmpId, bytes: logoBytes!, extension: ext);
-                  }
+                        String? logoUrl;
+                        if (pickedLogo != null && logoBytes != null) {
+                          final tmpId = isEdit
+                              ? (team['id'] as int)
+                              : DateTime.now().millisecondsSinceEpoch;
+                          final ext = pickedLogo!.name
+                              .split('.')
+                              .last
+                              .toLowerCase();
+                          logoUrl = await _controller.uploadLogo(
+                              teamId: tmpId,
+                              bytes: logoBytes!,
+                              extension: ext);
+                        }
 
-                  if (isEdit) {
-                    await _controller.updateTeam(
-                      id: team['id'] as int,
-                      name: nameCtrl.text.trim(),
-                      category: categoryCtrl.text.trim().isEmpty ? null : categoryCtrl.text.trim(),
-                      club: clubCtrl.text.trim().isEmpty ? null : clubCtrl.text.trim(),
-                      logoUrl: logoUrl,
-                    );
-                  } else {
-                    await _controller.createTeam(
-                      name: nameCtrl.text.trim(),
-                      category: categoryCtrl.text.trim().isEmpty ? null : categoryCtrl.text.trim(),
-                      club: clubCtrl.text.trim().isEmpty ? null : clubCtrl.text.trim(),
-                      logoUrl: logoUrl,
-                    );
-                  }
-                  if (!ctx.mounted) return;
-                  Navigator.pop(ctx);
-                },
+                        if (isEdit) {
+                          await _controller.updateTeam(
+                            id: team['id'] as int,
+                            name: nameCtrl.text.trim(),
+                            category: categoryCtrl.text.trim().isEmpty
+                                ? null
+                                : categoryCtrl.text.trim(),
+                            club: clubCtrl.text.trim().isEmpty
+                                ? null
+                                : clubCtrl.text.trim(),
+                            logoUrl: logoUrl,
+                          );
+                        } else {
+                          await _controller.createTeam(
+                            name: nameCtrl.text.trim(),
+                            category: categoryCtrl.text.trim().isEmpty
+                                ? null
+                                : categoryCtrl.text.trim(),
+                            club: clubCtrl.text.trim().isEmpty
+                                ? null
+                                : clubCtrl.text.trim(),
+                            logoUrl: logoUrl,
+                          );
+                        }
+                        if (!ctx.mounted) return;
+                        Navigator.pop(ctx);
+                      },
                 child: isSaving
-                    ? SizedBox(width: 16, height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: context.colors.accent))
-                    : Text(isEdit ? 'Save' : 'Create',
-                        style: TextStyle(color: context.colors.accent, fontWeight: FontWeight.w700)),
+                    ? SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: context.colors.accent))
+                    : Text(
+                        isEdit ? 'Save' : 'Create',
+                        style: TextStyle(
+                            color: context.colors.accent,
+                            fontWeight: FontWeight.w700),
+                      ),
               ),
             ],
           );
@@ -311,15 +358,21 @@ class _HomePageState extends State<HomePage> {
         final c = ctx.colors;
         return AlertDialog(
           backgroundColor: c.surface,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20)),
           title: Text('Delete team',
-              style: TextStyle(color: c.text, fontWeight: FontWeight.w700)),
-          content: Text('Delete team "${team['name']}"? This cannot be undone.',
-              style: TextStyle(color: c.muted, fontSize: 13, height: 1.5)),
+              style:
+                  TextStyle(color: c.text, fontWeight: FontWeight.w700)),
+          content: Text(
+            'Delete team "${team['name']}"? This cannot be undone.',
+            style: TextStyle(color: c.muted, fontSize: 13, height: 1.5),
+          ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false),
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
                 child: Text('Cancel', style: TextStyle(color: c.muted))),
-            TextButton(onPressed: () => Navigator.pop(ctx, true),
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
                 child: Text('Delete', style: TextStyle(color: c.danger))),
           ],
         );

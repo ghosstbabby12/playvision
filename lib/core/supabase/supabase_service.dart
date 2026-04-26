@@ -1,30 +1,32 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+/// Tiempo máximo de espera para cualquier operación con Supabase.
+const _kTimeout = Duration(seconds: 15);
+
 class SupabaseService {
   SupabaseService._();
   static final SupabaseService instance = SupabaseService._();
 
   final SupabaseClient client = Supabase.instance.client;
 
-  // Función interna para obtener el usuario actual de forma segura
+  // ─── Auth ────────────────────────────────────────────────────────────────
+
   String get _currentUserId {
-    final userId = client.auth.currentUser?.id;
-    if (userId == null) throw Exception("Sesión no iniciada. Por favor haz login.");
-    return userId;
+    final id = client.auth.currentUser?.id;
+    if (id == null) throw Exception('Sesión no iniciada. Por favor inicia sesión.');
+    return id;
   }
 
-  // =========================
-  // TEAMS
-  // =========================
+  // ─── Teams ───────────────────────────────────────────────────────────────
 
   Future<List<Map<String, dynamic>>> getTeams() async {
     final response = await client
         .from('teams')
         .select()
-        .eq('user_id', _currentUserId) // Solo los equipos de este usuario
-        .order('created_at', ascending: false);
-
+        .eq('user_id', _currentUserId)
+        .order('created_at', ascending: false)
+        .timeout(_kTimeout);
     return List<Map<String, dynamic>>.from(response);
   }
 
@@ -33,29 +35,33 @@ class SupabaseService {
         .from('teams')
         .select()
         .eq('id', teamId)
-        .eq('user_id', _currentUserId) // Medida extra de seguridad
-        .limit(1);
-
+        .eq('user_id', _currentUserId)
+        .limit(1)
+        .timeout(_kTimeout);
     final list = List<Map<String, dynamic>>.from(response);
-    if (list.isEmpty) return null;
-    return list.first;
+    return list.isEmpty ? null : list.first;
   }
 
   Future<String?> uploadTeamLogo({
     required int teamId,
     required Uint8List bytes,
-    required String extension, 
+    required String extension,
   }) async {
     try {
       final path = '$_currentUserId/team_$teamId.$extension';
       await client.storage
           .from('team-logos')
-          .uploadBinary(path, bytes,
-              fileOptions: FileOptions(
-                  contentType: 'image/$extension', upsert: true));
+          .uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(
+              contentType: 'image/$extension',
+              upsert: true,
+            ),
+          );
       return client.storage.from('team-logos').getPublicUrl(path);
     } catch (e) {
-      debugPrint('Logo upload error: $e');
+      debugPrint('Error al subir logo: $e');
       return null;
     }
   }
@@ -71,8 +77,8 @@ class SupabaseService {
       'category': category,
       'club': club,
       if (logoUrl != null) 'logo_url': logoUrl,
-      'user_id': _currentUserId, // Guarda el dueño
-    });
+      'user_id': _currentUserId,
+    }).timeout(_kTimeout);
   }
 
   Future<void> updateTeam({
@@ -82,30 +88,37 @@ class SupabaseService {
     String? club,
     String? logoUrl,
   }) async {
-    await client.from('teams').update({
-      'name': name,
-      'category': category,
-      'club': club,
-      if (logoUrl != null) 'logo_url': logoUrl,
-    }).eq('id', id).eq('user_id', _currentUserId);
+    await client
+        .from('teams')
+        .update({
+          'name': name,
+          'category': category,
+          'club': club,
+          if (logoUrl != null) 'logo_url': logoUrl,
+        })
+        .eq('id', id)
+        .eq('user_id', _currentUserId)
+        .timeout(_kTimeout);
   }
 
   Future<void> deleteTeam(int id) async {
-    await client.from('teams').delete().eq('id', id).eq('user_id', _currentUserId);
+    await client
+        .from('teams')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', _currentUserId)
+        .timeout(_kTimeout);
   }
 
-  // =========================
-  // PLAYERS
-  // =========================
+  // ─── Players ─────────────────────────────────────────────────────────────
 
   Future<List<Map<String, dynamic>>> getPlayers() async {
-    // Al pedir todos los jugadores, cruzamos con la tabla teams para asegurar que el equipo sea del usuario actual
     final response = await client
         .from('players')
         .select('*, teams!inner(name, user_id)')
         .eq('teams.user_id', _currentUserId)
-        .order('created_at', ascending: false);
-
+        .order('created_at', ascending: false)
+        .timeout(_kTimeout);
     return List<Map<String, dynamic>>.from(response);
   }
 
@@ -114,8 +127,8 @@ class SupabaseService {
         .from('players')
         .select()
         .eq('team_id', teamId)
-        .order('created_at', ascending: false);
-
+        .order('created_at', ascending: false)
+        .timeout(_kTimeout);
     return List<Map<String, dynamic>>.from(response);
   }
 
@@ -134,20 +147,18 @@ class SupabaseService {
       'shirt_number': shirtNumber,
       'status': status ?? 'active',
       'birth_date': birthDate,
-    });
+    }).timeout(_kTimeout);
   }
 
-  // =========================
-  // MATCHES
-  // =========================
+  // ─── Matches ─────────────────────────────────────────────────────────────
 
   Future<List<Map<String, dynamic>>> getMatches() async {
     final response = await client
         .from('matches')
         .select('*, teams(name)')
-        .eq('user_id', _currentUserId) // Solo sus partidos
-        .order('created_at', ascending: false);
-
+        .eq('user_id', _currentUserId)
+        .order('created_at', ascending: false)
+        .timeout(_kTimeout);          // ← FIX: evita el spinner infinito
     return List<Map<String, dynamic>>.from(response);
   }
 
@@ -157,8 +168,8 @@ class SupabaseService {
         .select('*, teams(name)')
         .eq('team_id', teamId)
         .eq('user_id', _currentUserId)
-        .order('created_at', ascending: false);
-
+        .order('created_at', ascending: false)
+        .timeout(_kTimeout);
     return List<Map<String, dynamic>>.from(response);
   }
 
@@ -168,11 +179,10 @@ class SupabaseService {
         .select('*, teams(name)')
         .eq('id', matchId)
         .eq('user_id', _currentUserId)
-        .limit(1);
-
+        .limit(1)
+        .timeout(_kTimeout);
     final list = List<Map<String, dynamic>>.from(response);
-    if (list.isEmpty) return null;
-    return list.first;
+    return list.isEmpty ? null : list.first;
   }
 
   Future<Map<String, dynamic>?> getLatestMatch() async {
@@ -181,11 +191,10 @@ class SupabaseService {
         .select('*, teams(name)')
         .eq('user_id', _currentUserId)
         .order('created_at', ascending: false)
-        .limit(1);
-
+        .limit(1)
+        .timeout(_kTimeout);
     final list = List<Map<String, dynamic>>.from(response);
-    if (list.isEmpty) return null;
-    return list.first;
+    return list.isEmpty ? null : list.first;
   }
 
   Future<void> createMatch({
@@ -207,8 +216,8 @@ class SupabaseService {
       'latitude': latitude,
       'longitude': longitude,
       'status': status,
-      'user_id': _currentUserId, // Guarda el dueño
-    });
+      'user_id': _currentUserId,
+    }).timeout(_kTimeout);
   }
 
   Future<int> createMatchAndReturnId({
@@ -221,18 +230,21 @@ class SupabaseService {
     double? longitude,
     String status = 'processing',
   }) async {
-    final response = await client.from('matches').insert({
-      'team_id': teamId,
-      'opponent': opponent,
-      'match_date': matchDate.toIso8601String(),
-      'source_type': sourceType,
-      'video_url': videoUrl,
-      'latitude': latitude,
-      'longitude': longitude,
-      'status': status,
-      'user_id': _currentUserId, // Guarda el dueño
-    }).select('id');
-
+    final response = await client
+        .from('matches')
+        .insert({
+          'team_id': teamId,
+          'opponent': opponent,
+          'match_date': matchDate.toIso8601String(),
+          'source_type': sourceType,
+          'video_url': videoUrl,
+          'latitude': latitude,
+          'longitude': longitude,
+          'status': status,
+          'user_id': _currentUserId,
+        })
+        .select('id')
+        .timeout(_kTimeout);
     final list = List<Map<String, dynamic>>.from(response);
     return list.first['id'] as int;
   }
@@ -245,7 +257,8 @@ class SupabaseService {
         .from('matches')
         .update({'status': status})
         .eq('id', matchId)
-        .eq('user_id', _currentUserId);
+        .eq('user_id', _currentUserId)
+        .timeout(_kTimeout);
   }
 
   Future<void> updateMatchVideoUrl({
@@ -256,12 +269,11 @@ class SupabaseService {
         .from('matches')
         .update({'video_url': videoUrl})
         .eq('id', matchId)
-        .eq('user_id', _currentUserId);
+        .eq('user_id', _currentUserId)
+        .timeout(_kTimeout);
   }
 
-  // =========================
-  // MATCH REPORTS & OTHERS
-  // =========================
+  // ─── Match Reports ────────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>?> getMatchReport(int matchId) async {
     try {
@@ -269,13 +281,13 @@ class SupabaseService {
           .from('match_reports')
           .select('summary_json')
           .eq('match_id', matchId)
-          .limit(1);
-
+          .limit(1)
+          .timeout(_kTimeout);
       final list = List<Map<String, dynamic>>.from(response);
       if (list.isEmpty) return null;
       return list.first['summary_json'] as Map<String, dynamic>?;
     } catch (e) {
-      debugPrint('Error al obtener reporte del partido: $e'); 
+      debugPrint('Error al obtener reporte del partido: $e');
       return null;
     }
   }
@@ -285,8 +297,8 @@ class SupabaseService {
         .from('player_match_stats')
         .select('*, players(name, position, shirt_number)')
         .eq('match_id', matchId)
-        .order('created_at', ascending: false);
-
+        .order('created_at', ascending: false)
+        .timeout(_kTimeout);
     return List<Map<String, dynamic>>.from(response);
   }
 
@@ -315,21 +327,30 @@ class SupabaseService {
       'shots': shots,
       'shots_on_target': shotsOnTarget,
       'rating': rating,
-    });
+    }).timeout(_kTimeout);
   }
 
-  Future<void> savePlayerStatsBatch(List<Map<String, dynamic>> statsList) async {
+  Future<void> savePlayerStatsBatch(
+    List<Map<String, dynamic>> statsList,
+  ) async {
     if (statsList.isEmpty) return;
-    await client.from('player_match_stats').insert(statsList);
+    await client
+        .from('player_match_stats')
+        .insert(statsList)
+        .timeout(_kTimeout);
   }
 
-  Future<List<Map<String, dynamic>>> getRecommendationsByMatch(int matchId) async {
+  // ─── Recommendations ─────────────────────────────────────────────────────
+
+  Future<List<Map<String, dynamic>>> getRecommendationsByMatch(
+    int matchId,
+  ) async {
     final response = await client
         .from('recommendations')
         .select()
         .eq('match_id', matchId)
-        .order('created_at', ascending: false);
-
+        .order('created_at', ascending: false)
+        .timeout(_kTimeout);
     return List<Map<String, dynamic>>.from(response);
   }
 
@@ -348,16 +369,20 @@ class SupabaseService {
       'title': title,
       'description': description,
       'priority': priority,
-    });
+    }).timeout(_kTimeout);
   }
 
-  Future<List<Map<String, dynamic>>> getPredictionsByPlayer(int playerId) async {
+  // ─── Predictions ─────────────────────────────────────────────────────────
+
+  Future<List<Map<String, dynamic>>> getPredictionsByPlayer(
+    int playerId,
+  ) async {
     final response = await client
         .from('predictions')
         .select()
         .eq('player_id', playerId)
-        .order('created_at', ascending: false);
-
+        .order('created_at', ascending: false)
+        .timeout(_kTimeout);
     return List<Map<String, dynamic>>.from(response);
   }
 
@@ -374,6 +399,6 @@ class SupabaseService {
       'predicted_rating': predictedRating,
       'trend': trend,
       'next_match_notes': nextMatchNotes,
-    });
+    }).timeout(_kTimeout);
   }
 }

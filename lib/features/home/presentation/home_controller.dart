@@ -1,12 +1,14 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/constants/app_constants.dart';
-import 'package:playvision/features/analysis/data/analysis_store.dart';
 import '../../../core/supabase/supabase_service.dart';
+import 'package:playvision/features/analysis/data/analysis_store.dart';
 
 class HomeController extends ChangeNotifier {
   final SupabaseService _service = SupabaseService.instance;
@@ -17,129 +19,143 @@ class HomeController extends ChangeNotifier {
   Map<int, List<Map<String, dynamic>>> teamMatches = {};
   Map<String, dynamic>? selectedTeam;
 
-  final Set<int> _loadingMatches = {};
-  bool isLoading          = false;
-  bool isLoadingMatches   = false;
-  bool isAnalyzing        = false;
+  final Set<int> _loadingTeamIds = {};
+  bool isLoading = false;
+  bool isLoadingMatches = false;
+  bool isAnalyzing = false;
   String? errorMessage;
   String? successMessage;
 
-  // NUEVO: Variable para saber si el controlador ya fue destruido
-  bool _isDisposed = false;
+  bool _disposed = false;
 
   Map<String, dynamic>? get lastResult => AnalysisStore.instance.lastResult;
   bool get hasResult => lastResult != null;
 
-  bool isLoadingMatchesForTeam(int teamId) => _loadingMatches.contains(teamId);
+  bool isLoadingMatchesForTeam(int teamId) =>
+      _loadingTeamIds.contains(teamId);
 
   List<Map<String, dynamic>> get selectedTeamMatches {
     final id = selectedTeam?['id'] as int?;
-    if (id == null) return [];
-    return teamMatches[id] ?? [];
+    return id != null ? (teamMatches[id] ?? []) : [];
   }
 
-  // NUEVO: Función segura para notificar oyentes solo si no está destruido
-  void _safeNotifyListeners() {
-    if (!_isDisposed) {
-      notifyListeners();
-    }
+  void _notify() {
+    if (!_disposed) notifyListeners();
   }
 
   @override
   void dispose() {
-    _isDisposed = true; // Marcamos como destruido
+    _disposed = true;
     super.dispose();
   }
 
-  // ── Team selection ───────────────────────────────────────
+  // ─── Selección de equipo ──────────────────────────────────────────────────
+
   void selectTeam(Map<String, dynamic> team) {
     selectedTeam = team;
     AnalysisStore.instance.selectedTeamId = team['id'] as int?;
-    _safeNotifyListeners();
+    _notify();
     loadMatchesForTeam(team['id'] as int);
   }
 
   void clearTeamSelection() {
     selectedTeam = null;
-    _safeNotifyListeners();
+    _notify();
   }
 
-  // ── Data loading ─────────────────────────────────────────
+  // ─── Carga de datos ───────────────────────────────────────────────────────
+
   Future<void> loadTeams() async {
     isLoading = true;
-    _safeNotifyListeners();
+    errorMessage = null;
+    _notify();
     try {
       teams = await _service.getTeams();
-      // Keep selectedTeam in sync with refreshed data
       if (selectedTeam != null) {
         final id = selectedTeam!['id'];
         final updated = teams.where((t) => t['id'] == id).firstOrNull;
         if (updated != null) selectedTeam = updated;
       }
+    } on TimeoutException {
+      errorMessage = 'La conexión tardó demasiado. Verifica tu red.';
     } catch (e) {
-      errorMessage = 'No se pudieron cargar los equipos: $e';
+      errorMessage = 'No se pudieron cargar los equipos.';
+      debugPrint('[HomeController.loadTeams] $e');
     } finally {
       isLoading = false;
-      _safeNotifyListeners();
+      _notify();
     }
   }
 
   Future<void> loadRecentMatches() async {
     isLoadingMatches = true;
-    _safeNotifyListeners();
+    errorMessage = null;
+    _notify();
     try {
       recentMatches = await _service.getMatches();
+    } on TimeoutException {
+      errorMessage = 'La conexión tardó demasiado. Verifica tu red.';
+      recentMatches = [];
     } catch (e) {
-      errorMessage = 'No se pudieron cargar los partidos: $e';
+      errorMessage = 'No se pudieron cargar los partidos.';
+      recentMatches = [];
+      debugPrint('[HomeController.loadRecentMatches] $e');
     } finally {
       isLoadingMatches = false;
-      _safeNotifyListeners();
+      _notify();
     }
   }
 
   Future<void> loadMatchesForTeam(int teamId) async {
-    _loadingMatches.add(teamId);
-    _safeNotifyListeners();
+    _loadingTeamIds.add(teamId);
+    _notify();
     try {
       teamMatches[teamId] = await _service.getMatchesByTeam(teamId);
+    } on TimeoutException {
+      errorMessage = 'La conexión tardó demasiado. Verifica tu red.';
+      teamMatches[teamId] = [];
     } catch (e) {
-      errorMessage = 'Fallo al cargar los partidos de este equipo: $e';
+      errorMessage = 'No se pudieron cargar los partidos del equipo.';
+      teamMatches[teamId] = [];
+      debugPrint('[HomeController.loadMatchesForTeam] $e');
     } finally {
-      _loadingMatches.remove(teamId);
-      _safeNotifyListeners();
+      _loadingTeamIds.remove(teamId);
+      _notify();
     }
   }
 
-  // ── Load specific match analysis ─────────────────────────
   Future<bool> loadAnalysisForMatch(int matchId) async {
     isLoading = true;
     errorMessage = null;
-    _safeNotifyListeners();
-
+    _notify();
     try {
       final report = await _service.getMatchReport(matchId);
       if (report != null) {
         AnalysisStore.instance.save(report);
-        return true; 
-      } else {
-        errorMessage = 'Datos de análisis no encontrados para este partido.';
-        return false;
+        return true;
       }
+      errorMessage = 'No se encontraron datos de análisis para este partido.';
+      return false;
+    } on TimeoutException {
+      errorMessage = 'La conexión tardó demasiado. Verifica tu red.';
+      return false;
     } catch (e) {
-      errorMessage = 'Error cargando análisis: $e';
+      errorMessage = 'Error al cargar el análisis.';
+      debugPrint('[HomeController.loadAnalysisForMatch] $e');
       return false;
     } finally {
       isLoading = false;
-      _safeNotifyListeners();
+      _notify();
     }
   }
 
-  // ── Analyse video ────────────────────────────────────────
+  // ─── Análisis de video ────────────────────────────────────────────────────
+
   Future<void> pickAndAnalyze({String opponent = ''}) async {
     final teamId = selectedTeam?['id'] as int?;
     if (teamId == null) {
-      errorMessage = 'Por favor selecciona un equipo primero.';
-      _safeNotifyListeners();
+      errorMessage = 'Selecciona un equipo antes de analizar.';
+      _notify();
       return;
     }
 
@@ -149,12 +165,11 @@ class HomeController extends ChangeNotifier {
     isAnalyzing = true;
     errorMessage = null;
     successMessage = null;
-    _safeNotifyListeners();
+    _notify();
 
     int? matchId;
 
     try {
-      // 1. Crear el partido en Supabase en estado "processing"
       matchId = await _service.createMatchAndReturnId(
         teamId: teamId,
         opponent: opponent,
@@ -162,83 +177,97 @@ class HomeController extends ChangeNotifier {
         sourceType: AppConstants.sourceUpload,
       );
 
-      // 2. Preparar y enviar el video a la API de Python
-      final bytes   = await file.readAsBytes();
+      final bytes = await file.readAsBytes();
       final request = http.MultipartRequest(
         'POST',
         Uri.parse('${AppConstants.apiBase}/analyze'),
       );
 
-      request.fields['team_id']     = teamId.toString();
-      request.fields['opponent']    = opponent;
+      request.fields['team_id'] = teamId.toString();
+      request.fields['opponent'] = opponent;
       request.fields['source_type'] = AppConstants.sourceUpload;
       request.fields['match_id'] = matchId.toString();
-
       request.files.add(
         http.MultipartFile.fromBytes('file', bytes, filename: file.name),
       );
 
-      final streamed = await request.send().timeout(AppConstants.analysisTimeout);
-      final body     = await streamed.stream.bytesToString();
+      final streamed = await request
+          .send()
+          .timeout(AppConstants.analysisTimeout);
+      final body = await streamed.stream.bytesToString();
 
       if (streamed.statusCode == 200) {
         final result = jsonDecode(body) as Map<String, dynamic>;
 
         await _service.updateMatchStatus(matchId: matchId, status: 'done');
+
         final videoUrl = result['video_url'] as String?;
         if (videoUrl != null && videoUrl.isNotEmpty) {
-          await _service.updateMatchVideoUrl(matchId: matchId, videoUrl: videoUrl);
+          await _service.updateMatchVideoUrl(
+            matchId: matchId,
+            videoUrl: videoUrl,
+          );
         }
 
         AnalysisStore.instance.save(result, localFile: file);
 
         final players = result['players'] as List?;
         if (players != null && players.isNotEmpty) {
-          final statsToInsert = players.map((p) => {
-            'match_id': matchId,
-            'player_id': null,
-            'distance': p['distance_km'],
-            'minutes': 0, 'passes_ok': 0, 'passes_bad': 0,
-            'losses': 0, 'recoveries': 0, 'shots': 0,
-            'shots_on_target': 0, 'rating': 0.0,
-          }).toList();
-
+          final stats = players.map((p) => {
+                'match_id': matchId,
+                'player_id': null,
+                'distance': p['distance_km'],
+                'minutes': 0,
+                'passes_ok': 0,
+                'passes_bad': 0,
+                'losses': 0,
+                'recoveries': 0,
+                'shots': 0,
+                'shots_on_target': 0,
+                'rating': 0.0,
+              }).toList();
           try {
-            await _service.savePlayerStatsBatch(statsToInsert);
+            await _service.savePlayerStatsBatch(stats);
           } catch (e) {
-            debugPrint('Stats insert error: $e');
+            debugPrint('[HomeController] Stats insert error: $e');
           }
         }
-        successMessage = '¡Análisis completo!';
+
+        successMessage = '¡Análisis completado!';
         await loadMatchesForTeam(teamId);
-        
       } else {
-        errorMessage = 'Error del servidor: ${streamed.statusCode} - $body';
+        errorMessage = 'Error del servidor (${streamed.statusCode}).';
+        await _service.updateMatchStatus(matchId: matchId, status: 'error');
+      }
+    } on TimeoutException {
+      errorMessage = 'El análisis tardó demasiado. Intenta con un video más corto.';
+      if (matchId != null) {
         await _service.updateMatchStatus(matchId: matchId, status: 'error');
       }
     } catch (e) {
-      errorMessage = 'Error de conexión: $e';
+      errorMessage = 'Error de conexión al analizar el video.';
+      debugPrint('[HomeController.pickAndAnalyze] $e');
       if (matchId != null) {
         await _service.updateMatchStatus(matchId: matchId, status: 'error');
       }
     } finally {
       isAnalyzing = false;
-      _safeNotifyListeners();
+      _notify();
     }
   }
 
-  // ── Team CRUD ────────────────────────────────────────────
+  // ─── CRUD de equipos ──────────────────────────────────────────────────────
+
   Future<String?> uploadLogo({
     required int teamId,
     required Uint8List bytes,
     required String extension,
-  }) async {
-    return _service.uploadTeamLogo(
-      teamId: teamId,
-      bytes: bytes,
-      extension: extension,
-    );
-  }
+  }) =>
+      _service.uploadTeamLogo(
+        teamId: teamId,
+        bytes: bytes,
+        extension: extension,
+      );
 
   Future<void> createTeam({
     required String name,
@@ -247,24 +276,41 @@ class HomeController extends ChangeNotifier {
     String? logoUrl,
   }) async {
     try {
-      await _service.createTeam(name: name, category: category, club: club, logoUrl: logoUrl);
+      await _service.createTeam(
+        name: name,
+        category: category,
+        club: club,
+        logoUrl: logoUrl,
+      );
       await loadTeams();
-      successMessage = "¡Equipo creado con éxito!";
-    } catch(e) {
-      errorMessage = "No se pudo crear el equipo: $e";
+      successMessage = '¡Equipo creado con éxito!';
+    } catch (e) {
+      errorMessage = 'No se pudo crear el equipo.';
+      debugPrint('[HomeController.createTeam] $e');
     }
-    _safeNotifyListeners();
+    _notify();
   }
 
   Future<void> updateTeam({
-    required int id, required String name, String? category, String? club, String? logoUrl,
+    required int id,
+    required String name,
+    String? category,
+    String? club,
+    String? logoUrl,
   }) async {
     try {
-      await _service.updateTeam(id: id, name: name, category: category, club: club, logoUrl: logoUrl);
+      await _service.updateTeam(
+        id: id,
+        name: name,
+        category: category,
+        club: club,
+        logoUrl: logoUrl,
+      );
       await loadTeams();
     } catch (e) {
-      errorMessage = 'No se pudo actualizar el equipo: $e';
-      _safeNotifyListeners();
+      errorMessage = 'No se pudo actualizar el equipo.';
+      debugPrint('[HomeController.updateTeam] $e');
+      _notify();
     }
   }
 
@@ -274,13 +320,14 @@ class HomeController extends ChangeNotifier {
       await _service.deleteTeam(id);
       await loadTeams();
     } catch (e) {
-      errorMessage = 'No se pudo eliminar el equipo: $e';
-      _safeNotifyListeners();
+      errorMessage = 'No se pudo eliminar el equipo.';
+      debugPrint('[HomeController.deleteTeam] $e');
+      _notify();
     }
   }
 
   void consumeMessages() {
-    errorMessage   = null;
+    errorMessage = null;
     successMessage = null;
   }
 }
