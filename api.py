@@ -937,6 +937,7 @@ from analysis.player_queries import (
     get_player_last_stats,
     get_player_history,
     get_player_match_stats,
+    get_team_players,
 )
 from analysis.metrics_engine import best_position as infer_best_position
 
@@ -1039,4 +1040,205 @@ def player_profile(player_id: int):
             "best_position":  ai_position,
             "recommendation": tip,
         },
+    }
+
+
+# ── Team tactical board ────────────────────────────────────────────────────────
+
+# Coordinate slots per position (dx, dy) normalized 0-1; dy=0 = attack end
+_POS_SLOTS: dict[str, list[tuple[float, float]]] = {
+    "GK":  [(0.50, 0.88)],
+    "CB":  [(0.62, 0.72), (0.38, 0.72), (0.75, 0.70), (0.25, 0.70)],
+    "RB":  [(0.85, 0.72)],  "RWB": [(0.88, 0.62)],
+    "LB":  [(0.15, 0.72)],  "LWB": [(0.12, 0.62)],
+    "CDM": [(0.50, 0.58), (0.65, 0.60), (0.35, 0.60)],
+    "CM":  [(0.72, 0.52), (0.28, 0.52), (0.50, 0.52)],
+    "RM":  [(0.85, 0.50)],
+    "LM":  [(0.15, 0.50)],
+    "CAM": [(0.50, 0.37), (0.70, 0.39), (0.30, 0.39)],
+    "RW":  [(0.82, 0.28)],
+    "LW":  [(0.18, 0.28)],
+    "ST":  [(0.50, 0.20), (0.65, 0.22), (0.35, 0.22)],
+    "CF":  [(0.50, 0.24)],
+    "SS":  [(0.60, 0.25)],
+}
+_FALLBACK_MID = [(0.30, 0.50), (0.50, 0.50), (0.70, 0.50), (0.20, 0.48), (0.80, 0.48)]
+
+def _infer_formation(starters: list) -> str:
+    counts: dict[str, int] = {"def": 0, "mid": 0, "fwd": 0}
+    for p in starters:
+        pos = (p.get("position") or "CM").upper()
+        if pos == "GK":
+            continue
+        if pos in ("CB", "RB", "LB", "RWB", "LWB"):
+            counts["def"] += 1
+        elif pos in ("CDM", "CM", "RM", "LM", "CAM"):
+            counts["mid"] += 1
+        else:
+            counts["fwd"] += 1
+    d, m, f = counts["def"], counts["mid"], counts["fwd"]
+    known = {"433": "4-3-3", "442": "4-4-2", "352": "3-5-2", "4231": "4-2-3-1", "532": "5-3-2"}
+    return known.get(f"{d}{m}{f}", f"{d}-{m}-{f}")
+
+def _place_players(players: list) -> list:
+    slots = {k: list(v) for k, v in _POS_SLOTS.items()}
+    placed, unplaced = [], []
+    for p in players:
+        pos = (p.get("position") or "CM").upper()
+        if slots.get(pos):
+            dx, dy = slots[pos].pop(0)
+            placed.append({**p, "dx": dx, "dy": dy})
+        else:
+            unplaced.append(p)
+    fallback = list(_FALLBACK_MID)
+    for p in unplaced:
+        dx, dy = fallback.pop(0) if fallback else (0.50, 0.50)
+        placed.append({**p, "dx": dx, "dy": dy})
+    return placed
+
+@app.get("/api/team/{team_id}/board")
+def get_team_board(team_id: int):
+    """
+    Returns all team players placed on the tactical board in their optimal positions.
+    Top 11 by overall are starters; the rest are substitutes.
+    """
+    players = get_team_players(team_id)
+    if not players:
+        raise HTTPException(status_code=404, detail="No players found for this team")
+
+    # Enrich each player with their latest stats
+    enriched = []
+    for p in players:
+        s = get_player_last_stats(p["id"]) or {}
+        enriched.append({
+            "id":       p["id"],
+            "name":     p["name"],
+            "number":   p.get("number", 0),
+            "position": p.get("position", "CM"),
+            "overall":  p.get("overall", 70),
+            "photo_url": p.get("photo_url"),
+            "stats": {
+                "rating":       s.get("rating", 7.0),
+                "distance":     s.get("distance_km", 9.0),
+                "passes":       s.get("passes", 50),
+                "passAccuracy": s.get("pass_accuracy", 82),
+                "goals":        s.get("goals", 0),
+                "assists":      s.get("assists", 0),
+                "tackles":      s.get("tackles", 5),
+                "minutes":      s.get("minutes", 90),
+            },
+        })
+
+    starters   = enriched[:11]
+    subs       = enriched[11:]
+    placed     = _place_players(starters)
+    formation  = _infer_formation(starters)
+
+    return {
+        "team_id":     team_id,
+        "formation":   formation,
+        "players":     placed,
+        "substitutes": subs,
+    }
+
+
+@app.get("/api/team/{team_id}/training-suggestions")
+def get_training_suggestions(team_id: int):
+    """
+    Returns AI-generated training session suggestions based on team player data.
+    Computes avg overall, avg rating, and distance to determine fitness level
+    and produce targeted recommendations.
+    """
+    players = get_team_players(team_id)
+
+    suggestions  = []
+    insights     = []
+    fitness_level = "medium"
+
+    if players:
+        starters = players[:11]
+
+        # Collect latest stats for each starter
+        stats_list = [s for p in starters if (s := get_player_last_stats(p["id"]))]
+        match_list = [m[0] for p in starters
+                      if (m := get_player_match_stats(p["id"], limit=1))]
+
+        avg_overall  = sum(p.get("overall", 70) for p in starters) / len(starters)
+        avg_rating   = (sum(s.get("rating", 7.0) for s in stats_list) / len(stats_list)
+                        if stats_list else 7.0)
+        avg_distance = (sum(m.get("distance", 9.0) for m in match_list) / len(match_list)
+                        if match_list else None)
+
+        # Fitness level from overall rating
+        if avg_overall < 65:
+            fitness_level = "low"
+        elif avg_overall >= 75:
+            fitness_level = "high"
+        else:
+            fitness_level = "medium"
+
+        # Insights
+        if avg_rating < 6.5:
+            insights.append(f"⚠️ El rendimiento del equipo está bajo (rating {avg_rating:.1f}). Refuerza los fundamentos técnicos.")
+        elif avg_rating >= 7.5:
+            insights.append(f"📈 Buen momento del equipo (rating {avg_rating:.1f}). Enfócate en táctica y detalles.")
+
+        if avg_distance is not None:
+            if avg_distance < 7.0:
+                insights.append(f"🏃 Distancia promedio baja ({avg_distance:.1f} km). Aumenta la carga física esta semana.")
+            elif avg_distance > 10.0:
+                insights.append(f"💪 Alta intensidad física ({avg_distance:.1f} km). Prioriza la recuperación.")
+
+        if avg_overall < 65:
+            insights.append("🎯 Equipo en desarrollo. Sesiones cortas y repetitivas para consolidar automatismos.")
+
+        # Rule-based suggestions
+        if fitness_level == "low" or (avg_distance is not None and avg_distance < 7.0):
+            suggestions += [
+                {"title": "Resistencia aeróbica", "duration_minutes": 60,
+                 "category": "Physical", "reason": "Distancia promedio baja — mejora la base física"},
+                {"title": "Sprints y explosividad", "duration_minutes": 30,
+                 "category": "Physical", "reason": "Incrementa la intensidad de carrera"},
+            ]
+
+        if avg_rating < 7.0:
+            suggestions.append(
+                {"title": "Posesión en espacio reducido", "duration_minutes": 45,
+                 "category": "Technical", "reason": f"Rating promedio {avg_rating:.1f} — refuerza el juego con balón"}
+            )
+
+        if fitness_level == "high":
+            suggestions.append(
+                {"title": "Recuperación activa", "duration_minutes": 40,
+                 "category": "Physical", "reason": "Alta carga acumulada — gestiona el esfuerzo"}
+            )
+
+        # Always include tactical variety
+        suggestions += [
+            {"title": "Presión alta y transiciones", "duration_minutes": 75,
+             "category": "Tactical", "reason": "Mejora el pressing y el contrataque"},
+            {"title": "Juego posicional 4-3-3", "duration_minutes": 60,
+             "category": "Technical", "reason": "Consolidar la estructura ofensiva"},
+        ]
+
+    else:
+        # No players — generic suggestions
+        suggestions = [
+            {"title": "Presión alta y transiciones", "duration_minutes": 90,
+             "category": "Tactical", "reason": "Recomendación general"},
+            {"title": "Posesión 4-3-3", "duration_minutes": 75,
+             "category": "Technical", "reason": "Recomendación general"},
+            {"title": "Resistencia y explosividad", "duration_minutes": 60,
+             "category": "Physical", "reason": "Recomendación general"},
+        ]
+        insights = ["📹 Sube un vídeo de entrenamiento para obtener recomendaciones personalizadas."]
+
+    if not insights:
+        insights.append("✅ Equipo equilibrado. Mantén la planificación actual.")
+
+    return {
+        "team_id":      team_id,
+        "fitness_level": fitness_level,
+        "suggestions":  suggestions[:5],   # cap at 5
+        "insights":     insights[:3],      # cap at 3
     }

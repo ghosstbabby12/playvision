@@ -48,6 +48,22 @@ def get_player_history(player_id: int, limit: int = 6) -> list[dict]:
         return []
 
 
+def get_team_players(team_id: int) -> list[dict]:
+    """All players for a team, ordered by overall rating descending."""
+    try:
+        res = (
+            _db()
+            .table("players")
+            .select("*")
+            .eq("team_id", team_id)
+            .order("overall", desc=True)
+            .execute()
+        )
+        return res.data or []
+    except Exception:
+        return []
+
+
 def get_player_match_stats(player_id: int, limit: int = 5) -> list[dict]:
     """Stats from `player_match_stats` linked to a real player id."""
     try:
