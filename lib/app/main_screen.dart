@@ -21,7 +21,7 @@ class _MainScreenState extends State<MainScreen> {
     HomePage(onTabChange: (i) => setState(() => _currentIndex = i)),
     const AnalysesHistoryPage(),
     const MatchesPage(),
-    const TrainingPage(),
+    TrainingPage(onTabChange: (i) => setState(() => _currentIndex = i)),
     const CoachingBoardPage(),
   ];
 

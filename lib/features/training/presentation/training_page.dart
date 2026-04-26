@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -10,7 +11,8 @@ import 'training_controller.dart';
 import 'training_session_detail_page.dart';
 
 class TrainingPage extends StatefulWidget {
-  const TrainingPage({super.key});
+  final void Function(int)? onTabChange;
+  const TrainingPage({super.key, this.onTabChange});
 
   @override
   State<TrainingPage> createState() => _TrainingPageState();
@@ -24,6 +26,7 @@ class _TrainingPageState extends State<TrainingPage> {
     super.initState();
     _controller = TrainingController();
     _controller.loadSessions();
+    _controller.loadSuggestions();
   }
 
   @override
@@ -185,6 +188,48 @@ class _TrainingPageState extends State<TrainingPage> {
     );
   }
 
+  void _showAddOptions(BuildContext context) {
+    final c = context.colors;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF141414),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(width: 36, height: 4,
+              decoration: BoxDecoration(color: c.border, borderRadius: BorderRadius.circular(2))),
+          const SizedBox(height: 20),
+          Text('¿Qué quieres hacer?',
+              style: TextStyle(color: c.textHi, fontSize: 17, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 20),
+          _AddOptionTile(
+            icon: Icons.videocam_rounded,
+            label: 'Analizar entrenamiento',
+            subtitle: 'Sube un vídeo y obtén métricas con IA',
+            color: const Color(0xFF3DCF6E),
+            onTap: () {
+              Navigator.of(context).pop();
+              widget.onTabChange?.call(1);
+            },
+          ),
+          const SizedBox(height: 12),
+          _AddOptionTile(
+            icon: Icons.edit_note_rounded,
+            label: 'Crear sesión manual',
+            subtitle: 'Planifica una sesión de entrenamiento',
+            color: const Color(0xFF3B82F6),
+            onTap: () {
+              Navigator.of(context).pop();
+              _showCreateSessionDialog(context, _controller);
+            },
+          ),
+        ]),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c    = context.colors;
@@ -199,36 +244,39 @@ class _TrainingPageState extends State<TrainingPage> {
           backgroundColor: c.bg,
           body: CustomScrollView(
             slivers: [
-              // ── Hero ──────────────────────────────────────────────────
               SliverToBoxAdapter(child: _TrainingHero(l10n: l10n)),
 
-              // ── Weekly activity strip ──────────────────────────────────
-              SliverToBoxAdapter(child: _WeeklyActivity(c: c)),
-
-              // ── Active task (glassmorphism) ────────────────────────────
-              SliverToBoxAdapter(child: _ActiveFocusCard(
-                hasResult: hasResult,
-                controller: _controller,
-                c: c,
+              // ── Fitness card ─────────────────────────────────────────
+              SliverToBoxAdapter(child: _FitnessCard(
+                ctrl: _controller,
+                onAnalyze: () => widget.onTabChange?.call(1),
               )),
 
-              // ── Team insights ──────────────────────────────────────────
+              // ── Interactive weekly calendar ───────────────────────────
+              SliverToBoxAdapter(child: _WeeklyActivityInteractive(ctrl: _controller)),
+
+              // ── Auto-insights ─────────────────────────────────────────
+              SliverToBoxAdapter(child: _AutoInsightsBanner(ctrl: _controller)),
+
+              // ── Progress chart ────────────────────────────────────────
+              SliverToBoxAdapter(child: _ProgressChart(ctrl: _controller)),
+
+              // ── Team analysis (if result exists) ─────────────────────
               if (hasResult) ...[
                 SliverToBoxAdapter(child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
                   child: Text(l10n.aiRecommendationsTeam,
-                      style: TextStyle(color: c.text, fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 0.2)),
+                      style: TextStyle(color: c.text, fontSize: 16,
+                          fontWeight: FontWeight.w800, letterSpacing: 0.2)),
                 )),
                 SliverToBoxAdapter(child: _TeamInsightsBanner(
-                  insights: _controller.buildTeamInsights(),
-                )),
-
-                // ── Per-player cards ───────────────────────────────────
+                    insights: _controller.buildTeamInsights())),
                 if (_controller.players != null && _controller.players!.isNotEmpty) ...[
                   SliverToBoxAdapter(child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
                     child: Text(l10n.personalisedPlanByPlayer,
-                        style: TextStyle(color: c.text, fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 0.2)),
+                        style: TextStyle(color: c.text, fontSize: 16,
+                            fontWeight: FontWeight.w800, letterSpacing: 0.2)),
                   )),
                   SliverList(delegate: SliverChildBuilderDelegate(
                     (_, i) {
@@ -243,33 +291,23 @@ class _TrainingPageState extends State<TrainingPage> {
                 ],
               ],
 
-              // ── Suggested sessions ─────────────────────────────────────
-              SliverToBoxAdapter(child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 28, 20, 14),
-                child: Row(children: [
-                  Expanded(child: Text('SUGGESTED SESSIONS',
-                      style: TextStyle(color: c.muted, fontSize: 11,
-                          fontWeight: FontWeight.w700, letterSpacing: 1.4))),
-                  GestureDetector(
-                    onTap: () => _showCreateSessionDialog(context, _controller),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: c.accentLo,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: c.borderGreen),
-                      ),
-                      child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.add_rounded, color: c.accent, size: 14),
-                        const SizedBox(width: 4),
-                        Text('New', style: TextStyle(color: c.accent, fontSize: 12, fontWeight: FontWeight.w700)),
-                      ]),
-                    ),
-                  ),
-                ]),
+              // ── AI suggestions ────────────────────────────────────────
+              SliverToBoxAdapter(child: _SectionHeader(
+                label: 'SUGERIDO POR IA',
+                actionLabel: '+ Nuevo',
+                onAction: () => _showAddOptions(context),
+                c: c,
               )),
+              SliverToBoxAdapter(child: _AISuggestionsCarousel(ctrl: _controller)),
 
-              SliverToBoxAdapter(child: _DynamicSessionCarousel(controller: _controller)),
+              // ── My sessions ───────────────────────────────────────────
+              if (_controller.sessions.isNotEmpty || _controller.loadingSessions) ...[
+                SliverToBoxAdapter(child: _SectionHeader(
+                  label: 'MIS SESIONES',
+                  c: c,
+                )),
+                SliverToBoxAdapter(child: _DynamicSessionCarousel(controller: _controller)),
+              ],
 
               const SliverToBoxAdapter(child: SizedBox(height: 120)),
             ],
@@ -343,128 +381,586 @@ class _TrainingHero extends StatelessWidget {
   }
 }
 
-// ── Weekly activity strip ─────────────────────────────────────────────────────
+// ── Shared section header ─────────────────────────────────────────────────────
 
-class _WeeklyActivity extends StatelessWidget {
+class _SectionHeader extends StatelessWidget {
+  final String label;
+  final String? actionLabel;
+  final VoidCallback? onAction;
   final AppColorTokens c;
-  const _WeeklyActivity({required this.c});
+  const _SectionHeader({required this.label, required this.c, this.actionLabel, this.onAction});
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 28, 20, 14),
+    child: Row(children: [
+      Expanded(child: Text(label,
+          style: TextStyle(color: c.muted, fontSize: 11,
+              fontWeight: FontWeight.w700, letterSpacing: 1.4))),
+      if (actionLabel != null)
+        GestureDetector(
+          onTap: onAction,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: c.accentLo, borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: c.borderGreen),
+            ),
+            child: Text(actionLabel!,
+                style: TextStyle(color: c.accent, fontSize: 12, fontWeight: FontWeight.w700)),
+          ),
+        ),
+    ]),
+  );
+}
+
+// ── Option tile for add-options bottom sheet ──────────────────────────────────
+
+class _AddOptionTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final Color color;
+  final VoidCallback onTap;
+  const _AddOptionTile({required this.icon, required this.label,
+      required this.subtitle, required this.color, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    const days  = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    final today = DateTime.now().weekday - 1; // 0 = Mon
-    final done  = [true, true, true, false, false, false, false];
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: c.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: c.border),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: List.generate(7, (i) {
-          final isToday = i == today;
-          final isDone  = done[i];
-          return Column(children: [
-            Text(days[i], style: TextStyle(
-                color: isToday ? c.accent : c.muted,
-                fontSize: 11, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              width: 32, height: 32,
-              decoration: BoxDecoration(
-                color: isToday
-                    ? c.accent
-                    : isDone
-                        ? c.accentLo
-                        : c.elevated,
-                shape: BoxShape.circle,
-                border: isToday ? null : Border.all(
-                  color: isDone ? c.borderGreen : c.border,
-                  width: 1.5,
-                ),
-              ),
-              child: Icon(
-                isDone || isToday ? Icons.check_rounded : Icons.remove,
-                color: isToday ? Colors.black : isDone ? c.accent : c.border,
-                size: 16,
-              ),
+    final c = context.colors;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: c.surface, borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: c.border),
+        ),
+        child: Row(children: [
+          Container(
+            width: 44, height: 44,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
             ),
-          ]);
-        }),
+            child: Icon(icon, color: color, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(label, style: TextStyle(color: c.textHi, fontSize: 14, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 2),
+            Text(subtitle, style: TextStyle(color: c.muted, fontSize: 12)),
+          ])),
+          Icon(Icons.chevron_right_rounded, color: c.dim, size: 20),
+        ]),
       ),
     );
   }
 }
 
-// ── Active focus card (glassmorphism style) ───────────────────────────────────
+// ── Fitness card (redesigned) ─────────────────────────────────────────────────
 
-class _ActiveFocusCard extends StatelessWidget {
-  final bool hasResult;
-  final TrainingController controller;
-  final AppColorTokens c;
-  const _ActiveFocusCard({required this.hasResult, required this.controller, required this.c});
+class _FitnessCard extends StatelessWidget {
+  final TrainingController ctrl;
+  final VoidCallback onAnalyze;
+  const _FitnessCard({required this.ctrl, required this.onAnalyze});
 
   @override
   Widget build(BuildContext context) {
-    final players = controller.players;
-    final totalKm = players == null ? 0.0
-        : players.fold(0.0, (sum, p) => sum + ((p as Map)['distance_km'] as num? ?? 0).toDouble());
-    final avgSpeed = players == null || players.isEmpty ? 0.0
-        : players.fold(0.0, (sum, p) => sum + ((p as Map)['speed_ms'] as num? ?? 0).toDouble()) / players.length;
-    final fitnessScore = hasResult ? ((avgSpeed / 8.0) * 100).clamp(0.0, 100.0) : 0.0;
+    final c         = context.colors;
+    final hasResult = ctrl.result != null;
+
+    if (!hasResult) {
+      return Container(
+        margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: c.surface, borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: c.border),
+        ),
+        child: Row(children: [
+          Container(
+            width: 52, height: 52,
+            decoration: BoxDecoration(
+              color: c.accentLo, shape: BoxShape.circle,
+              border: Border.all(color: c.borderGreen),
+            ),
+            child: const Icon(Icons.sports_soccer, color: Color(0xFF3DCF6E), size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Empieza tu análisis',
+                style: TextStyle(color: c.textHi, fontSize: 15, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 4),
+            Text('Sube un vídeo para obtener distancia, mapa de calor y rendimiento por jugador.',
+                style: TextStyle(color: c.muted, fontSize: 12, height: 1.4)),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: onAnalyze,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: c.accent, borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Text('Subir vídeo',
+                    style: TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.w800)),
+              ),
+            ),
+          ])),
+        ]),
+      );
+    }
+
+    final score       = ctrl.fitnessScore;
+    final status      = ctrl.fitnessStatusLabel;
+    final statusColor = ctrl.fitnessStatusColor;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: c.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: c.borderGreen.withValues(alpha: 0.5)),
-        boxShadow: [
-          BoxShadow(
-            color: c.accent.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: c.surface, borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+        boxShadow: [BoxShadow(
+          color: statusColor.withValues(alpha: 0.06), blurRadius: 20, offset: const Offset(0, 4))],
       ),
-      child: Row(children: [
-        // Arc progress
-        SizedBox(
-          width: 90, height: 90,
-          child: CustomPaint(
-            painter: _ArcPainter(
-              progress: fitnessScore / 100,
-              trackColor: c.elevated,
-              fillColor: c.accent,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // Status badge
+        Row(children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(20),
             ),
-            child: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Text('${fitnessScore.toInt()}%',
-                  style: TextStyle(color: c.textHi, fontSize: 18, fontWeight: FontWeight.w900)),
-              Text('fitness', style: TextStyle(color: c.muted, fontSize: 9)),
-            ])),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Container(width: 7, height: 7,
+                  decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle)),
+              const SizedBox(width: 6),
+              Text('Carga: $status',
+                  style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.w800)),
+            ]),
+          ),
+          const Spacer(),
+          Text('Estado físico del equipo',
+              style: TextStyle(color: c.muted, fontSize: 11)),
+        ]),
+        const SizedBox(height: 16),
+        Row(children: [
+          // Arc
+          SizedBox(width: 80, height: 80,
+            child: CustomPaint(
+              painter: _ArcPainter(
+                  progress: score / 100, trackColor: c.elevated, fillColor: statusColor),
+              child: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+                Text('${score.toInt()}%',
+                    style: TextStyle(color: c.textHi, fontSize: 16, fontWeight: FontWeight.w900)),
+                Text('fitness', style: TextStyle(color: c.muted, fontSize: 9)),
+              ])),
+            ),
+          ),
+          const SizedBox(width: 20),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            _StatRow(icon: Icons.directions_run_rounded, label: 'Distancia prom.',
+                value: '${ctrl.avgDistanceKm.toStringAsFixed(1)} km', c: c),
+            const SizedBox(height: 8),
+            _StatRow(icon: Icons.speed_rounded, label: 'Velocidad prom.',
+                value: '${ctrl.avgSpeedMs.toStringAsFixed(1)} m/s', c: c),
+            const SizedBox(height: 8),
+            _StatRow(icon: Icons.group_rounded, label: 'Jugadores',
+                value: '${ctrl.players?.length ?? 0}', c: c),
+          ])),
+        ]),
+        const SizedBox(height: 14),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: c.elevated, borderRadius: BorderRadius.circular(10)),
+          child: Row(children: [
+            Icon(Icons.lightbulb_outline_rounded, color: statusColor, size: 14),
+            const SizedBox(width: 8),
+            Expanded(child: Text(ctrl.fitnessRecommendation,
+                style: TextStyle(color: c.text, fontSize: 12, height: 1.4))),
+          ]),
+        ),
+      ]),
+    );
+  }
+}
+
+// ── Interactive weekly calendar ────────────────────────────────────────────────
+
+class _WeeklyActivityInteractive extends StatelessWidget {
+  final TrainingController ctrl;
+  const _WeeklyActivityInteractive({required this.ctrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final c      = context.colors;
+    const days   = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+    final today  = DateTime.now().weekday - 1;
+    final byDay  = ctrl.sessionsByWeekday;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: c.surface, borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.border),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: List.generate(7, (i) {
+          final sessions  = byDay[i] ?? [];
+          final isToday   = i == today;
+          final hasSess   = sessions.isNotEmpty;
+
+          return GestureDetector(
+            onTap: () => _showDaySessions(context, i, sessions, c),
+            child: Column(children: [
+              Text(days[i], style: TextStyle(
+                  color: isToday ? c.accent : c.muted,
+                  fontSize: 11, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: 32, height: 32,
+                decoration: BoxDecoration(
+                  color: isToday ? c.accent : hasSess ? c.accentLo : c.elevated,
+                  shape: BoxShape.circle,
+                  border: isToday ? null : Border.all(
+                    color: hasSess ? c.borderGreen : c.border, width: 1.5),
+                ),
+                child: Icon(
+                  hasSess ? Icons.fitness_center_rounded
+                      : isToday ? Icons.today_rounded
+                      : Icons.remove,
+                  color: isToday ? Colors.black : hasSess ? c.accent : c.border,
+                  size: 14,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(hasSess ? '${sessions.length}' : '',
+                  style: TextStyle(color: c.accent, fontSize: 9, fontWeight: FontWeight.w800)),
+            ]),
+          );
+        }),
+      ),
+    );
+  }
+
+  void _showDaySessions(BuildContext context, int dayIdx,
+      List<TrainingSession> sessions, AppColorTokens c) {
+    const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF141414),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(dayNames[dayIdx],
+              style: TextStyle(color: c.textHi, fontSize: 18, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 4),
+          Text('${sessions.length} sesión${sessions.length != 1 ? "es" : ""}',
+              style: TextStyle(color: c.muted, fontSize: 13)),
+          const SizedBox(height: 16),
+          if (sessions.isEmpty)
+            Center(child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Text('Sin sesiones este día', style: TextStyle(color: c.dim)),
+            ))
+          else
+            ...sessions.map((s) => Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: c.surface, borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: c.border),
+              ),
+              child: Row(children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: TrainingSession.categoryColor(s.category).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(s.category, style: TextStyle(
+                      color: TrainingSession.categoryColor(s.category),
+                      fontSize: 10, fontWeight: FontWeight.w800)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(child: Text(s.title,
+                    style: TextStyle(color: c.textHi, fontSize: 13, fontWeight: FontWeight.w600))),
+                Text('${s.durationMinutes} min',
+                    style: TextStyle(color: c.muted, fontSize: 11)),
+              ]),
+            )),
+        ]),
+      ),
+    );
+  }
+}
+
+// ── Auto-insights banner ──────────────────────────────────────────────────────
+
+class _AutoInsightsBanner extends StatelessWidget {
+  final TrainingController ctrl;
+  const _AutoInsightsBanner({required this.ctrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final c       = context.colors;
+    final insights = ctrl.autoInsights;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [c.accentLo, c.surface],
+          begin: Alignment.topLeft, end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.borderGreen),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Container(width: 28, height: 28,
+              decoration: BoxDecoration(color: c.accent, shape: BoxShape.circle),
+              child: const Icon(Icons.auto_awesome_rounded, color: Colors.black, size: 14)),
+          const SizedBox(width: 8),
+          Text('Insights automáticos',
+              style: TextStyle(color: c.text, fontSize: 13, fontWeight: FontWeight.w800)),
+        ]),
+        const SizedBox(height: 12),
+        ...insights.map((txt) => Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Text(txt, style: TextStyle(color: c.text, fontSize: 13, height: 1.4)),
+        )),
+      ]),
+    );
+  }
+}
+
+// ── Progress chart (fl_chart) ─────────────────────────────────────────────────
+
+class _ProgressChart extends StatelessWidget {
+  final TrainingController ctrl;
+  const _ProgressChart({required this.ctrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final c     = context.colors;
+    final spots = ctrl.weeklySpots;
+    final maxY  = spots.map((s) => s.$2).fold(0.0, (a, b) => a > b ? a : b);
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      decoration: BoxDecoration(
+        color: c.surface, borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.border),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Text('Actividad semanal',
+              style: TextStyle(color: c.text, fontSize: 13, fontWeight: FontWeight.w700)),
+          const Spacer(),
+          Text('sesiones / día',
+              style: TextStyle(color: c.muted, fontSize: 11)),
+        ]),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 100,
+          child: LineChart(
+            LineChartData(
+              minY: 0,
+              maxY: maxY < 1 ? 3 : maxY + 1,
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: false,
+                horizontalInterval: 1,
+                getDrawingHorizontalLine: (_) => FlLine(
+                    color: c.border.withValues(alpha: 0.5), strokeWidth: 1),
+              ),
+              borderData: FlBorderData(show: false),
+              titlesData: FlTitlesData(
+                leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                bottomTitles: AxisTitles(sideTitles: SideTitles(
+                  showTitles: true,
+                  interval: 1,
+                  getTitlesWidget: (v, _) {
+                    const labels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+                    final i = v.toInt();
+                    if (i < 0 || i > 6) return const SizedBox.shrink();
+                    return Text(labels[i],
+                        style: TextStyle(color: c.muted, fontSize: 10));
+                  },
+                )),
+              ),
+              lineBarsData: [
+                LineChartBarData(
+                  spots: spots.map((s) => FlSpot(s.$1, s.$2)).toList(),
+                  isCurved: true,
+                  curveSmoothness: 0.3,
+                  color: c.accent,
+                  barWidth: 2.5,
+                  dotData: FlDotData(
+                    show: true,
+                    getDotPainter: (spot, _, __, ___) => FlDotCirclePainter(
+                      radius: spot.y > 0 ? 4 : 2,
+                      color: spot.y > 0 ? c.accent : c.border,
+                      strokeWidth: 0,
+                      strokeColor: Colors.transparent,
+                    ),
+                  ),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    color: c.accent.withValues(alpha: 0.08),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        const SizedBox(width: 20),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(hasResult ? 'Team Performance' : 'No analysis yet',
-              style: TextStyle(color: c.text, fontSize: 15, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
-          _StatRow(icon: Icons.directions_run_rounded, label: 'Total distance',
-              value: hasResult ? '${totalKm.toStringAsFixed(1)} km' : '—', c: c),
-          const SizedBox(height: 8),
-          _StatRow(icon: Icons.speed_rounded, label: 'Avg speed',
-              value: hasResult ? '${avgSpeed.toStringAsFixed(1)} m/s' : '—', c: c),
-          const SizedBox(height: 8),
-          _StatRow(icon: Icons.group_rounded, label: 'Players tracked',
-              value: hasResult ? '${players?.length ?? 0}' : '—', c: c),
-        ])),
       ]),
+    );
+  }
+}
+
+// ── AI suggestions carousel ────────────────────────────────────────────────────
+
+class _AISuggestionsCarousel extends StatelessWidget {
+  final TrainingController ctrl;
+  const _AISuggestionsCarousel({required this.ctrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+
+    if (ctrl.loadingSuggestions) {
+      return SizedBox(height: 160,
+          child: Center(child: CircularProgressIndicator(color: c.accent, strokeWidth: 1.5)));
+    }
+
+    if (ctrl.suggestions.isEmpty) {
+      return Container(
+        height: 100, margin: const EdgeInsets.symmetric(horizontal: 20),
+        decoration: BoxDecoration(color: c.surface,
+            borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
+        child: Center(child: Text('Sin sugerencias disponibles',
+            style: TextStyle(color: c.muted, fontSize: 13))),
+      );
+    }
+
+    return SizedBox(
+      height: 160,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: ctrl.suggestions.length,
+        itemBuilder: (_, i) => _AISuggestionCard(
+          data: ctrl.suggestions[i],
+          onSave: () async {
+            final s = ctrl.suggestions[i];
+            await ctrl.createSession(
+              title: s['title'] as String,
+              category: s['category'] as String,
+              durationMinutes: s['duration_minutes'] as int,
+              description: s['reason'] as String?,
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _AISuggestionCard extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final VoidCallback onSave;
+  const _AISuggestionCard({required this.data, required this.onSave});
+
+  @override
+  Widget build(BuildContext context) {
+    final title    = data['title']            as String? ?? '';
+    final category = data['category']         as String? ?? 'Tactical';
+    final duration = data['duration_minutes'] as int?    ?? 60;
+    final reason   = data['reason']           as String? ?? '';
+    final catColor = TrainingSession.categoryColor(category);
+    final imgUrl   = TrainingSession.categoryImage(category);
+
+    return Container(
+      width: 180,
+      margin: const EdgeInsets.only(right: 12),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(18)),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Stack(fit: StackFit.expand, children: [
+          Image.network(imgUrl, fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(color: catColor.withValues(alpha: 0.3))),
+          DecoratedBox(decoration: BoxDecoration(
+              gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Colors.black.withValues(alpha: 0.92)]))),
+          Positioned(top: 10, left: 10,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+              decoration: BoxDecoration(color: catColor, borderRadius: BorderRadius.circular(6)),
+              child: Text(category,
+                  style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800)),
+            ),
+          ),
+          // AI badge
+          Positioned(top: 10, right: 10,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              decoration: BoxDecoration(
+                  color: Colors.black54, borderRadius: BorderRadius.circular(6)),
+              child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(Icons.auto_awesome_rounded, color: Colors.amber, size: 9),
+                SizedBox(width: 3),
+                Text('IA', style: TextStyle(color: Colors.amber, fontSize: 9, fontWeight: FontWeight.w800)),
+              ]),
+            ),
+          ),
+          Positioned(left: 10, right: 10, bottom: 10,
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(title, maxLines: 2, overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.white, fontSize: 12,
+                      fontWeight: FontWeight.w700, height: 1.3)),
+              const SizedBox(height: 4),
+              Row(children: [
+                const Icon(Icons.timer_outlined, color: Colors.white60, size: 11),
+                const SizedBox(width: 3),
+                Expanded(child: Text('$duration min',
+                    style: const TextStyle(color: Colors.white60, fontSize: 10))),
+                GestureDetector(
+                  onTap: onSave,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text('Guardar',
+                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ]),
+              if (reason.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 3),
+                  child: Text(reason, maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.white38, fontSize: 9)),
+                ),
+            ]),
+          ),
+        ]),
+      ),
     );
   }
 }
