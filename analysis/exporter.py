@@ -106,24 +106,36 @@ def get_match_players(match_id: int) -> list:
 
 
 def save_player_stats(match_id: int, players: list) -> None:
-    """
-    Insert one row per player into player_match_stats.
-    Columns must already exist in the DB schema.
-    """
     now  = datetime.utcnow().isoformat()
     rows = [
         {
-            "match_id":   match_id,
-            "player_id":  None,
-            "track_id":   p["track_id"],
-            "distance":   p["distance_km"],
-            "velocity":   p["speed_ms"],
-            "possession": p["possession_pct"],
-            "presence":   p["presence_pct"],
-            "zone":       p["zone"],
-            "created_at": now,
-            "updated_at": now,
+            "match_id":      match_id,
+            "player_id":     None,
+            "track_id":      p["track_id"],
+            "distance":      p["distance_km"],
+            "velocity":      p["speed_ms"],
+            "speed_kmh":     p.get("speed_kmh"),
+            "possession":    p["possession_pct"],
+            "presence":      p["presence_pct"],
+            "zone":          p["zone"],
+            "best_position": p.get("best_position"),
+            "created_at":    now,
+            "updated_at":    now,
         }
         for p in players
     ]
     _db().table("player_match_stats").insert(rows).execute()
+
+
+def get_player_history(track_id: int, limit: int = 10) -> list:
+    """Fetch recent match stats for a player identified by track_id."""
+    result = (
+        _db()
+        .table("player_match_stats")
+        .select("match_id, distance, velocity, speed_kmh, possession, presence, zone, best_position, created_at")
+        .eq("track_id", track_id)
+        .order("created_at", desc=True)
+        .limit(limit)
+        .execute()
+    )
+    return result.data or []

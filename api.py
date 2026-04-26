@@ -799,3 +799,121 @@ def get_news(topic: str = None):
 
     todas.sort(key=lambda x: x["fecha"], reverse=True)
     return {"articulos": todas[:20]}
+
+
+# ── Player profile ─────────────────────────────────────────────────────────────
+
+from analysis.player_queries import (
+    get_player_profile,
+    get_player_last_stats,
+    get_player_history,
+    get_player_match_stats,
+)
+from analysis.metrics_engine import best_position as infer_best_position
+
+
+@app.get("/api/player/{player_id}")
+def player_profile(player_id: int):
+    """
+    Full player profile: basic info + last match stats + history + AI insights.
+    Returns 404 if the player doesn't exist in Supabase yet.
+    """
+    player = get_player_profile(player_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+
+    last = get_player_last_stats(player_id) or {}
+    history = get_player_history(player_id)
+    match_stats = get_player_match_stats(player_id)
+
+    # ── AI insights ────────────────────────────────────────────────────────────
+    ratings = [h["rating"] for h in history if h.get("rating")]
+    avg_rating = round(sum(ratings) / len(ratings), 1) if ratings else last.get("rating", 7.0)
+
+    form_label = (
+        "Excellent 🔥" if avg_rating >= 8.0 else
+        "Good ✅"       if avg_rating >= 7.0 else
+        "Average ⚠️"   if avg_rating >= 6.0 else
+        "Poor 📉"
+    )
+
+    # Use video-analysis zones if available, otherwise fall back to position
+    zone_map: dict = {}
+    avg_dist = last.get("distance_km", 0) or 0
+    avg_poss = 0.0
+    if match_stats:
+        for ms in match_stats:
+            z = ms.get("zone", "Mid-Center")
+            zone_map[z] = zone_map.get(z, 0) + 1
+            avg_dist = max(avg_dist, ms.get("distance", 0))
+            avg_poss += ms.get("possession", 0)
+        avg_poss /= len(match_stats)
+
+    ai_position = (
+        infer_best_position(zone_map, avg_poss, avg_dist)
+        if zone_map
+        else player.get("position", "CM")
+    )
+
+    _tips = {
+        "GK":  "Excellent distributor. Use in a build-up system.",
+        "CB":  "Strong aerially. Partner with a ball-playing CB.",
+        "LB":  "High overlap rate. Exploit the left channel.",
+        "RB":  "Consistent width provider. Maintain current role.",
+        "CDM": "Defensive anchor. Deploy as single pivot.",
+        "CM":  "Box-to-box engine. Pair with a DM for balance.",
+        "CAM": "Creative force. Give freedom between the lines.",
+        "LW":  "Pace threat on the left. Counter-attack weapon.",
+        "RW":  "Cuts inside regularly. Works best on right side.",
+        "ST":  "Clinical finisher. Keep in central areas.",
+        "CF":  "Link-up play specialist. Drop deep to create.",
+    }
+    tip = _tips.get(player.get("position", ""), "Player is performing consistently. Keep current role.")
+
+    return {
+        "id":         player["id"],
+        "name":       player["name"],
+        "number":     player.get("number"),
+        "position":   player.get("position"),
+        "overall":    player.get("overall"),
+        "age":        player.get("age"),
+        "foot":       player.get("foot"),
+        "height_cm":  player.get("height_cm"),
+        "photo_url":  player.get("photo_url"),
+
+        "attributes": {
+            "pace":      last.get("pace", 70),
+            "shooting":  last.get("shooting", 70),
+            "passing":   last.get("passing_attr", 70),
+            "dribbling": last.get("dribbling", 70),
+            "defending": last.get("defending", 40),
+            "physical":  last.get("physical", 70),
+        },
+
+        "last_match": {
+            "rating":        last.get("rating"),
+            "goals":         last.get("goals"),
+            "assists":       last.get("assists"),
+            "distance_km":   last.get("distance_km"),
+            "passes":        last.get("passes"),
+            "pass_accuracy": last.get("pass_accuracy"),
+            "minutes":       last.get("minutes"),
+        },
+
+        "history": [
+            {
+                "rating":  h.get("rating", 7.0),
+                "goals":   h.get("goals", 0),
+                "assists": h.get("assists", 0),
+                "date":    h.get("updated_at", ""),
+            }
+            for h in history
+        ],
+
+        "ai_insights": {
+            "form":           form_label,
+            "avg_rating":     avg_rating,
+            "best_position":  ai_position,
+            "recommendation": tip,
+        },
+    }

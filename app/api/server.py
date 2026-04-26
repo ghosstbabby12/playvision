@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
-from app.api.routers import analysis, heatmap, matches, news
+from app.api.routers import analysis, heatmap, matches, news, insights, players
 
 
 class CORSStaticFiles(StaticFiles):
@@ -36,6 +36,8 @@ def create_app() -> FastAPI:
     app.include_router(heatmap.router)
     app.include_router(matches.router)
     app.include_router(news.router)
+    app.include_router(insights.router)
+    app.include_router(players.router)
 
     return app
 
