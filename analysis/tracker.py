@@ -1,6 +1,5 @@
 """
 tracker.py — Stateful per-player tracking across frames.
-
 Maintains positions, distances, ball-possession frames and a
 short speed history for moving-average smoothing.
 Includes outlier removal to ignore teleportation artefacts.
@@ -25,16 +24,27 @@ class PlayerTracker:
             "frames_seen":      0,
             "frames_with_ball": 0,
             "speed_history":    deque(maxlen=SMOOTHING_WINDOW),
+            "team":             "unknown",
         }
 
     def update(self, frame_players: dict[int, tuple], ball_center: tuple | None):
         """Process one frame of detections."""
-        for pid, pos in frame_players.items():
+        for pid, detection in frame_players.items():
+            if len(detection) == 3:
+                cx, cy, team = detection
+            else:
+                cx, cy = detection
+                team = "unknown"
+
+            pos = (cx, cy)
             entry = self._data[pid]
+
+            if team != "unknown":
+                entry["team"] = team
 
             if entry["positions"]:
                 raw_dist = math.dist(pos, entry["positions"][-1])
-                if raw_dist < MAX_JUMP_PX:           # outlier filter
+                if raw_dist < MAX_JUMP_PX:
                     entry["distances"].append(raw_dist)
                     entry["speed_history"].append(raw_dist)
 
@@ -48,6 +58,19 @@ class PlayerTracker:
         """Moving-average speed for a player (in px/frame)."""
         h = self._data[pid]["speed_history"]
         return sum(h) / len(h) if h else 0.0
+
+    def players_by_team(self, team: str) -> list[int]:
+        """Devuelve lista de track_ids que pertenecen a un equipo."""
+        return [pid for pid, d in self._data.items() if d["team"] == team]
+
+    def team_summary(self) -> dict:
+        """Resumen de cuántos jugadores hay por equipo."""
+        green = self.players_by_team("green")
+        red   = self.players_by_team("red")
+        return {
+            "green": {"count": len(green), "track_ids": green},
+            "red":   {"count": len(red),   "track_ids": red},
+        }
 
     @property
     def data(self) -> dict:

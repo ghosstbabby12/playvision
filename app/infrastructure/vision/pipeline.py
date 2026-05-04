@@ -23,6 +23,7 @@ from analysis.exporter         import (
     create_or_update_match, save_match_report,
     save_player_stats, upload_video,
 )
+from analysis.commentary_prompt import build_analysis_prompt
 
 cfg = settings
 
@@ -78,7 +79,9 @@ def run_pipeline(
             continue
 
         frame = resize_frame(frame, cfg.target_width)
-        players, ball, raw = detect_frame(frame, conf_threshold=cfg.conf_threshold)
+        players_full, ball, raw = detect_frame(frame, conf_threshold=cfg.conf_threshold)
+        # Strip team from 3-tuple so possession/pass/heatmap engines receive plain (cx, cy)
+        players = {pid: (cx, cy) for pid, (cx, cy, team) in players_full.items()}
         frame_data.append((frame_count, dict(players)))
         classifier.update(frame, raw)
 
@@ -89,7 +92,8 @@ def run_pipeline(
 
         ball_stable     = ball_tracker.update(ball)
         ball_possession = ball_stable or ball_tracker.last_known
-        tracker.update(players, ball_possession)
+        # Pass full 3-tuples so tracker records the team per player
+        tracker.update(players_full, ball_possession)
 
         pass_log.tick()
         pass_log.update_positions(players)
@@ -138,6 +142,10 @@ def run_pipeline(
         path  = os.path.join(videos_dir, fname)
         p["heatmap_video_url"] = upload_video(path, fname) or f"{cfg.base_video_url}/{fname}"
 
+    team_reg = {pid: d["team"] for pid, d in tracker.data.items()}
+    for p in players_out:
+        p["team"] = team_reg.get(p["track_id"], "unknown")
+
     result = {
         "frames_total":      frame_count,
         "frames_analyzed":   analyzed,
@@ -146,8 +154,26 @@ def run_pipeline(
         "video_url":         ann_url,
         "heatmap_video_url": heat_url,
         "team":              team_stats,
+        "team_summary":      tracker.team_summary(),
         "players":           players_out,
     }
+
+    try:
+        from groq import Groq
+        groq_client = Groq(api_key=cfg.groq_api_key)
+        prompt_text = build_analysis_prompt(result, opponent)
+        chat = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": "Eres un analista táctico de fútbol de élite. Responde siempre en español con terminología profesional."},
+                {"role": "user",   "content": prompt_text},
+            ],
+            max_tokens=2048,
+        )
+        result["ai_analysis"] = chat.choices[0].message.content
+    except Exception as e:
+        print(f"[warn] Groq analysis: {e}")
+        result["ai_analysis"] = None
 
     try:
         mid = create_or_update_match(

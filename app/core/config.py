@@ -21,6 +21,7 @@ class Settings:
     api_port: str = os.getenv("API_PORT", "8000")
 
     # ── Pipeline de visión ────────────────────────────────────────────────────
+    model_path: str        = os.getenv("MODEL_PATH", "models/best.pt")
     num_players: int       = int(os.getenv("NUM_PLAYERS",     "22"))
     min_presence: float    = float(os.getenv("MIN_PRESENCE",  "0.01"))
     ball_radius: int       = int(os.getenv("BALL_RADIUS",     "80"))
@@ -28,6 +29,9 @@ class Settings:
     fps: float             = float(os.getenv("FPS",           "30.0"))
     conf_threshold: float  = float(os.getenv("CONF_THRESHOLD","0.35"))
     frame_skip: int        = int(os.getenv("FRAME_SKIP",      "2"))
+
+    # ── Groq (gratis) ─────────────────────────────────────────────────────────
+    groq_api_key: str = os.getenv("GROQ_API_KEY", "")
 
     # ── Salida de video ───────────────────────────────────────────────────────
     target_width: int  = 1280

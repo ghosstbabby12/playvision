@@ -81,6 +81,7 @@ def compute_metrics(
         players_out.append({
             "rank":             rank,
             "track_id":         pid,
+            "team":             data.get("team", "unknown"),
             "zone":             zone_label(avg_x, avg_y, frame_width, frame_height),
             "best_position":    best_position(zones, round(poss_pct, 1), distance_km),
             "presence_pct":     round(presence_pct, 1),
@@ -104,6 +105,9 @@ def compute_metrics(
     least_act = min(players_out, key=lambda p: p["total_distance"], default=None)
     most_poss = max(players_out, key=lambda p: p["possession_pct"], default=None)
 
+    green_players = [p for p in players_out if p["team"] == "green"]
+    red_players   = [p for p in players_out if p["team"] == "red"]
+
     team_stats = {
         "total_distance_km": team_km,
         "avg_distance_km":   round(team_km / max(len(active), 1), 2),
@@ -111,6 +115,22 @@ def compute_metrics(
         "most_active":       most_act["rank"]  if most_act  else None,
         "least_active":      least_act["rank"] if least_act else None,
         "most_possession":   most_poss["rank"] if most_poss else None,
+        "by_team": {
+            "green": {
+                "player_count":       len(green_players),
+                "total_distance_km":  round(sum(p["distance_km"] for p in green_players), 2),
+                "avg_possession_pct": round(
+                    sum(p["possession_pct"] for p in green_players) / max(len(green_players), 1), 1
+                ),
+            },
+            "red": {
+                "player_count":       len(red_players),
+                "total_distance_km":  round(sum(p["distance_km"] for p in red_players), 2),
+                "avg_possession_pct": round(
+                    sum(p["possession_pct"] for p in red_players) / max(len(red_players), 1), 1
+                ),
+            },
+        },
     }
 
     return players_out, team_stats
