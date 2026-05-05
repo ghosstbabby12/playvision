@@ -17,7 +17,7 @@ _cache_ts: dict = {}
 
 
 class NewsClient:
-    BASE = "https://newsapi.org/v2/everything"
+    BASE = settings.news_api_url
 
     def get_articles(self, topic_id: str | None = None, max_results: int = 20) -> list:
         topics = [t for t in _TOPICS if topic_id is None or t["id"] == topic_id]

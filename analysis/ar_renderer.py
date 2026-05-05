@@ -14,8 +14,6 @@ import cv2
 import numpy as np
 
 # ── Constants ──────────────────────────────────────────────────────────────────
-PLAYER_NAMES: dict[int, str] = {}   # fill to show real names
-
 _FORMATION_COLOR = (60, 200, 60)    # bright green
 _ARROW_BLUE      = (210,  70,  10)  # BGR ≈ bright blue
 _ARROW_GLOW      = (  0, 185, 255)  # BGR ≈ gold/yellow glow
@@ -77,7 +75,7 @@ def _draw_player_label(frame, display_id, cx, cy, is_holder):
     Ball holder gets a green accent on the tag.
     display_id is already remapped (1-11), not the raw ByteTrack track ID.
     """
-    label = PLAYER_NAMES.get(display_id, f"{display_id}")
+    label = f"{display_id}"
     font, scale, thick = cv2.FONT_HERSHEY_SIMPLEX, 0.40, 1
     (tw, th), _ = cv2.getTextSize(label, font, scale, thick)
 

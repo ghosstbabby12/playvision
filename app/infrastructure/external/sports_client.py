@@ -29,7 +29,7 @@ _standings_ts:     dict        = {}
 
 
 class SportsClient:
-    BASE = "https://v3.football.api-sports.io"
+    BASE = settings.sports_api_url
 
     def get_live_fixtures(self) -> list:
         global _fixtures_cache, _fixtures_ts

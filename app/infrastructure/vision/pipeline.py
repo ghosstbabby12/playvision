@@ -163,7 +163,7 @@ def run_pipeline(
         groq_client = Groq(api_key=cfg.groq_api_key)
         prompt_text = build_analysis_prompt(result, opponent)
         chat = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=cfg.groq_model,
             messages=[
                 {"role": "system", "content": "Eres un analista táctico de fútbol de élite. Responde siempre en español con terminología profesional."},
                 {"role": "user",   "content": prompt_text},

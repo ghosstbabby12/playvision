@@ -60,11 +60,11 @@ class PlayerTracker:
         return sum(h) / len(h) if h else 0.0
 
     def players_by_team(self, team: str) -> list[int]:
-        """Devuelve lista de track_ids que pertenecen a un equipo."""
+        """Return list of track_ids belonging to a given team."""
         return [pid for pid, d in self._data.items() if d["team"] == team]
 
     def team_summary(self) -> dict:
-        """Resumen de cuántos jugadores hay por equipo."""
+        """Return player count and track_ids grouped by team."""
         green = self.players_by_team("green")
         red   = self.players_by_team("red")
         return {
