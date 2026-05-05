@@ -27,6 +27,7 @@ class CoachingBoardController extends ChangeNotifier {
   String _formation = '4-3-3';
   List<PlayerToken> _players = [];
   PlayerToken? _selectedPlayer;
+  PlayerToken? _swapSource;
 
   // ── Getters ────────────────────────────────────────────────────────────────
   BoardStep get step => _step;
@@ -37,6 +38,9 @@ class CoachingBoardController extends ChangeNotifier {
   String get formation => _formation;
   List<PlayerToken> get players => List.unmodifiable(_players);
   PlayerToken? get selectedPlayer => _selectedPlayer;
+  PlayerToken? get swapSource => _swapSource;
+
+  static const List<String> availableFormations = ['4-3-3', '4-4-2', '4-2-3-1', '3-5-2'];
 
   // ── Team loading ────────────────────────────────────────────────────────────
   Future<void> loadTeams() async {
@@ -58,17 +62,14 @@ class CoachingBoardController extends ChangeNotifier {
     _step = BoardStep.analyzing;
     notifyListeners();
 
-    // Kick off the API call immediately (parallel with animation)
     final apiFuture = _fetchBoardFromApi(team['id'] as int);
 
-    // Play animation steps
     for (int i = 0; i < analysisSteps.length - 1; i++) {
       await Future.delayed(const Duration(milliseconds: 620));
       _completedSteps = i + 1;
       notifyListeners();
     }
 
-    // Wait for API result (already in-flight, usually done by now)
     await apiFuture;
     _completedSteps = analysisSteps.length;
     notifyListeners();
@@ -104,13 +105,13 @@ class CoachingBoardController extends ChangeNotifier {
       }
     } catch (_) {}
 
-    // Fallback to local mock
     _players = _buildMockPlayers(_mockFormations[_formation]!);
   }
 
   void goBack() {
     _step = BoardStep.selectTeam;
     _selectedPlayer = null;
+    _swapSource = null;
     notifyListeners();
   }
 
@@ -131,6 +132,37 @@ class CoachingBoardController extends ChangeNotifier {
   void resetFormation() {
     _players = _buildMockPlayers(_mockFormations[_formation]!);
     _selectedPlayer = null;
+    _swapSource = null;
+    notifyListeners();
+  }
+
+  void switchFormation(String newFormation) {
+    if (!_mockFormations.containsKey(newFormation)) return;
+    _formation = newFormation;
+    _players = _buildMockPlayers(_mockFormations[newFormation]!);
+    _selectedPlayer = null;
+    _swapSource = null;
+    notifyListeners();
+  }
+
+  void startSwap(PlayerToken player) {
+    _swapSource = _swapSource?.id == player.id ? null : player;
+    _selectedPlayer = null;
+    notifyListeners();
+  }
+
+  void finishSwap(PlayerToken target) {
+    final src = _swapSource;
+    _swapSource = null;
+    if (src == null || src.id == target.id) { notifyListeners(); return; }
+    final srcIdx = _players.indexWhere((p) => p.id == src.id);
+    final tgtIdx = _players.indexWhere((p) => p.id == target.id);
+    if (srcIdx == -1 || tgtIdx == -1) { notifyListeners(); return; }
+    final list = List.of(_players);
+    final (sx, sy) = (list[srcIdx].dx, list[srcIdx].dy);
+    list[srcIdx] = list[srcIdx].copyWith(dx: list[tgtIdx].dx, dy: list[tgtIdx].dy);
+    list[tgtIdx] = list[tgtIdx].copyWith(dx: sx, dy: sy);
+    _players = list;
     notifyListeners();
   }
 
@@ -153,6 +185,45 @@ class CoachingBoardController extends ChangeNotifier {
       ['Torres',    9,  'RW',  0.80, 0.28],
       ['Sánchez',   10, 'ST',  0.50, 0.22],
       ['Ramírez',   11, 'LW',  0.20, 0.28],
+    ],
+    '4-4-2': [
+      ['García',    1,  'GK',  0.50, 0.88],
+      ['Pérez',     2,  'RB',  0.82, 0.72],
+      ['López',     3,  'CB',  0.62, 0.72],
+      ['Rodríguez', 4,  'CB',  0.38, 0.72],
+      ['González',  5,  'LB',  0.18, 0.72],
+      ['Díaz',      6,  'RM',  0.82, 0.52],
+      ['Morales',   7,  'CM',  0.60, 0.52],
+      ['Fernández', 8,  'CM',  0.40, 0.52],
+      ['Torres',    9,  'LM',  0.18, 0.52],
+      ['Sánchez',   10, 'ST',  0.62, 0.26],
+      ['Ramírez',   11, 'ST',  0.38, 0.26],
+    ],
+    '4-2-3-1': [
+      ['García',    1,  'GK',  0.50, 0.88],
+      ['Pérez',     2,  'RB',  0.82, 0.74],
+      ['López',     3,  'CB',  0.62, 0.74],
+      ['Rodríguez', 4,  'CB',  0.38, 0.74],
+      ['González',  5,  'LB',  0.18, 0.74],
+      ['Díaz',      6,  'CDM', 0.62, 0.58],
+      ['Morales',   7,  'CDM', 0.38, 0.58],
+      ['Fernández', 8,  'RAM', 0.78, 0.38],
+      ['Torres',    9,  'CAM', 0.50, 0.38],
+      ['Sánchez',   10, 'LAM', 0.22, 0.38],
+      ['Ramírez',   11, 'ST',  0.50, 0.20],
+    ],
+    '3-5-2': [
+      ['García',    1,  'GK',  0.50, 0.88],
+      ['Pérez',     2,  'CB',  0.72, 0.74],
+      ['López',     3,  'CB',  0.50, 0.74],
+      ['Rodríguez', 4,  'CB',  0.28, 0.74],
+      ['González',  5,  'RM',  0.90, 0.52],
+      ['Díaz',      6,  'CM',  0.67, 0.52],
+      ['Morales',   7,  'CDM', 0.50, 0.56],
+      ['Fernández', 8,  'CM',  0.33, 0.52],
+      ['Torres',    9,  'LM',  0.10, 0.52],
+      ['Sánchez',   10, 'ST',  0.62, 0.26],
+      ['Ramírez',   11, 'ST',  0.38, 0.26],
     ],
   };
 
