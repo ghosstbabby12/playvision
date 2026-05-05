@@ -42,12 +42,38 @@ class LiveMatchesService {
     try {
       final res = await http
           .get(Uri.parse('${AppConstants.apiBase}/api/featured-matches'))
-          .timeout(_timeoutFeatured);   // ← 25s para dar tiempo al backend
+          .timeout(_timeoutFeatured);
       if (res.statusCode == 200) {
-        final body = jsonDecode(res.body) as Map<String, dynamic>;
-        final data = body['data'] as Map<String, dynamic>? ?? {};
-        debugPrint('[LiveMatchesService] ✓ featured → ${data.keys.length} secciones');
-        return data.map((k, v) => MapEntry(k, v as List));
+        final body = jsonDecode(res.body);
+
+        // Caso 1: body['data'] es un Map de competiciones → formato ideal
+        if (body is Map<String, dynamic>) {
+          final inner = body['data'];
+
+          if (inner is Map<String, dynamic>) {
+            debugPrint('[LiveMatchesService] ✓ featured → ${inner.keys.length} secciones');
+            return inner.map((k, v) => MapEntry(k, v as List<dynamic>));
+          }
+
+          // Caso 2: body['data'] es una List plana
+          if (inner is List) {
+            debugPrint('[LiveMatchesService] ✓ featured → ${inner.length} partidos (lista plana)');
+            return {'Featured': inner};
+          }
+
+          // Caso 3: el propio body es el Map de competiciones (sin wrapper 'data')
+          final firstValue = body.values.isNotEmpty ? body.values.first : null;
+          if (firstValue is List) {
+            debugPrint('[LiveMatchesService] ✓ featured → ${body.keys.length} secciones (sin wrapper)');
+            return body.map((k, v) => MapEntry(k, v as List<dynamic>));
+          }
+        }
+
+        // Caso 4: el body es directamente una List
+        if (body is List) {
+          debugPrint('[LiveMatchesService] ✓ featured → ${body.length} partidos (root list)');
+          return {'Featured': body};
+        }
       }
     } on TimeoutException {
       debugPrint('[LiveMatchesService] Timeout featured en Railway');

@@ -13,8 +13,9 @@ class AnalysisController extends ChangeNotifier {
   final SupabaseService  _service = SupabaseService.instance;
 
   XFile?  videoFile;
-  String? videoUrl;        // remote URL input
-  bool    isAnalyzing = false;
+  String? videoUrl;
+  bool    isAnalyzing    = false;
+  bool    _isPickingVideo = false;  // ← guard anti-doble tap
   Map<String, dynamic>? result;
   String? errorMessage;
 
@@ -24,12 +25,21 @@ class AnalysisController extends ChangeNotifier {
   }
 
   Future<void> pickVideo() async {
-    final file = await _picker.pickVideo(source: ImageSource.gallery);
-    if (file == null) return;
-    videoFile = file;
-    videoUrl  = null;
-    result    = null;
-    notifyListeners();
+    if (_isPickingVideo) return;  // ← bloquea doble llamada
+    _isPickingVideo = true;
+
+    try {
+      final file = await _picker.pickVideo(source: ImageSource.gallery);
+      if (file == null) return;
+      videoFile = file;
+      videoUrl  = null;
+      result    = null;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('[AnalysisController] Error picker: $e');
+    } finally {
+      _isPickingVideo = false;  // ← siempre libera al terminar
+    }
   }
 
   void setVideoUrl(String url) {
@@ -120,10 +130,11 @@ class AnalysisController extends ChangeNotifier {
   }
 
   void reset() {
-    result       = null;
-    videoFile    = null;
-    videoUrl     = null;
-    errorMessage = null;
+    result          = null;
+    videoFile       = null;
+    videoUrl        = null;
+    errorMessage    = null;
+    _isPickingVideo = false;  // ← también resetea el guard
     notifyListeners();
   }
 
