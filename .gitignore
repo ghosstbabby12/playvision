@@ -18,5 +18,3 @@ annotated_videos/
 # macOS
 .DS_Store
 
-# YOLO model
-*.pt
