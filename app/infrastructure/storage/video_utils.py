@@ -3,7 +3,6 @@ import cv2
 import requests
 from fastapi import HTTPException
 
-
 def resize_frame(frame, target_width: int):
     h, w = frame.shape[:2]
     if w <= target_width:
@@ -13,13 +12,21 @@ def resize_frame(frame, target_width: int):
 
 
 def open_writer(path: str, fps: float, width: int, height: int) -> cv2.VideoWriter:
-    for codec in ("avc1", "mp4v"):
-        writer = cv2.VideoWriter(
-            path, cv2.VideoWriter_fourcc(*codec), fps, (width, height)
-        )
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    fps = fps if fps and fps > 0 else 30.0
+    size = (int(width), int(height))
+    
+    # Probamos mp4v primero (el más compatible en Linux/Docker), luego otros
+    for codec in ("mp4v", "avc1", "XVID"):
+        # Usamos cv2.VideoWriter.fourcc para evitar la advertencia de Pylance
+        fourcc = cv2.VideoWriter.fourcc(*codec)
+        writer = cv2.VideoWriter(path, fourcc, fps, size)
+        
         if writer.isOpened():
+            print(f"[video] writer ok codec={codec} path={path}")
             return writer
-    raise RuntimeError("Could not open VideoWriter with any codec")
+            
+    raise RuntimeError(f"Could not open VideoWriter for {path} with any codec")
 
 
 _PLATFORM_PATTERNS = (
@@ -48,9 +55,11 @@ def _download_platform(url: str, out_path: str) -> None:
         "quiet":       True,
         "no_warnings": True,
     }
-    with yt_dlp.YoutubeDL(opts) as ydl:
+    
+    # type: ignore se usa para que Pylance no moleste con el tipo de opts
+    with yt_dlp.YoutubeDL(opts) as ydl:  # type: ignore
         info     = ydl.extract_info(url, download=True)
-        expected = ydl.prepare_filename(info)
+        expected = ydl.prepare_filename(info)  # type: ignore
         if expected != out_path and os.path.exists(expected):
             os.rename(expected, out_path)
 

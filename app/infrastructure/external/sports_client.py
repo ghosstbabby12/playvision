@@ -1,6 +1,7 @@
 import time
 import requests
 from datetime import datetime
+from typing import Any
 from app.core.config import settings
 
 _HEADERS = {"x-apisports-key": settings.api_key_sports}
@@ -28,21 +29,21 @@ _FEATURED_LEAGUE_IDS = {
     for l in region
 }
 
-_fixtures_cache:   dict | None = None
-_fixtures_ts:      float       = 0
-_featured_cache:   list | None = None
-_featured_ts:      float       = 0
-_standings_cache:  dict        = {}
-_standings_ts:     dict        = {}
-
+# Inicializados como listas vacías para evitar problemas de tipos con "None"
+_fixtures_cache:   list[Any] = []
+_fixtures_ts:      float     = 0
+_featured_cache:   list[Any] = []
+_featured_ts:      float     = 0
+_standings_cache:  dict[str, list[Any]] = {}
+_standings_ts:     dict[str, float] = {}
 
 class SportsClient:
     BASE = settings.sports_api_url
 
-    def get_featured_fixtures(self) -> list:
+    def get_featured_fixtures(self) -> list[Any]:
         """Today's fixtures from featured leagues, cached 5 min."""
         global _featured_cache, _featured_ts
-        if _featured_cache is not None and time.time() - _featured_ts < 300:
+        if _featured_cache and time.time() - _featured_ts < 300:
             return _featured_cache
 
         date = datetime.now().strftime("%Y-%m-%d")
@@ -70,7 +71,7 @@ class SportsClient:
         _featured_ts    = time.time()
         return _featured_cache
 
-    def get_live_fixtures(self) -> list:
+    def get_live_fixtures(self) -> list[Any]:
         global _fixtures_cache, _fixtures_ts
         if _fixtures_cache and time.time() - _fixtures_ts < _TTL_FIXTURES:
             return _fixtures_cache
@@ -81,7 +82,7 @@ class SportsClient:
         _fixtures_ts    = time.time()
         return _fixtures_cache
 
-    def get_standings(self, league_id: int, season: int) -> list:
+    def get_standings(self, league_id: int, season: int) -> list[Any]:
         key = f"{league_id}_{season}"
         if key in _standings_cache and time.time() - _standings_ts.get(key, 0) < _TTL_STANDINGS:
             return _standings_cache[key]
@@ -112,7 +113,7 @@ class SportsClient:
         _standings_ts[key]    = time.time()
         return teams
 
-    def search_team(self, name: str) -> list:
+    def search_team(self, name: str) -> list[Any]:
         data = self._get(f"/teams?search={name}")
         return [
             {
@@ -125,12 +126,11 @@ class SportsClient:
             for t in data.get("response", [])[:10]
         ]
 
-    def leagues_for_region(self, region: str) -> list:
+    def leagues_for_region(self, region: str) -> list[Any]:
         return _LEAGUES.get(region, [])
 
-    def _get(self, path: str) -> dict:
+    def _get(self, path: str) -> dict[str, Any]:
         resp = requests.get(f"{self.BASE}{path}", headers=_HEADERS, timeout=10)
         return resp.json()
-
 
 sports_client = SportsClient()
