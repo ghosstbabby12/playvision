@@ -22,14 +22,53 @@ _LEAGUES = {
     ],
 }
 
+_FEATURED_LEAGUE_IDS = {
+    l["id"]
+    for region in _LEAGUES.values()
+    for l in region
+}
+
 _fixtures_cache:   dict | None = None
 _fixtures_ts:      float       = 0
+_featured_cache:   list | None = None
+_featured_ts:      float       = 0
 _standings_cache:  dict        = {}
 _standings_ts:     dict        = {}
 
 
 class SportsClient:
     BASE = settings.sports_api_url
+
+    def get_featured_fixtures(self) -> list:
+        """Today's fixtures from featured leagues, cached 5 min."""
+        global _featured_cache, _featured_ts
+        if _featured_cache is not None and time.time() - _featured_ts < 300:
+            return _featured_cache
+
+        date = datetime.now().strftime("%Y-%m-%d")
+        data = self._get(f"/fixtures?date={date}")
+        all_fixtures = data.get("response", [])
+
+        league_map = {
+            l["id"]: l
+            for region in _LEAGUES.values()
+            for l in region
+        }
+
+        result = []
+        for f in all_fixtures:
+            lid = f.get("league", {}).get("id")
+            if lid in _FEATURED_LEAGUE_IDS:
+                result.append({
+                    "fixture":  f.get("fixture", {}),
+                    "league":   league_map.get(lid, f.get("league", {})),
+                    "teams":    f.get("teams", {}),
+                    "goals":    f.get("goals", {}),
+                    "score":    f.get("score", {}),
+                })
+        _featured_cache = result[:20]
+        _featured_ts    = time.time()
+        return _featured_cache
 
     def get_live_fixtures(self) -> list:
         global _fixtures_cache, _fixtures_ts

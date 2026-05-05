@@ -7,6 +7,16 @@ from app.infrastructure.external.sports_client import sports_client
 router = APIRouter(prefix="/api", tags=["Matches"])
 
 
+@router.get("/featured-matches", summary="Featured matches")
+def featured_matches():
+    """Return today's fixtures from featured leagues (La Liga, Premier, Champions, etc.)."""
+    try:
+        data = sports_client.get_featured_fixtures()
+        return {"data": data}
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
 @router.get("/live-matches", summary="Live matches")
 def live_matches():
     """Return all fixtures currently in progress."""

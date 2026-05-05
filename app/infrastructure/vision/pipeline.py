@@ -24,6 +24,7 @@ from analysis.exporter         import (
     save_player_stats, upload_video,
 )
 from analysis.commentary_prompt import build_analysis_prompt
+from analysis.id_stabilizer     import IDStabilizer
 
 cfg = settings
 
@@ -56,6 +57,7 @@ def run_pipeline(
     heat_wr    = open_writer(heat_path, out_fps, out_w, out_h)
 
     reset_detector()
+    stabilizer   = IDStabilizer(max_dist=120, max_unseen=30)
     tracker      = PlayerTracker(ball_radius=cfg.ball_radius)
     heat_overlay = VideoHeatmapOverlay(width=out_w, height=out_h)
     classifier   = TeamClassifier()
@@ -80,7 +82,7 @@ def run_pipeline(
 
         frame = resize_frame(frame, cfg.target_width)
         players_full, ball, raw = detect_frame(frame, conf_threshold=cfg.conf_threshold)
-        # Strip team from 3-tuple so possession/pass/heatmap engines receive plain (cx, cy)
+        players_full = stabilizer.update(players_full)
         players = {pid: (cx, cy) for pid, (cx, cy, team) in players_full.items()}
         frame_data.append((frame_count, dict(players)))
         classifier.update(frame, raw)

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from analysis.exporter import get_player_history
+from analysis.exporter import get_player_history, _db
 from app.api.routers.insights import _generate_insights
 
 router = APIRouter(prefix="/api", tags=["Players"])
@@ -37,6 +37,68 @@ def _player_insight(agg: dict) -> list[str]:
         "heatmap_zones":  {agg["dominant_zone"]: 100},
     }
     return _generate_insights(proxy)
+
+
+@router.get("/team/{team_id}/board", summary="Team dashboard")
+def team_board(team_id: int, limit: int = 10):
+    """Return recent matches, top players, and aggregate stats for a team."""
+    try:
+        db = _db()
+
+        # Recent matches
+        matches_res = (
+            db.table("matches")
+            .select("id, opponent, match_date, video_url, status")
+            .eq("team_id", team_id)
+            .order("match_date", desc=True)
+            .limit(limit)
+            .execute()
+        )
+        matches = matches_res.data or []
+
+        # Last match report for summary stats
+        last_report = None
+        if matches:
+            report_res = (
+                db.table("match_reports")
+                .select("summary_json")
+                .eq("match_id", matches[0]["id"])
+                .order("created_at", desc=True)
+                .limit(1)
+                .execute()
+            )
+            if report_res.data:
+                last_report = report_res.data[0].get("summary_json", {})
+
+        # Aggregate stats across all matches
+        stats_res = (
+            db.table("player_match_stats")
+            .select("distance, velocity, speed_kmh, possession, presence, zone, best_position")
+            .in_("match_id", [m["id"] for m in matches] if matches else [0])
+            .execute()
+        )
+        rows = stats_res.data or []
+
+        def avg(key):
+            vals = [r[key] for r in rows if r.get(key) is not None]
+            return round(sum(vals) / len(vals), 2) if vals else 0.0
+
+        team_stats = {
+            "total_matches":     len(matches),
+            "avg_distance_km":   avg("distance"),
+            "avg_speed_kmh":     avg("speed_kmh"),
+            "avg_possession_pct": avg("possession"),
+        }
+
+        return {
+            "team_id":    team_id,
+            "matches":    matches,
+            "team_stats": team_stats,
+            "last_match": last_report,
+        }
+
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @router.get("/player/{track_id}")
