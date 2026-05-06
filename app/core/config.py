@@ -9,15 +9,21 @@ load_dotenv(dotenv_path=BASE_DIR / ".env", override=True)
 
 class Settings:
     # -- Supabase -----------------------------------------------------------------
-    supabase_url: str  = os.getenv("SUPABASE_URL", "")
-    supabase_key: str  = os.getenv("SUPABASE_SERVICE_KEY", "")
+    supabase_url: str   = os.getenv("SUPABASE_URL", "")
+    supabase_key: str   = os.getenv("SUPABASE_SERVICE_KEY", "")
     storage_bucket: str = os.getenv("STORAGE_BUCKET", "match-videos")
 
     # -- External APIs ------------------------------------------------------------
+    # API-Sports (legacy, ya no se usa — se deja por si acaso)
     api_key_sports: str  = os.getenv("API_KEY_SPORTS", "")
-    api_key_news: str    = os.getenv("API_KEY_NEWS", "")
     sports_api_url: str  = os.getenv("SPORTS_API_URL", "https://v3.football.api-sports.io")
-    news_api_url: str    = os.getenv("NEWS_API_URL", "https://newsapi.org/v2/everything")
+
+    # football-data.org (activo)
+    football_data_api_key: str = os.getenv("FOOTBALL_DATA_API_KEY", "50178df659244bf6ad29edf7d6284bbf")
+    football_data_url: str     = os.getenv("FOOTBALL_DATA_URL", "https://api.football-data.org/v4")
+
+    api_key_news: str  = os.getenv("API_KEY_NEWS", "")
+    news_api_url: str  = os.getenv("NEWS_API_URL", "https://newsapi.org/v2/everything")
 
     # -- Server -------------------------------------------------------------------
     api_host: str = os.getenv("API_HOST", "http://127.0.0.1")
