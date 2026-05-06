@@ -78,7 +78,7 @@ def upload_video(local_path: str, file_name: str) -> Optional[str]:
         )
 
         public_url = db.storage.from_(bucket).get_public_url(file_name)
-        return public_url
+        return public_url.strip() if public_url else None
     except Exception as e:
         print(f"[warn] Storage upload failed: {e}")
         return None

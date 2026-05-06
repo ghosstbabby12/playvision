@@ -6,7 +6,7 @@ from typing import Optional
 from fastapi import HTTPException
 
 from app.core.config import settings
-from app.infrastructure.storage.video_utils import resize_frame, open_writer
+from app.infrastructure.storage.video_utils import resize_frame, open_writer, transcode_to_h264
 
 from analysis.detector         import detect_frame, reset_state as reset_detector
 from analysis.tracker          import PlayerTracker
@@ -121,6 +121,12 @@ def run_pipeline(
     cap.release()
     writer.release()
     heat_wr.release()
+
+    # Re-encode to H.264 for browser compatibility
+    ann_h264  = ann_path.replace(".mp4",  "_h264.mp4")
+    heat_h264 = heat_path.replace(".mp4", "_h264.mp4")
+    if transcode_to_h264(ann_path,  ann_h264):  ann_path  = ann_h264
+    if transcode_to_h264(heat_path, heat_h264): heat_path = heat_h264
 
     players_out, team_stats = compute_metrics(
         player_data     = tracker.data,

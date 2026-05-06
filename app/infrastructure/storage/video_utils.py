@@ -1,4 +1,5 @@
 import os
+import subprocess
 import cv2
 import requests
 from fastapi import HTTPException
@@ -27,6 +28,31 @@ def open_writer(path: str, fps: float, width: int, height: int) -> cv2.VideoWrit
             return writer
             
     raise RuntimeError(f"Could not open VideoWriter for {path} with any codec")
+
+
+def transcode_to_h264(src: str, dst: str) -> bool:
+    """Re-encode src to H.264 (browser-compatible) using ffmpeg. Returns True on success."""
+    try:
+        result = subprocess.run(
+            [
+                "ffmpeg", "-y", "-i", src,
+                "-c:v", "libx264", "-preset", "fast",
+                "-crf", "23",
+                "-movflags", "+faststart",
+                "-pix_fmt", "yuv420p",
+                dst,
+            ],
+            capture_output=True,
+            timeout=600,
+        )
+        if result.returncode == 0 and os.path.exists(dst):
+            os.remove(src)
+            return True
+        print(f"[warn] ffmpeg transcode failed: {result.stderr.decode()[-300:]}")
+        return False
+    except (FileNotFoundError, subprocess.TimeoutExpired) as e:
+        print(f"[warn] ffmpeg not available: {e}")
+        return False
 
 
 _PLATFORM_PATTERNS = (
