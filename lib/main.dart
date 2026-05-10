@@ -6,9 +6,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'l10n/generated/app_localizations.dart';
 import 'core/theme/app_theme.dart';
-import 'core/theme/theme_controller.dart';
+import 'core/providers/theme_controller.dart';
 import 'routes/app_routes.dart';
-import 'core/store/locale_provider.dart';
+import 'core/providers/locale_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

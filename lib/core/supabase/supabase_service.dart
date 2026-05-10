@@ -132,7 +132,7 @@ class SupabaseService {
     return List<Map<String, dynamic>>.from(response);
   }
 
-  Future<void> createPlayer({
+  Future<int?> createPlayer({
     required int teamId,
     required String name,
     required String position,
@@ -140,14 +140,62 @@ class SupabaseService {
     String? status,
     String? birthDate,
   }) async {
-    await client.from('players').insert({
+    final res = await client.from('players').insert({
       'team_id': teamId,
       'name': name,
       'position': position,
       'shirt_number': shirtNumber,
       'status': status ?? 'active',
       'birth_date': birthDate,
-    }).timeout(_kTimeout);
+    }).select('id').single().timeout(_kTimeout);
+    return res['id'] as int?;
+  }
+
+  Future<void> updatePlayer({
+    required int id,
+    required String name,
+    required String position,
+    int? shirtNumber,
+    String? birthDate,
+    String? status,
+  }) async {
+    await client.from('players').update({
+      'name':         name,
+      'position':     position,
+      'shirt_number': shirtNumber,
+      'birth_date':   birthDate,
+      if (status != null) 'status': status,
+    }).eq('id', id).timeout(_kTimeout);
+  }
+
+  Future<void> deletePlayer(int id) async {
+    await client.from('players').delete().eq('id', id).timeout(_kTimeout);
+  }
+
+  Future<String?> uploadPlayerPhoto({
+    required int playerId,
+    required Uint8List bytes,
+    required String extension,
+  }) async {
+    try {
+      final path = '$_currentUserId/player_$playerId.$extension';
+      await client.storage
+          .from('player-photos')
+          .uploadBinary(path, bytes,
+              fileOptions: FileOptions(
+                  contentType: 'image/$extension', upsert: true));
+      final url =
+          client.storage.from('player-photos').getPublicUrl(path);
+      await client
+          .from('players')
+          .update({'photo_url': url})
+          .eq('id', playerId)
+          .timeout(_kTimeout);
+      return url;
+    } catch (e) {
+      debugPrint('Error al subir foto de jugador: $e');
+      return null;
+    }
   }
 
   // ─── Matches ─────────────────────────────────────────────────────────────
@@ -450,5 +498,37 @@ class SupabaseService {
         .eq('id', id)
         .eq('user_id', _currentUserId)
         .timeout(_kTimeout);
+  }
+
+  // ─── Formations ───────────────────────────────────────────────────────────
+
+  Future<void> saveFormation({
+    required int teamId,
+    required String formation,
+    required List<Map<String, dynamic>> players,
+  }) async {
+    await client.from('team_formations').upsert({
+      'team_id':   teamId,
+      'user_id':   _currentUserId,
+      'formation': formation,
+      'players':   players,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }, onConflict: 'team_id, user_id').timeout(_kTimeout);
+  }
+
+  Future<Map<String, dynamic>?> getFormation(int teamId) async {
+    try {
+      final res = await client
+          .from('team_formations')
+          .select()
+          .eq('team_id', teamId)
+          .eq('user_id', _currentUserId)
+          .limit(1)
+          .timeout(_kTimeout);
+      final list = List<Map<String, dynamic>>.from(res);
+      return list.isEmpty ? null : list.first;
+    } catch (_) {
+      return null;
+    }
   }
 }

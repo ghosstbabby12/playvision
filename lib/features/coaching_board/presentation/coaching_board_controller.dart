@@ -1,7 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
-import 'package:playvision/core/constants/app_constants.dart';
 import 'package:playvision/core/supabase/supabase_service.dart';
 import '../domain/player_token.dart';
 
@@ -29,6 +26,10 @@ class CoachingBoardController extends ChangeNotifier {
   PlayerToken? _selectedPlayer;
   PlayerToken? _swapSource;
 
+  // Save state
+  bool _isSaving = false;
+  String? _savedMessage;
+
   // ── Getters ────────────────────────────────────────────────────────────────
   BoardStep get step => _step;
   List<Map<String, dynamic>> get teams => List.unmodifiable(_teams);
@@ -39,6 +40,12 @@ class CoachingBoardController extends ChangeNotifier {
   List<PlayerToken> get players => List.unmodifiable(_players);
   PlayerToken? get selectedPlayer => _selectedPlayer;
   PlayerToken? get swapSource => _swapSource;
+  bool get isSaving => _isSaving;
+  String? get savedMessage => _savedMessage;
+
+  void consumeSavedMessage() {
+    _savedMessage = null;
+  }
 
   static const List<String> availableFormations = ['4-3-3', '4-4-2', '4-2-3-1', '3-5-2'];
 
@@ -80,32 +87,197 @@ class CoachingBoardController extends ChangeNotifier {
   }
 
   Future<void> _fetchBoardFromApi(int teamId) async {
+    // Always try to load real Supabase players first
+    List<Map<String, dynamic>> supaPlayers = [];
     try {
-      final res = await http
-          .get(Uri.parse('${AppConstants.apiBase}/api/team/$teamId/board'))
-          .timeout(const Duration(seconds: 12));
+      supaPlayers = await SupabaseService.instance.getPlayersByTeam(teamId);
+    } catch (_) {}
 
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body) as Map<String, dynamic>;
-        _formation = data['formation'] as String? ?? '4-3-3';
-        _players = (data['players'] as List).map((p) {
-          final m = p as Map<String, dynamic>;
-          return PlayerToken(
-            id:       m['id'] as int,
-            name:     m['name'] as String? ?? '',
-            number:   m['number'] as int? ?? 0,
-            position: m['position'] as String? ?? 'CM',
-            dx:       (m['dx'] as num).toDouble(),
-            dy:       (m['dy'] as num).toDouble(),
-            stats:    Map<String, dynamic>.from(
-                (m['stats'] as Map<String, dynamic>?) ?? _defaultStats),
-          );
-        }).toList();
-        return;
+    // Try to restore a previously saved formation (positions only)
+    try {
+      final saved = await SupabaseService.instance.getFormation(teamId);
+      if (saved != null) {
+        final f       = saved['formation'] as String? ?? '4-3-3';
+        final rawList = saved['players']   as List?;
+        if (rawList != null && rawList.isNotEmpty) {
+          _formation = f;
+          // Build a map of saved positions keyed by player id
+          final posById = <int, (double, double)>{};
+          for (final p in rawList) {
+            final m  = p as Map<String, dynamic>;
+            final id = (m['id'] as num).toInt();
+            posById[id] = (
+              (m['dx'] as num).toDouble(),
+              (m['dy'] as num).toDouble(),
+            );
+          }
+
+          if (supaPlayers.isNotEmpty) {
+            // Merge: real player data + saved positions
+            _players = _assignRealPlayersWithSavedPos(
+              supaPlayers, posById, _mockFormations[_formation]!);
+          } else {
+            // No real players → restore saved formation as-is (may be mock names)
+            _players = rawList.map((p) {
+              final m = p as Map<String, dynamic>;
+              return PlayerToken(
+                id:       (m['id'] as num).toInt(),
+                name:     m['name'] as String? ?? '',
+                number:   (m['number'] as num?)?.toInt() ?? 0,
+                position: m['position'] as String? ?? 'CM',
+                dx:       (m['dx'] as num).toDouble(),
+                dy:       (m['dy'] as num).toDouble(),
+                stats:    Map<String, dynamic>.from(_defaultStats),
+              );
+            }).toList();
+          }
+          return;
+        }
       }
     } catch (_) {}
 
+    // No saved formation — place real players in default formation positions
+    if (supaPlayers.isNotEmpty) {
+      _players = _assignRealPlayers(supaPlayers, _mockFormations[_formation]!);
+      return;
+    }
+
+    // Full mock fallback (team has no players)
     _players = _buildMockPlayers(_mockFormations[_formation]!);
+  }
+
+  // Real players + saved (dx,dy) positions by player id
+  static List<PlayerToken> _assignRealPlayersWithSavedPos(
+    List<Map<String, dynamic>> supaPlayers,
+    Map<int, (double, double)> posById,
+    List<List<dynamic>> defaultSlots,
+  ) {
+    final available = List<Map<String, dynamic>>.from(supaPlayers);
+    final mockStats = List<Map<String, dynamic>>.from(_mockStats);
+
+    // Players with a saved position
+    final result = <PlayerToken>[];
+    final usedIds = <int>{};
+
+    for (final p in supaPlayers) {
+      final pid = (p['id'] as num).toInt();
+      if (posById.containsKey(pid)) {
+        final (dx, dy) = posById[pid]!;
+        final slot = defaultSlots.firstWhere(
+          (s) => s[2] == (p['position'] as String? ?? 'CM'),
+          orElse: () => defaultSlots[result.length % defaultSlots.length],
+        );
+        result.add(PlayerToken(
+          id:       pid,
+          name:     p['name'] as String? ?? '',
+          number:   (p['shirt_number'] as num?)?.toInt() ?? 0,
+          position: slot[2] as String,
+          dx:       dx,
+          dy:       dy,
+          stats:    Map<String, dynamic>.from(mockStats[result.length % mockStats.length]),
+        ));
+        usedIds.add(pid);
+      }
+    }
+
+    // Remaining players that weren't in the saved formation → assign to empty slots
+    final remaining = available.where((p) => !usedIds.contains((p['id'] as num).toInt())).toList();
+    final usedSlots  = result.length;
+    for (int i = 0; i < remaining.length && (usedSlots + i) < defaultSlots.length; i++) {
+      final slot = defaultSlots[usedSlots + i];
+      final p    = remaining[i];
+      result.add(PlayerToken(
+        id:       (p['id'] as num).toInt(),
+        name:     p['name'] as String? ?? '',
+        number:   (p['shirt_number'] as num?)?.toInt() ?? slot[1] as int,
+        position: slot[2] as String,
+        dx:       (slot[3] as num).toDouble(),
+        dy:       (slot[4] as num).toDouble(),
+        stats:    Map<String, dynamic>.from(mockStats[(usedSlots + i) % mockStats.length]),
+      ));
+    }
+
+    // Fill remaining slots with mock if fewer than 11 real players
+    while (result.length < defaultSlots.length) {
+      final i    = result.length;
+      final slot = defaultSlots[i];
+      result.add(PlayerToken(
+        id:       -(i + 1),
+        name:     slot[0] as String,
+        number:   slot[1] as int,
+        position: slot[2] as String,
+        dx:       (slot[3] as num).toDouble(),
+        dy:       (slot[4] as num).toDouble(),
+        stats:    Map<String, dynamic>.from(mockStats[i % mockStats.length]),
+      ));
+    }
+
+    return result;
+  }
+
+  // Maps real Supabase players onto formation positions by matching positions
+  static List<PlayerToken> _assignRealPlayers(
+    List<Map<String, dynamic>> supaPlayers,
+    List<List<dynamic>> positions,
+  ) {
+    final available = List<Map<String, dynamic>>.from(supaPlayers);
+    final mockStats = List<Map<String, dynamic>>.from(_mockStats);
+
+    return List.generate(positions.length, (i) {
+      final slot    = positions[i];
+      final wantPos = slot[2] as String;
+
+      // Try to find a player whose position matches (or is compatible)
+      int bestIdx = _findBestPlayer(available, wantPos);
+
+      Map<String, dynamic> chosen;
+      if (bestIdx >= 0) {
+        chosen = available.removeAt(bestIdx);
+      } else if (available.isNotEmpty) {
+        chosen = available.removeAt(0);
+      } else {
+        // No real player available → use mock slot
+        return PlayerToken(
+          id:       i + 1,
+          name:     slot[0] as String,
+          number:   slot[1] as int,
+          position: wantPos,
+          dx:       (slot[3] as num).toDouble(),
+          dy:       (slot[4] as num).toDouble(),
+          stats:    Map<String, dynamic>.from(mockStats[i % mockStats.length]),
+        );
+      }
+
+      return PlayerToken(
+        id:       (chosen['id'] as num).toInt(),
+        name:     chosen['name'] as String? ?? slot[0] as String,
+        number:   (chosen['shirt_number'] as num?)?.toInt() ?? slot[1] as int,
+        position: wantPos,
+        dx:       (slot[3] as num).toDouble(),
+        dy:       (slot[4] as num).toDouble(),
+        stats:    Map<String, dynamic>.from(mockStats[i % mockStats.length]),
+      );
+    });
+  }
+
+  static int _findBestPlayer(List<Map<String, dynamic>> pool, String wantPos) {
+    // Exact match first
+    for (int i = 0; i < pool.length; i++) {
+      if ((pool[i]['position'] as String? ?? '') == wantPos) return i;
+    }
+    // Group match (GK→GK, DEF→CB/RB/LB, MID→CM/CDM, FWD→ST/RW/LW)
+    final group = _posGroup(wantPos);
+    for (int i = 0; i < pool.length; i++) {
+      if (_posGroup(pool[i]['position'] as String? ?? '') == group) return i;
+    }
+    return -1;
+  }
+
+  static String _posGroup(String pos) {
+    if (pos == 'GK') return 'GK';
+    if ({'CB','RB','LB','WB','RWB','LWB'}.contains(pos)) return 'DEF';
+    if ({'ST','CF','RW','LW','SS'}.contains(pos)) return 'FWD';
+    return 'MID';
   }
 
   void goBack() {
@@ -163,6 +335,29 @@ class CoachingBoardController extends ChangeNotifier {
     list[srcIdx] = list[srcIdx].copyWith(dx: list[tgtIdx].dx, dy: list[tgtIdx].dy);
     list[tgtIdx] = list[tgtIdx].copyWith(dx: sx, dy: sy);
     _players = list;
+    notifyListeners();
+  }
+
+  // ── Save formation ─────────────────────────────────────────────────────────
+  Future<void> saveFormation() async {
+    final teamId = _selectedTeam?['id'] as int?;
+    if (teamId == null || _isSaving) return;
+    _isSaving = true;
+    notifyListeners();
+    try {
+      await SupabaseService.instance.saveFormation(
+        teamId: teamId,
+        formation: _formation,
+        players: _players.map((p) => {
+          'id': p.id, 'name': p.name, 'number': p.number,
+          'position': p.position, 'dx': p.dx, 'dy': p.dy,
+        }).toList(),
+      );
+      _savedMessage = 'Formación guardada ✓';
+    } catch (_) {
+      _savedMessage = 'Error al guardar la formación';
+    }
+    _isSaving = false;
     notifyListeners();
   }
 

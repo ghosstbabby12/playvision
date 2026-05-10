@@ -124,7 +124,7 @@ class TrainingController extends ChangeNotifier {
     final label = fitnessStatusLabel;
     return switch (label) {
       'Baja'  => const Color(0xFFFF5252),
-      'Alta'  => const Color(0xFF3DCF6E),
+      'Alta'  => const Color(0xFF39D353),
       'Media' => const Color(0xFFFFB300),
       _       => const Color(0xFF888888),
     };

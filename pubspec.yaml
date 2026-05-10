@@ -25,6 +25,9 @@ dependencies:
   # HTTP cliente
   http: ^1.6.0
 
+  # Caché de imágenes de red (escudos, logos)
+  cached_network_image: ^3.4.1
+
   # Gráficas
   fl_chart: ^0.69.0
 

@@ -26,7 +26,7 @@ class PlayerChip extends StatelessWidget {
   static Color positionColor(String pos) {
     if (pos == 'GK') return const Color(0xFFF59E0B);
     if ({'CB', 'RB', 'LB', 'WB', 'RWB', 'LWB'}.contains(pos)) return const Color(0xFF3B82F6);
-    if ({'ST', 'CF', 'RW', 'LW', 'SS'}.contains(pos)) return const Color(0xFF3DCF6E);
+    if ({'ST', 'CF', 'RW', 'LW', 'SS'}.contains(pos)) return const Color(0xFF39D353);
     return const Color(0xFF8B5CF6); // all midfielders
   }
 

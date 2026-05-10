@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_color_tokens.dart';
+import '../../../shared/widgets/glass_card.dart';
+import '../../../shared/widgets/pv_back_button.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../domain/training_session.dart';
 import 'training_controller.dart';
@@ -208,7 +210,7 @@ class _TrainingPageState extends State<TrainingPage> {
             icon: Icons.videocam_rounded,
             label: 'Analizar entrenamiento',
             subtitle: 'Sube un vídeo y obtén métricas con IA',
-            color: const Color(0xFF3DCF6E),
+            color: const Color(0xFF39D353),
             onTap: () {
               Navigator.of(context).pop();
               widget.onTabChange?.call(1);
@@ -352,20 +354,24 @@ class _TrainingHero extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 22),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              // Badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: c.accent,
-                  borderRadius: BorderRadius.circular(20),
+              // Back button + badge row
+              Row(children: [
+                const PvBackButton(lightIcon: true),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: c.accent,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.bolt_rounded, color: Colors.black, size: 12),
+                    SizedBox(width: 4),
+                    Text('AI TRAINING', style: TextStyle(
+                        color: Colors.black, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                  ]),
                 ),
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  const Icon(Icons.bolt_rounded, color: Colors.black, size: 12),
-                  const SizedBox(width: 4),
-                  const Text('AI TRAINING', style: TextStyle(
-                      color: Colors.black, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
-                ]),
-              ),
+              ]),
               const Spacer(),
               Text(l10n.trainingTitle,
                   style: const TextStyle(color: Colors.white, fontSize: 28,
@@ -430,12 +436,9 @@ class _AddOptionTile extends StatelessWidget {
     final c = context.colors;
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: GlassCard(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: c.surface, borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: c.border),
-        ),
+        radius: 16,
         child: Row(children: [
           Container(
             width: 44, height: 44,
@@ -471,13 +474,9 @@ class _FitnessCard extends StatelessWidget {
     final hasResult = ctrl.result != null;
 
     if (!hasResult) {
-      return Container(
+      return GlassCard(
         margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: c.surface, borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: c.border),
-        ),
         child: Row(children: [
           Container(
             width: 52, height: 52,
@@ -485,7 +484,7 @@ class _FitnessCard extends StatelessWidget {
               color: c.accentLo, shape: BoxShape.circle,
               border: Border.all(color: c.borderGreen),
             ),
-            child: const Icon(Icons.sports_soccer, color: Color(0xFF3DCF6E), size: 24),
+            child: const Icon(Icons.sports_soccer, color: Color(0xFF39D353), size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -515,15 +514,11 @@ class _FitnessCard extends StatelessWidget {
     final status      = ctrl.fitnessStatusLabel;
     final statusColor = ctrl.fitnessStatusColor;
 
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: c.surface, borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
-        boxShadow: [BoxShadow(
-          color: statusColor.withValues(alpha: 0.06), blurRadius: 20, offset: const Offset(0, 4))],
-      ),
+      neonBorder: true,
+      accentColor: statusColor,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         // Status badge
         Row(children: [

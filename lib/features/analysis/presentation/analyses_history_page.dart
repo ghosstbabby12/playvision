@@ -4,7 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:playvision/features/analysis/data/analysis_store.dart';
 import '../../../core/supabase/supabase_service.dart';
 import '../../../core/theme/app_color_tokens.dart';
-import '../../../l10n/generated/app_localizations.dart'; // IMPORTANTE
+import '../../../l10n/generated/app_localizations.dart';
+import '../../../shared/widgets/pv_back_button.dart';
 import 'analysis_page.dart';
 
 class AnalysesHistoryPage extends StatefulWidget {
@@ -66,6 +67,8 @@ class _AnalysesHistoryPageState extends State<AnalysesHistoryPage> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
             child: Row(children: [
+              const PvBackButton(),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(l10n.myAnalysesTitle,

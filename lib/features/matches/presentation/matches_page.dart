@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_color_tokens.dart';
 import '../../../shared/widgets/form_text_field.dart';
+import '../../../shared/widgets/pv_back_button.dart';
 import '../../../shared/widgets/section_label.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'matches_controller.dart';
@@ -64,6 +65,8 @@ class _MatchesPageState extends State<MatchesPage> {
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                   child: Row(
                     children: [
+                      const PvBackButton(),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

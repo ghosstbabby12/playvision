@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:playvision/core/theme/app_color_tokens.dart';
 import 'package:playvision/features/home/data/news_service.dart';
+import 'package:playvision/shared/widgets/glass_card.dart';
 
 class NewsSection extends StatefulWidget {
   const NewsSection({super.key});
@@ -95,13 +96,8 @@ class ErrorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return Container(
+    return GlassCard(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: c.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: c.border),
-      ),
       child: Column(children: [
         Icon(Icons.wifi_off_rounded, color: c.dim, size: 32),
         const SizedBox(height: 10),
@@ -186,18 +182,15 @@ class ArticleCard extends StatelessWidget {
     final c        = context.colors;
     final imageUrl = article.imageUrl ?? fallbackImage;
 
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: c.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: c.border),
-      ),
+      padding: EdgeInsets.zero,
+      radius: 16,
       child: Row(children: [
         ClipRRect(
-          borderRadius: const BorderRadius.horizontal(left: Radius.circular(13)),
+          borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
           child: SizedBox(
-            width: 90, height: 82,
+            width: 90, height: 88,
             child: Image.network(
               imageUrl,
               fit: BoxFit.cover,

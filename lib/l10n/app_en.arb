@@ -304,5 +304,16 @@
   "uploadTapGallery": "Tap to open gallery",
   "uploadUrlLabel": "Video URL",
   "uploadUrlHint": "YouTube, direct .mp4, Vimeo…",
-  "uploadUrlSupports": "Supports YouTube, Vimeo and direct .mp4/.mov links"
+  "uploadUrlSupports": "Supports YouTube, Vimeo and direct .mp4/.mov links",
+  "uploadReqTitle": "VIDEO REQUIREMENTS",
+  "uploadReqFormat": "Format",
+  "uploadReqFormatDesc": "MP4, MOV or AVI",
+  "uploadReqResolution": "Resolution",
+  "uploadReqResolutionDesc": "Minimum 720p recommended",
+  "uploadReqDuration": "Duration",
+  "uploadReqDurationDesc": "Between 30 sec and 10 minutes",
+  "uploadReqAngle": "Camera angle",
+  "uploadReqAngleDesc": "Full lateral field view",
+  "uploadReqSize": "Max size",
+  "uploadReqSizeDesc": "500 MB per video"
 }

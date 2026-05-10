@@ -539,4 +539,37 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get uploadUrlSupports =>
       'Compatible con YouTube, Vimeo y enlaces directos .mp4/.mov';
+
+  @override
+  String get uploadReqTitle => 'REQUISITOS DEL VIDEO';
+
+  @override
+  String get uploadReqFormat => 'Formato';
+
+  @override
+  String get uploadReqFormatDesc => 'MP4, MOV o AVI';
+
+  @override
+  String get uploadReqResolution => 'Resolución';
+
+  @override
+  String get uploadReqResolutionDesc => 'Mínimo 720p recomendado';
+
+  @override
+  String get uploadReqDuration => 'Duración';
+
+  @override
+  String get uploadReqDurationDesc => 'Entre 30 seg y 10 minutos';
+
+  @override
+  String get uploadReqAngle => 'Ángulo de cámara';
+
+  @override
+  String get uploadReqAngleDesc => 'Vista lateral completa del campo';
+
+  @override
+  String get uploadReqSize => 'Tamaño máximo';
+
+  @override
+  String get uploadReqSizeDesc => '500 MB por video';
 }

@@ -2,8 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../../core/theme/theme_controller.dart';
-import '../../../../../core/store/locale_provider.dart';
+import '../../../../../core/providers/theme_controller.dart';
+import '../../../../../core/providers/locale_provider.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
 import '../../../../../shared/widgets/soccer_logo.dart';
 import 'login_controller.dart';
@@ -141,7 +141,25 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const SoccerLogo(size: 80),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF39D353).withValues(alpha: 0.35),
+                          blurRadius: 40,
+                          spreadRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: Image.asset(
+                      'assets/images/playvision_logo.png',
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const SoccerLogo(size: 80),
+                    ),
+                  ),
                   const SizedBox(height: 16),
 
                   // App title
@@ -161,20 +179,21 @@ class _LoginPageState extends State<LoginPage> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3DCF6E).withValues(alpha: 0.14),
+                      color: const Color(0xFF39D353).withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                          color: const Color(0xFF3DCF6E).withValues(alpha: 0.50),
+                          color: const Color(0xFF39D353).withValues(alpha: 0.50),
                           width: 1.2),
                     ),
-                    child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
                       Icon(Icons.auto_awesome_rounded,
-                          color: Color(0xFF3DCF6E), size: 12),
-                      SizedBox(width: 6),
+                          color: isDark ? const Color(0xFF39D353) : const Color(0xFF1A7A40),
+                          size: 12),
+                      const SizedBox(width: 6),
                       Text(
                         'AI Football Analysis',
                         style: TextStyle(
-                          color: Color(0xFF3DCF6E),
+                          color: isDark ? const Color(0xFF39D353) : const Color(0xFF1A7A40),
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.5,
@@ -182,7 +201,21 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ]),
                   ),
-                  const SizedBox(height: 44),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Donde los datos se convierten en estrategia',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.55)
+                          : const Color(0xFF444444),
+                      fontSize: 13,
+                      fontStyle: FontStyle.italic,
+                      height: 1.4,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
 
                   // ── Glass card ───────────────────────────────────
                   ClipRRect(
@@ -246,7 +279,7 @@ class _LoginPageState extends State<LoginPage> {
                             if (_controller.successMessage != null) ...[
                               _GlassBanner(
                                 text: _controller.successMessage!,
-                                color: const Color(0xFF3DCF6E),
+                                color: const Color(0xFF39D353),
                                 icon: Icons.check_circle_outline_rounded,
                               ),
                               const SizedBox(height: 16),
@@ -458,11 +491,11 @@ class _GreenButton extends StatelessWidget {
       child: Container(
         height: 54,
         decoration: BoxDecoration(
-          color: const Color(0xFF3DCF6E),
+          color: const Color(0xFF39D353),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF3DCF6E).withValues(alpha: 0.38),
+              color: const Color(0xFF39D353).withValues(alpha: 0.38),
               blurRadius: 18,
               offset: const Offset(0, 6),
             ),
@@ -589,12 +622,12 @@ class _LanguageToggle extends StatelessWidget {
               : Colors.black.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(h / 2),
           border: Border.all(
-              color: const Color(0xFF3DCF6E).withValues(alpha: 0.55),
+              color: const Color(0xFF39D353).withValues(alpha: 0.55),
               width: 1.5),
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           const Icon(Icons.language_rounded,
-              size: 16, color: Color(0xFF3DCF6E)),
+              size: 16, color: Color(0xFF39D353)),
           const SizedBox(width: 6),
           Text(isEn ? 'EN' : 'ES',
               style: TextStyle(
@@ -636,8 +669,8 @@ class _ThemeToggle extends StatelessWidget {
           borderRadius: BorderRadius.circular(h / 2),
           border: Border.all(
             color: isDark
-                ? const Color(0xFF3DCF6E)
-                : const Color(0xFF3DCF6E).withValues(alpha: 0.70),
+                ? const Color(0xFF39D353)
+                : const Color(0xFF39D353).withValues(alpha: 0.70),
             width: 1.5,
           ),
         ),
@@ -654,7 +687,7 @@ class _ThemeToggle extends StatelessWidget {
                 isDark ? Icons.nightlight_round : Icons.wb_sunny_rounded,
                 size: 14,
                 color: isDark
-                    ? const Color(0xFF3DCF6E)
+                    ? const Color(0xFF39D353)
                     : const Color(0xFFF59E0B),
               ),
             ),

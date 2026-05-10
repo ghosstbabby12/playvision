@@ -1063,6 +1063,72 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Compatible con YouTube, Vimeo y enlaces directos .mp4/.mov'**
   String get uploadUrlSupports;
+
+  /// No description provided for @uploadReqTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'REQUISITOS DEL VIDEO'**
+  String get uploadReqTitle;
+
+  /// No description provided for @uploadReqFormat.
+  ///
+  /// In es, this message translates to:
+  /// **'Formato'**
+  String get uploadReqFormat;
+
+  /// No description provided for @uploadReqFormatDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'MP4, MOV o AVI'**
+  String get uploadReqFormatDesc;
+
+  /// No description provided for @uploadReqResolution.
+  ///
+  /// In es, this message translates to:
+  /// **'Resolución'**
+  String get uploadReqResolution;
+
+  /// No description provided for @uploadReqResolutionDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Mínimo 720p recomendado'**
+  String get uploadReqResolutionDesc;
+
+  /// No description provided for @uploadReqDuration.
+  ///
+  /// In es, this message translates to:
+  /// **'Duración'**
+  String get uploadReqDuration;
+
+  /// No description provided for @uploadReqDurationDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Entre 30 seg y 10 minutos'**
+  String get uploadReqDurationDesc;
+
+  /// No description provided for @uploadReqAngle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ángulo de cámara'**
+  String get uploadReqAngle;
+
+  /// No description provided for @uploadReqAngleDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista lateral completa del campo'**
+  String get uploadReqAngleDesc;
+
+  /// No description provided for @uploadReqSize.
+  ///
+  /// In es, this message translates to:
+  /// **'Tamaño máximo'**
+  String get uploadReqSize;
+
+  /// No description provided for @uploadReqSizeDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'500 MB por video'**
+  String get uploadReqSizeDesc;
 }
 
 class _AppLocalizationsDelegate

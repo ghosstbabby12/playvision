@@ -3,8 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../../core/theme/app_color_tokens.dart';
-import '../../../../../core/theme/theme_controller.dart';
-import '../../../../../core/store/locale_provider.dart';
+import '../../../../../core/providers/theme_controller.dart';
+import '../../../../../core/providers/locale_provider.dart';
 import '../../../../../l10n/generated/app_localizations.dart'; 
 
 class SettingsDrawer extends StatelessWidget {

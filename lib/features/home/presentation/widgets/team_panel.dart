@@ -1,3 +1,6 @@
+import 'dart:ui';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -20,11 +23,15 @@ class TeamSelectorSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(l10n.selectOrCreateTeam,
-            style: TextStyle(color: c.text, fontSize: 18, fontWeight: FontWeight.w700)),
+        Text(
+          l10n.selectOrCreateTeam,
+          style: TextStyle(color: c.textHi, fontSize: 16, fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 4),
-        Text(l10n.chooseTeamSubtitle,
-            style: TextStyle(color: c.muted, fontSize: 13)),
+        Text(
+          l10n.chooseTeamSubtitle,
+          style: TextStyle(color: c.muted, fontSize: 12),
+        ),
         const SizedBox(height: 20),
 
         if (controller.isLoading)
@@ -102,29 +109,78 @@ class TeamCircleItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final hasLogo = !isAdd && logoUrl != null && logoUrl!.isNotEmpty;
+
     return GestureDetector(
       onTap: onTap,
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         Container(
-          width: 60, height: 60,
+          width: 64,
+          height: 64,
           decoration: BoxDecoration(
-            color: isAdd ? c.accentLo : c.elevated,
+            color: isAdd ? c.accentLo : c.surface,
             shape: BoxShape.circle,
-            border: Border.all(color: isAdd ? c.borderGreen : c.border, width: 1.5),
-            image: !isAdd && logoUrl != null && logoUrl!.isNotEmpty
-                ? DecorationImage(image: NetworkImage(logoUrl!), fit: BoxFit.cover)
-                : null,
+            border: Border.all(
+              color: isAdd
+                  ? c.accent.withValues(alpha: 0.60)
+                  : c.accent.withValues(alpha: 0.45),
+              width: 2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: c.accent.withValues(alpha: 0.25),
+                blurRadius: 12,
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          child: !isAdd && logoUrl != null && logoUrl!.isNotEmpty
-              ? null
-              : Center(child: Text(initial,
-                  style: TextStyle(
-                      color: isAdd ? c.accent : c.text, fontSize: 22, fontWeight: FontWeight.w700))),
+          child: hasLogo
+              ? ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: logoUrl!,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => Center(
+                      child: CircularProgressIndicator(
+                          strokeWidth: 1.5, color: c.accent),
+                    ),
+                    errorWidget: (_, __, ___) => Center(
+                      child: Text(
+                        initial,
+                        style: TextStyle(
+                          color: c.accent,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              : Center(
+                  child: Text(
+                    initial,
+                    style: TextStyle(
+                      color: isAdd ? c.accent : c.text,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
         ),
         const SizedBox(height: 6),
-        SizedBox(width: 64, child: Text(label,
-            maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,
-            style: TextStyle(color: c.muted, fontSize: 11))),
+        SizedBox(
+          width: 64,
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: c.muted, fontSize: 11),
+          ),
+        ),
       ]),
     );
   }
@@ -143,8 +199,9 @@ class SelectedTeamHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c    = context.colors;
-    final l10n = AppLocalizations.of(context)!;
+    final c      = context.colors;
+    final l10n   = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final team    = controller.selectedTeam!;
     final initial = (team['name'] as String?)?.isNotEmpty == true
         ? (team['name'] as String)[0].toUpperCase() : '?';
@@ -153,47 +210,141 @@ class SelectedTeamHeader extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: c.card,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: c.borderGreen),
-        ),
-        child: Row(children: [
-          Container(
-            width: 52, height: 52,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: c.accentLo,
-              shape: BoxShape.circle,
-              image: hasLogo ? DecorationImage(image: NetworkImage(logoUrl), fit: BoxFit.cover) : null,
+              color: isDark
+                  ? const Color(0xFF07111F).withValues(alpha: 0.50)
+                  : Colors.white.withValues(alpha: 0.95),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: c.borderGreen),
+              boxShadow: isDark
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFF32FF88).withValues(alpha: 0.10),
+                        blurRadius: 24,
+                      ),
+                    ]
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 20,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
             ),
-            child: hasLogo ? null : Center(child: Text(initial,
-                style: TextStyle(color: c.accent, fontSize: 22, fontWeight: FontWeight.w700))),
+            child: Row(children: [
+              // Logo with accent gradient border
+              Container(
+                width: 56,
+                height: 56,
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF32FF88),
+                      const Color(0xFF32FF88).withValues(alpha: 0.40),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF32FF88).withValues(alpha: 0.30),
+                      blurRadius: 16,
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: Container(
+                    color: c.accentLo,
+                    child: hasLogo
+                        ? CachedNetworkImage(
+                            imageUrl: logoUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Center(
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 1.5, color: c.accent),
+                            ),
+                            errorWidget: (_, __, ___) => Center(
+                              child: Text(
+                                initial,
+                                style: TextStyle(
+                                  color: c.accent,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          )
+                        : Center(
+                            child: Text(
+                              initial,
+                              style: TextStyle(
+                                color: c.accent,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(
+                  team['name'] ?? '',
+                  style: TextStyle(
+                    color: c.textHi,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Text(
+                  '${team['club'] ?? ''} ${team['category'] ?? ''}'.trim(),
+                  style: TextStyle(color: c.muted, fontSize: 12),
+                ),
+              ])),
+              // "Cambiar" glass pill
+              GestureDetector(
+                onTap: controller.clearTeamSelection,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: c.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: c.accent.withValues(alpha: 0.50),
+                    ),
+                  ),
+                  child: Text(
+                    l10n.changeTeam,
+                    style: TextStyle(
+                      color: c.accent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: onEdit,
+                child: Icon(Icons.edit_outlined, color: c.dim, size: 18),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: onDelete,
+                child: Icon(Icons.delete_outline, color: c.danger, size: 18),
+              ),
+            ]),
           ),
-          const SizedBox(width: 14),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(team['name'] ?? '',
-                style: TextStyle(color: c.text, fontSize: 16, fontWeight: FontWeight.w700)),
-            Text('${team['club'] ?? ''} ${team['category'] ?? ''}',
-                style: TextStyle(color: c.muted, fontSize: 12)),
-          ])),
-          GestureDetector(
-            onTap: controller.clearTeamSelection,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(color: c.accentLo, borderRadius: BorderRadius.circular(10)),
-              child: Text(l10n.changeTeam,
-                  style: TextStyle(color: c.accent, fontSize: 12, fontWeight: FontWeight.w600)),
-            ),
-          ),
-          const SizedBox(width: 8),
-          GestureDetector(onTap: onEdit,
-              child: Icon(Icons.edit_outlined, color: c.muted, size: 18)),
-          const SizedBox(width: 8),
-          GestureDetector(onTap: onDelete,
-              child: Icon(Icons.delete_outline, color: c.danger, size: 18)),
-        ]),
+        ),
       ),
     );
   }
@@ -205,8 +356,9 @@ class AnalyseButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c    = context.colors;
-    final l10n = AppLocalizations.of(context)!;
+    final c      = context.colors;
+    final l10n   = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
@@ -214,28 +366,53 @@ class AnalyseButton extends StatelessWidget {
         onTap: onTap,
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: c.card,
+            gradient: isDark
+                ? const LinearGradient(
+                    colors: [Color(0xFF0A3020), Color(0xFF1A5A35)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  )
+                : null,
+            color: isDark ? null : Colors.white,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: c.borderGreen),
+            boxShadow: [
+              BoxShadow(
+                color: c.accent.withValues(alpha: isDark ? 0.20 : 0.15),
+                blurRadius: 20,
+                offset: Offset(0, isDark ? 8 : 6),
+              ),
+            ],
           ),
           child: Row(children: [
             Container(
-              width: 52, height: 52,
+              width: 52,
+              height: 52,
               decoration: BoxDecoration(
-                color: c.accent.withValues(alpha: 0.2),
+                color: isDark
+                    ? c.accent.withValues(alpha: 0.15)
+                    : c.accentLo,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(Icons.videocam_outlined, color: c.accent, size: 26),
             ),
             const SizedBox(width: 16),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(l10n.analyseVideo,
-                  style: TextStyle(color: c.textHi, fontSize: 17, fontWeight: FontWeight.w700)),
+              Text(
+                l10n.analyseVideo,
+                style: TextStyle(
+                  color: c.textHi,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               const SizedBox(height: 4),
-              Text(l10n.uploadMatchVideo,
-                  style: TextStyle(color: c.muted, fontSize: 12)),
+              Text(
+                l10n.uploadMatchVideo,
+                style: TextStyle(color: c.muted, fontSize: 12),
+              ),
             ])),
             Icon(Icons.arrow_forward_ios_rounded, color: c.accent, size: 16),
           ]),
@@ -251,7 +428,6 @@ class ViewAnalysisButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c    = context.colors;
     final l10n = AppLocalizations.of(context)!;
 
     return Padding(
@@ -260,16 +436,32 @@ class ViewAnalysisButton extends StatelessWidget {
         onTap: onTap,
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            color: c.accent,
-            borderRadius: BorderRadius.circular(14),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF32FF88), Color(0xFF1A8A44)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF32FF88).withValues(alpha: 0.35),
+                blurRadius: 24,
+              ),
+            ],
           ),
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Icon(Icons.analytics_outlined, color: c.bg, size: 20),
+            const Icon(Icons.analytics_outlined, color: Colors.black, size: 20),
             const SizedBox(width: 8),
-            Text(l10n.viewAnalysis,
-                style: TextStyle(color: c.bg, fontSize: 15, fontWeight: FontWeight.w700)),
+            Text(
+              l10n.viewAnalysis,
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ]),
         ),
       ),
@@ -305,7 +497,7 @@ class PreviousAnalysesSection extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(l10n.teamMatches,
-              style: TextStyle(color: c.text, fontSize: 16, fontWeight: FontWeight.w700)),
+              style: TextStyle(color: c.textHi, fontSize: 18, fontWeight: FontWeight.w800)),
           const SizedBox(height: 12),
           Container(
             width: double.infinity,
@@ -328,7 +520,7 @@ class PreviousAnalysesSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(l10n.teamMatches,
-              style: TextStyle(color: c.text, fontSize: 16, fontWeight: FontWeight.w700)),
+              style: TextStyle(color: c.textHi, fontSize: 18, fontWeight: FontWeight.w800)),
           const SizedBox(height: 12),
           ...matches.map((m) => MatchItem(
             match: m,
@@ -357,6 +549,7 @@ class _MatchItemState extends State<MatchItem> {
   @override
   Widget build(BuildContext context) {
     final c          = context.colors;
+    final isDark     = Theme.of(context).brightness == Brightness.dark;
     final controller = widget.controller;
     final opponent   = widget.match['opponent'] as String? ?? 'Unknown opponent';
     final dateStr    = widget.match['match_date'] as String? ?? '';
@@ -412,16 +605,30 @@ class _MatchItemState extends State<MatchItem> {
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: c.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: c.border),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.06),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Row(children: [
           Container(
             width: 44, height: 44,
-            decoration: BoxDecoration(color: c.elevated, borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(
+              color: c.elevated,
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Icon(Icons.sports_soccer_outlined, color: c.dim, size: 20),
           ),
           const SizedBox(width: 12),
@@ -437,6 +644,7 @@ class _MatchItemState extends State<MatchItem> {
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: statusColor.withValues(alpha: 0.30)),
                 ),
                 child: Text(statusLabel,
                     style: TextStyle(color: statusColor, fontSize: 9, fontWeight: FontWeight.w700)),
@@ -453,4 +661,3 @@ class _MatchItemState extends State<MatchItem> {
     );
   }
 }
-

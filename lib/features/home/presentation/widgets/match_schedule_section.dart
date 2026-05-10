@@ -1,8 +1,29 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:playvision/core/theme/app_color_tokens.dart';
 import '../../../../../../l10n/generated/app_localizations.dart';
+
+// Browser-like User-Agent so CDNs (media.api-sports.io) return images
+const _kImgHeaders = <String, String>{
+  'User-Agent':
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) '
+      'AppleWebKit/605.1.15 (KHTML, like Gecko) '
+      'Version/17.0 Mobile/15E148 Safari/604.1',
+};
+
+const _kTopLeagueKeywords = [
+  'premier league', 'la liga', 'serie a', 'bundesliga', 'ligue 1',
+  'champions league', 'europa league', 'conference league',
+  'copa libertadores', 'mls', 'liga mx', 'eredivisie', 'primeira liga',
+  'liga portugal', 'süper lig', 'primera division', 'primera división',
+];
+
+bool _isTopLeague(String name) {
+  final lower = name.toLowerCase();
+  return _kTopLeagueKeywords.any((k) => lower.contains(k));
+}
 
 class MatchScheduleSection extends StatefulWidget {
   // Live
@@ -61,6 +82,10 @@ class _MatchScheduleSectionState extends State<MatchScheduleSection> {
   Widget build(BuildContext context) {
     final c    = context.colors;
     final l10n = AppLocalizations.of(context)!;
+
+    // ── Filtrar secciones destacadas a ligas reconocidas ──────────────────
+    final filteredSections = Map.fromEntries(
+      widget.featuredSections.entries.where((e) => _isTopLeague(e.key)));
 
     // ── Determinar si hay partidos en vivo ─────────────────────────────────
     final liveStatus  = {'1H', '2H', 'HT', 'ET', 'P'};
@@ -206,10 +231,11 @@ class _MatchScheduleSectionState extends State<MatchScheduleSection> {
               child: ClipOval(
                 child: (widget.searchedTeam!['logo'] as String? ?? '')
                         .isNotEmpty
-                    ? Image.network(
-                        widget.searchedTeam!['logo'] as String,
+                    ? CachedNetworkImage(
+                        imageUrl: widget.searchedTeam!['logo'] as String,
+                        httpHeaders: _kImgHeaders,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
+                        errorWidget: (_, __, ___) =>
                             Icon(Icons.sports_soccer, color: c.accent, size: 20),
                       )
                     : Icon(Icons.sports_soccer, color: c.accent, size: 20),
@@ -336,12 +362,12 @@ class _MatchScheduleSectionState extends State<MatchScheduleSection> {
       // ════════════════════════════════════════════════════════════════════
       // Secciones destacadas del día (Champions, Premier, etc.)
       // ════════════════════════════════════════════════════════════════════
-      if (widget.isLoadingFeatured && widget.featuredSections.isEmpty)
+      if (widget.isLoadingFeatured && filteredSections.isEmpty)
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
           child: _SectionSkeleton(c: c),
         )
-      else if (widget.featuredSections.isNotEmpty) ...[
+      else if (filteredSections.isNotEmpty) ...[
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 28, 20, 4),
           child: Row(
@@ -359,7 +385,7 @@ class _MatchScheduleSectionState extends State<MatchScheduleSection> {
                     color: c.accentLo,
                     borderRadius: BorderRadius.circular(20)),
                 child: Text(
-                    '${widget.featuredSections.values.fold(0, (s, l) => s + l.length)} partidos',
+                    '${filteredSections.values.fold(0, (s, l) => s + l.length)} partidos',
                     style: TextStyle(
                         color: c.accent,
                         fontSize: 11,
@@ -368,7 +394,7 @@ class _MatchScheduleSectionState extends State<MatchScheduleSection> {
             ],
           ),
         ),
-        ...widget.featuredSections.entries.map((entry) => LeagueGroup(
+        ...filteredSections.entries.map((entry) => LeagueGroup(
               leagueName: entry.key,
               leagueLogo: entry.value.isNotEmpty
                   ? (entry.value.first['league']?['logo'] as String? ?? '')
@@ -429,21 +455,37 @@ class FeaturedMatchCard extends StatelessWidget {
   final Map<String, dynamic> match;
   const FeaturedMatchCard({super.key, required this.match});
 
+  static String _logo(dynamic team) {
+    if (team == null) return '';
+    final url = team['logo'] as String? ?? '';
+    if (url.isNotEmpty) return url;
+    final id = team['id'];
+    return id != null ? 'https://media.api-sports.io/football/teams/$id.png' : '';
+  }
+
+  static String _leagueLogo(dynamic league) {
+    if (league == null) return '';
+    final url = league['logo'] as String? ?? '';
+    if (url.isNotEmpty) return url;
+    final id = league['id'];
+    return id != null ? 'https://media.api-sports.io/football/leagues/$id.png' : '';
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
 
     final homeTeam    = match['teams']?['home']?['name'] as String? ?? 'Home';
     final awayTeam    = match['teams']?['away']?['name'] as String? ?? 'Away';
-    final homeLogo    = match['teams']?['home']?['logo'] as String? ?? '';
-    final awayLogo    = match['teams']?['away']?['logo'] as String? ?? '';
+    final homeLogo    = _logo(match['teams']?['home']);
+    final awayLogo    = _logo(match['teams']?['away']);
     final homeGoals   = match['goals']?['home'];
     final awayGoals   = match['goals']?['away'];
     final statusShort = match['fixture']?['status']?['short'] as String? ?? 'NS';
     final elapsed     = match['fixture']?['status']?['elapsed'];
     final dateStr     = match['fixture']?['date'] as String? ?? '';
     final leagueName  = match['league']?['name'] as String? ?? '';
-    final leagueLogo  = match['league']?['logo'] as String? ?? '';
+    final leagueLogo  = _leagueLogo(match['league']);
 
     final isLive     = statusShort == '1H' || statusShort == '2H' || statusShort == 'HT';
     final isFinished = statusShort == 'FT' || statusShort == 'AET' || statusShort == 'PEN';
@@ -485,11 +527,13 @@ class FeaturedMatchCard extends StatelessWidget {
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
                 if (leagueLogo.isNotEmpty)
-                  Image.network(leagueLogo, width: 20, height: 20,
-                      errorBuilder: (_, __, ___) => const Icon(
-                          Icons.emoji_events,
-                          color: Colors.white70,
-                          size: 16))
+                  CachedNetworkImage(
+                    imageUrl: leagueLogo, width: 20, height: 20,
+                    httpHeaders: _kImgHeaders,
+                    fit: BoxFit.contain,
+                    errorWidget: (_, __, ___) =>
+                        const Icon(Icons.emoji_events, color: Colors.white70, size: 16),
+                  )
                 else
                   const Icon(Icons.emoji_events,
                       color: Colors.white70, size: 16),
@@ -639,29 +683,33 @@ class HeroTeamLogo extends StatelessWidget {
   const HeroTeamLogo(
       {super.key, required this.logoUrl, required this.name});
 
+  Widget _placeholder() => Container(
+    width: 52, height: 52,
+    decoration: const BoxDecoration(color: Colors.white12, shape: BoxShape.circle),
+    child: Center(
+      child: Text(
+        name.isNotEmpty ? name[0].toUpperCase() : '?',
+        style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
-    if (logoUrl.isNotEmpty) {
-      return Image.network(logoUrl, width: 52, height: 52,
-          errorBuilder: (_, __, ___) => _placeholder());
-    }
-    return _placeholder();
+    if (logoUrl.isEmpty) return _placeholder();
+    return CachedNetworkImage(
+      imageUrl: logoUrl,
+      width: 52,
+      height: 52,
+      httpHeaders: _kImgHeaders,
+      fit: BoxFit.contain,
+      placeholder: (_, __) => Container(
+        width: 52, height: 52,
+        decoration: const BoxDecoration(color: Colors.white12, shape: BoxShape.circle),
+      ),
+      errorWidget: (_, __, ___) => _placeholder(),
+    );
   }
-
-  Widget _placeholder() => Container(
-        width: 52,
-        height: 52,
-        decoration: const BoxDecoration(
-            color: Colors.white12, shape: BoxShape.circle),
-        child: Center(
-            child: Text(
-          name.isNotEmpty ? name[0].toUpperCase() : '?',
-          style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w700),
-        )),
-      );
 }
 
 class LeagueGroup extends StatelessWidget {
@@ -685,9 +733,13 @@ class LeagueGroup extends StatelessWidget {
           if (leagueLogo.isNotEmpty)
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
-              child: Image.network(leagueLogo, width: 26, height: 26,
-                  errorBuilder: (_, __, ___) =>
-                      Icon(Icons.emoji_events, color: c.accent, size: 18)),
+              child: CachedNetworkImage(
+                imageUrl: leagueLogo, width: 26, height: 26,
+                httpHeaders: _kImgHeaders,
+                fit: BoxFit.contain,
+                errorWidget: (_, __, ___) =>
+                    Icon(Icons.emoji_events, color: c.accent, size: 18),
+              ),
             )
           else
             Icon(Icons.emoji_events, color: c.accent, size: 18),
@@ -714,155 +766,227 @@ class MatchRow extends StatelessWidget {
   final Map<String, dynamic> match;
   const MatchRow({super.key, required this.match});
 
+  static String _resolveLogoUrl(dynamic team) {
+    if (team == null) return '';
+    final provided = team['logo'] as String? ?? '';
+    if (provided.isNotEmpty) return provided;
+    final id = team['id'];
+    if (id != null) return 'https://media.api-sports.io/football/teams/$id.png';
+    return '';
+  }
+
+  static String _resolveLeagueLogoUrl(dynamic league) {
+    if (league == null) return '';
+    final provided = league['logo'] as String? ?? '';
+    if (provided.isNotEmpty) return provided;
+    final id = league['id'];
+    if (id != null) return 'https://media.api-sports.io/football/leagues/$id.png';
+    return '';
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
 
     final homeTeam    = match['teams']?['home']?['name'] as String? ?? 'Local';
     final awayTeam    = match['teams']?['away']?['name'] as String? ?? 'Away';
-    final homeLogo    = match['teams']?['home']?['logo'] as String? ?? '';
-    final awayLogo    = match['teams']?['away']?['logo'] as String? ?? '';
+    final homeLogo    = _resolveLogoUrl(match['teams']?['home']);
+    final awayLogo    = _resolveLogoUrl(match['teams']?['away']);
     final homeGoals   = match['goals']?['home'];
     final awayGoals   = match['goals']?['away'];
     final statusShort = match['fixture']?['status']?['short'] as String? ?? 'NS';
     final elapsed     = match['fixture']?['status']?['elapsed'];
     final dateStr     = match['fixture']?['date'] as String? ?? '';
+    final leagueName  = match['league']?['name'] as String? ?? '';
+    final leagueLogo  = _resolveLeagueLogoUrl(match['league']);
 
-    final isLive     = statusShort == '1H' || statusShort == '2H' || statusShort == 'HT';
-    final isFinished = statusShort == 'FT' || statusShort == 'AET' || statusShort == 'PEN';
+    final isLive     = {'1H', '2H', 'HT', 'ET', 'P'}.contains(statusShort);
+    final isFinished = {'FT', 'AET', 'PEN'}.contains(statusShort);
+    final hasScore   = isLive || isFinished;
 
-    String centerTop;
-    String centerBottom = '';
-    Color  centerColor;
-
+    String timeLabel = '--:--';
+    String dateLabel = '';
+    String statusLabel = '';
     if (isLive) {
-      centerTop    = '${homeGoals ?? 0} – ${awayGoals ?? 0}';
-      centerBottom = elapsed != null ? "$elapsed'" : 'LIVE';
-      centerColor  = const Color(0xFFE91E63);
+      timeLabel   = elapsed != null ? "$elapsed'" : 'LIVE';
+      statusLabel = 'En vivo';
     } else if (isFinished) {
-      centerTop    = '${homeGoals ?? 0} – ${awayGoals ?? 0}';
-      centerBottom = 'FT';
-      centerColor  = c.textHi;
-    } else {
+      timeLabel   = '${homeGoals ?? 0}  –  ${awayGoals ?? 0}';
+      statusLabel = 'Finalizado';
       if (dateStr.isNotEmpty) {
-        try {
-          final dt = DateTime.parse(dateStr).toLocal();
-          centerTop    = DateFormat('HH:mm').format(dt);
-          centerBottom = DateFormat('dd MMM').format(dt);
-        } catch (_) {
-          centerTop = '--:--';
-        }
-      } else {
-        centerTop = '--:--';
+        try { dateLabel = DateFormat('dd MMM').format(DateTime.parse(dateStr).toLocal()); } catch (_) {}
       }
-      centerColor = c.accent;
+    } else if (dateStr.isNotEmpty) {
+      try {
+        final dt  = DateTime.parse(dateStr).toLocal();
+        timeLabel   = DateFormat('HH:mm').format(dt);
+        dateLabel   = DateFormat('dd MMM').format(dt);
+        statusLabel = 'No iniciado';
+      } catch (_) {}
     }
+
+    const liveRed  = Color(0xFFE91E63);
+    final timeColor = isLive ? liveRed : isFinished ? c.textHi : c.accent;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: c.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isLive
-              ? const Color(0xFFE91E63).withValues(alpha: 0.35)
-              : c.border,
-        ),
+        border: Border.all(color: isLive ? liveRed.withValues(alpha: 0.30) : c.border),
       ),
-      child: Row(children: [
-        Expanded(
-            child: Row(children: [
-          MatchTeamLogo(
-              logoUrl: homeLogo, name: homeTeam, accentColor: c.accent),
-          const SizedBox(width: 8),
-          Expanded(
-              child: Text(homeTeam,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      color: c.text,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600))),
-        ])),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: isLive
-                ? const Color(0xFFE91E63).withValues(alpha: 0.12)
-                : c.elevated,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Text(centerTop,
-                style: TextStyle(
-                    color: centerColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800)),
-            if (centerBottom.isNotEmpty)
-              Text(centerBottom,
-                  style: TextStyle(
-                    color: isLive ? const Color(0xFFE91E63) : c.dim,
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                  )),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+
+        // ── League header ──
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 8),
+          child: Row(children: [
+            if (leagueLogo.isNotEmpty)
+              CachedNetworkImage(
+                imageUrl: leagueLogo, width: 15, height: 15,
+                httpHeaders: _kImgHeaders,
+                fit: BoxFit.contain,
+                errorWidget: (_, __, ___) =>
+                    Icon(Icons.emoji_events_rounded, color: c.accent, size: 13),
+              )
+            else
+              Icon(Icons.emoji_events_rounded, color: c.accent, size: 13),
+            const SizedBox(width: 7),
+            Expanded(
+              child: Text(leagueName,
+                  maxLines: 1, overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: c.dim, fontSize: 10,
+                      fontWeight: FontWeight.w600, letterSpacing: 0.3)),
+            ),
+            if (isLive) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                decoration: BoxDecoration(
+                  color: liveRed.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Container(width: 5, height: 5,
+                      decoration: const BoxDecoration(color: liveRed, shape: BoxShape.circle)),
+                  const SizedBox(width: 4),
+                  const Text('LIVE', style: TextStyle(color: liveRed, fontSize: 9, fontWeight: FontWeight.w800)),
+                ]),
+              ),
+            ],
           ]),
         ),
-        Expanded(
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-          Expanded(
-              child: Text(awayTeam,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.end,
-                  style: TextStyle(
-                      color: c.text,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600))),
-          const SizedBox(width: 8),
-          MatchTeamLogo(
-              logoUrl: awayLogo, name: awayTeam, accentColor: c.accent),
-        ])),
+
+        Divider(height: 1, color: c.border),
+
+        // ── Teams + score ──
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+
+              // Home team
+              Expanded(
+                child: Column(children: [
+                  _MatchLogo(url: homeLogo, name: homeTeam, accent: c.accent),
+                  const SizedBox(height: 8),
+                  Text(homeTeam, maxLines: 1, overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: c.text, fontSize: 12, fontWeight: FontWeight.w700)),
+                ]),
+              ),
+
+              // Center: score or time
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  if (hasScore && !isFinished)
+                    // Live: score side by side
+                    Row(mainAxisSize: MainAxisSize.min, children: [
+                      Text('${homeGoals ?? 0}',
+                          style: TextStyle(color: liveRed, fontSize: 32,
+                              fontWeight: FontWeight.w900, letterSpacing: -1)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text('–', style: TextStyle(color: c.dim, fontSize: 22,
+                            fontWeight: FontWeight.w300)),
+                      ),
+                      Text('${awayGoals ?? 0}',
+                          style: TextStyle(color: liveRed, fontSize: 32,
+                              fontWeight: FontWeight.w900, letterSpacing: -1)),
+                    ])
+                  else
+                    Text(timeLabel,
+                        style: TextStyle(color: timeColor, fontSize: 20,
+                            fontWeight: FontWeight.w800, letterSpacing: -0.5)),
+                  const SizedBox(height: 4),
+                  if (dateLabel.isNotEmpty)
+                    Text(dateLabel,
+                        style: TextStyle(color: c.muted, fontSize: 10, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 2),
+                  Text(statusLabel,
+                      style: TextStyle(color: c.dim, fontSize: 9)),
+                ]),
+              ),
+
+              // Away team
+              Expanded(
+                child: Column(children: [
+                  _MatchLogo(url: awayLogo, name: awayTeam, accent: c.accent),
+                  const SizedBox(height: 8),
+                  Text(awayTeam, maxLines: 1, overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: c.text, fontSize: 12, fontWeight: FontWeight.w700)),
+                ]),
+              ),
+            ],
+          ),
+        ),
       ]),
     );
   }
 }
 
-class MatchTeamLogo extends StatelessWidget {
-  final String logoUrl;
+class _MatchLogo extends StatelessWidget {
+  final String url;
   final String name;
-  final Color  accentColor;
-  const MatchTeamLogo(
-      {super.key,
-      required this.logoUrl,
-      required this.name,
-      required this.accentColor});
+  final Color  accent;
+  const _MatchLogo({required this.url, required this.name, required this.accent});
+
+  Widget _fallback() => Container(
+    width: 52, height: 52,
+    decoration: BoxDecoration(
+      color: accent.withValues(alpha: 0.10),
+      shape: BoxShape.circle,
+      border: Border.all(color: accent.withValues(alpha: 0.25)),
+    ),
+    child: Center(
+      child: Text(
+        name.isNotEmpty ? name[0].toUpperCase() : '?',
+        style: TextStyle(color: accent, fontSize: 20, fontWeight: FontWeight.w800),
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
-    if (logoUrl.isNotEmpty) {
-      return Image.network(logoUrl, width: 28, height: 28,
-          errorBuilder: (_, __, ___) => _placeholder(c));
-    }
-    return _placeholder(c);
+    if (url.isEmpty) return _fallback();
+    return CachedNetworkImage(
+      imageUrl: url,
+      width: 52,
+      height: 52,
+      httpHeaders: _kImgHeaders,
+      fit: BoxFit.contain,
+      placeholder: (_, __) => Container(
+        width: 52, height: 52,
+        decoration: BoxDecoration(
+          color: accent.withValues(alpha: 0.06),
+          shape: BoxShape.circle,
+        ),
+      ),
+      errorWidget: (_, __, ___) => _fallback(),
+    );
   }
-
-  Widget _placeholder(AppColorTokens c) => Container(
-        width: 28,
-        height: 28,
-        decoration:
-            BoxDecoration(color: c.elevated, shape: BoxShape.circle),
-        child: Center(
-            child: Text(
-          name.isNotEmpty ? name[0].toUpperCase() : '?',
-          style: TextStyle(
-              color: accentColor,
-              fontSize: 11,
-              fontWeight: FontWeight.w700),
-        )),
-      );
 }
+

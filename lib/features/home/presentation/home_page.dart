@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -159,6 +160,8 @@ class _HomePageState extends State<HomePage> {
               SliverToBoxAdapter(
                 child: HeroSection(controller: _controller),
               ),
+
+              const SliverToBoxAdapter(child: _FeatureSection()),
 
               if (!hasTeam)
                 SliverToBoxAdapter(
@@ -434,5 +437,96 @@ class _HomePageState extends State<HomePage> {
     );
 
     if (confirm == true) await _controller.deleteTeam(team['id'] as int);
+  }
+}
+
+// ── Feature section (premium tactical cards) ──────────────────────────────────
+
+class _FeatureSection extends StatelessWidget {
+  const _FeatureSection();
+
+  static const _cards = [
+    (Icons.radar_rounded,          'Análisis Rival',    'Anticipa al oponente', '94%'),
+    (Icons.sports_soccer_rounded,  'Táctica Previa',    'Prepara cada partido',  '87%'),
+    (Icons.person_search_rounded,  'Stats Individuales','Seguimiento de jugadores','91%'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    const accent = Color(0xFF32FF88);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 4),
+      child: SizedBox(
+        height: 110,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: _cards.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 10),
+          itemBuilder: (context, i) {
+            final card   = _cards[i];
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            final cardAccent = isDark ? accent : c.accent;
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                child: Container(
+                  width: 160,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? c.elevated.withValues(alpha: 0.80)
+                        : Colors.white.withValues(alpha: 0.90),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : Colors.black.withValues(alpha: 0.08),
+                    ),
+                    boxShadow: isDark
+                        ? [BoxShadow(color: accent.withValues(alpha: 0.06), blurRadius: 16)]
+                        : [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 16, offset: const Offset(0, 4))],
+                  ),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                      Container(
+                        width: 32, height: 32,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? accent.withValues(alpha: 0.12)
+                              : c.accentLo,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(card.$1, color: cardAccent, size: 16),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? accent.withValues(alpha: 0.14)
+                              : c.accentLo,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(card.$4,
+                            style: TextStyle(color: cardAccent, fontSize: 9, fontWeight: FontWeight.w800)),
+                      ),
+                    ]),
+                    const Spacer(),
+                    Text(card.$2,
+                        style: TextStyle(color: c.textHi, fontSize: 12, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 2),
+                    Text(card.$3,
+                        style: TextStyle(color: c.muted, fontSize: 10)),
+                  ]),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
   }
 }
