@@ -7,22 +7,23 @@ from app.infrastructure.external.sports_client import sports_client
 router = APIRouter(prefix="/api", tags=["Matches"])
 
 
-@router.get("/featured-matches", summary="Featured matches")
+@router.get("/featured-matches", summary="Featured matches grouped by league")
 def featured_matches():
-    """Return today's fixtures from featured leagues (La Liga, Premier, Champions, etc.)."""
+    """
+    Today's fixtures from top leagues, grouped by league name.
+    Each fixture includes full league (id, logo) and teams (id, logo) objects.
+    """
     try:
-        data = sports_client.get_featured_fixtures()
-        return {"data": data}
+        return sports_client.get_featured_fixtures()
     except Exception as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @router.get("/live-matches", summary="Live matches")
 def live_matches():
-    """Return all fixtures currently in progress."""
+    """Return today's fixtures with full team and league objects."""
     try:
-        data = sports_client.get_live_fixtures()
-        return {"data": data}
+        return {"data": sports_client.get_live_fixtures()}
     except Exception as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
@@ -49,14 +50,12 @@ def standings(region: str, season: int | None = None):
         try:
             teams = sports_client.get_standings(league["id"], season)
             if teams:
-                result.append(
-                    {
-                        "league":  league["name"],
-                        "country": league["country"],
-                        "season":  season,
-                        "teams":   teams,
-                    }
-                )
+                result.append({
+                    "league":  league["name"],
+                    "country": league["country"],
+                    "season":  season,
+                    "teams":   teams,
+                })
         except Exception as exc:
             print(f"[warn] standings {league['name']}: {exc}")
 
