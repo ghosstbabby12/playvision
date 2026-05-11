@@ -113,12 +113,14 @@ class NewsService {
       final title = _extractTag(block, 'title');
       if (title.isEmpty) continue;
 
+      final raw = _extractTag(block, 'description');
       items.add(NewsArticle(
         title:    title,
         category: source,
         timeAgo:  _timeAgo(_extractTag(block, 'pubDate')),
         link:     _extractLink(block),
         imageUrl: _extractImage(block),
+        summary:  _cleanHtml(raw),
       ));
     }
     return items;
@@ -203,6 +205,21 @@ class NewsService {
     } catch (_) {}
 
     return '';
+  }
+
+  String _cleanHtml(String html) {
+    if (html.isEmpty) return '';
+    return html
+        .replaceAll(RegExp(r'<[^>]+>'), '')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll("&apos;", "'")
+        .replaceAll('&#39;', "'")
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
   }
 
   String _formatDiff(Duration diff) {

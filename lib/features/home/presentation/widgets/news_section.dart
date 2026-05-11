@@ -122,113 +122,194 @@ class ErrorCard extends StatelessWidget {
   }
 }
 
-class FeaturedArticleCard extends StatelessWidget {
+class FeaturedArticleCard extends StatefulWidget {
   final NewsArticle article;
   final String fallbackImage;
   const FeaturedArticleCard({super.key, required this.article, required this.fallbackImage});
 
   @override
-  Widget build(BuildContext context) {
-    final c        = context.colors;
-    final imageUrl = article.imageUrl ?? fallbackImage;
+  State<FeaturedArticleCard> createState() => _FeaturedArticleCardState();
+}
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: SizedBox(
-        height: 200,
-        child: Stack(fit: StackFit.expand, children: [
-          Image.network(
-            imageUrl,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => Image.network(fallbackImage, fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(color: c.elevated)),
+class _FeaturedArticleCardState extends State<FeaturedArticleCard> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final c          = context.colors;
+    final imageUrl   = widget.article.imageUrl ?? widget.fallbackImage;
+    final hasSummary = widget.article.summary?.isNotEmpty == true;
+
+    return GestureDetector(
+      onTap: () => setState(() => _expanded = !_expanded),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        ClipRRect(
+          borderRadius: BorderRadius.vertical(
+            top: const Radius.circular(18),
+            bottom: _expanded ? Radius.zero : const Radius.circular(18),
           ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.black.withValues(alpha: 0.88)],
+          child: SizedBox(
+            height: 200,
+            child: Stack(fit: StackFit.expand, children: [
+              Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Image.network(widget.fallbackImage, fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(color: c.elevated)),
               ),
-            ),
-          ),
-          Positioned(
-            left: 16, right: 16, bottom: 16,
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(color: c.accent, borderRadius: BorderRadius.circular(6)),
-                child: Text(article.category,
-                    style: const TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.w800)),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.88)],
+                  ),
+                ),
               ),
-              const SizedBox(height: 8),
-              Text(article.title,
-                  maxLines: 2, overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700, height: 1.3)),
-              const SizedBox(height: 6),
-              Text(article.timeAgo,
-                  style: const TextStyle(color: Colors.white60, fontSize: 11)),
+              Positioned(
+                left: 16, right: 16, bottom: 16,
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(color: c.accent, borderRadius: BorderRadius.circular(6)),
+                    child: Text(widget.article.category,
+                        style: const TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.w800)),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(widget.article.title,
+                      maxLines: 2, overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700, height: 1.3)),
+                  const SizedBox(height: 6),
+                  Row(children: [
+                    Text(widget.article.timeAgo,
+                        style: const TextStyle(color: Colors.white60, fontSize: 11)),
+                    const Spacer(),
+                    AnimatedRotation(
+                      turns: _expanded ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 220),
+                      child: const Icon(Icons.keyboard_arrow_down_rounded,
+                          color: Colors.white60, size: 20),
+                    ),
+                  ]),
+                ]),
+              ),
             ]),
           ),
-        ]),
-      ),
+        ),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeInOut,
+          child: _expanded
+              ? Container(
+                  decoration: BoxDecoration(
+                    color: c.surface,
+                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(18)),
+                    border: Border.all(color: c.border),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: hasSummary
+                      ? Text(widget.article.summary!,
+                          style: TextStyle(color: c.text, fontSize: 13, height: 1.55))
+                      : Text('Sin descripción disponible',
+                          style: TextStyle(color: c.muted, fontSize: 12,
+                              fontStyle: FontStyle.italic)),
+                )
+              : const SizedBox.shrink(),
+        ),
+      ]),
     );
   }
 }
 
-class ArticleCard extends StatelessWidget {
+class ArticleCard extends StatefulWidget {
   final NewsArticle article;
   final String fallbackImage;
   const ArticleCard({super.key, required this.article, required this.fallbackImage});
 
   @override
+  State<ArticleCard> createState() => _ArticleCardState();
+}
+
+class _ArticleCardState extends State<ArticleCard> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
-    final c        = context.colors;
-    final imageUrl = article.imageUrl ?? fallbackImage;
+    final c          = context.colors;
+    final imageUrl   = widget.article.imageUrl ?? widget.fallbackImage;
+    final hasSummary = widget.article.summary?.isNotEmpty == true;
 
     return GlassCard(
       margin: const EdgeInsets.only(bottom: 12),
       padding: EdgeInsets.zero,
       radius: 16,
-      child: Row(children: [
-        ClipRRect(
-          borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
-          child: SizedBox(
-            width: 90, height: 88,
-            child: Image.network(
-              imageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Image.network(fallbackImage, fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: c.elevated,
-                    child: Icon(Icons.sports_soccer, color: c.accent, size: 28),
-                  )),
+      child: GestureDetector(
+        onTap: () => setState(() => _expanded = !_expanded),
+        behavior: HitTestBehavior.opaque,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
+              child: SizedBox(
+                width: 90, height: 88,
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Image.network(widget.fallbackImage, fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: c.elevated,
+                        child: Icon(Icons.sports_soccer, color: c.accent, size: 28),
+                      )),
+                ),
+              ),
             ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-              decoration: BoxDecoration(color: c.accentLo, borderRadius: BorderRadius.circular(5)),
-              child: Text(article.category,
-                  style: TextStyle(color: c.accent, fontSize: 9, fontWeight: FontWeight.w700)),
+            const SizedBox(width: 12),
+            Expanded(child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(color: c.accentLo, borderRadius: BorderRadius.circular(5)),
+                  child: Text(widget.article.category,
+                      style: TextStyle(color: c.accent, fontSize: 9, fontWeight: FontWeight.w700)),
+                ),
+                const SizedBox(height: 5),
+                Text(widget.article.title,
+                    maxLines: 2, overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: c.text, fontSize: 12, fontWeight: FontWeight.w600, height: 1.3)),
+                const SizedBox(height: 4),
+                Text(widget.article.timeAgo, style: TextStyle(color: c.muted, fontSize: 10)),
+              ]),
+            )),
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: AnimatedRotation(
+                turns: _expanded ? 0.5 : 0,
+                duration: const Duration(milliseconds: 220),
+                child: Icon(Icons.keyboard_arrow_down_rounded, color: c.dim, size: 20),
+              ),
             ),
-            const SizedBox(height: 5),
-            Text(article.title,
-                maxLines: 2, overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: c.text, fontSize: 12, fontWeight: FontWeight.w600, height: 1.3)),
-            const SizedBox(height: 4),
-            Text(article.timeAgo, style: TextStyle(color: c.muted, fontSize: 10)),
           ]),
-        )),
-        Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: Icon(Icons.arrow_forward_ios_rounded, color: c.dim, size: 12),
-        ),
-      ]),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 260),
+            curve: Curves.easeInOut,
+            child: _expanded
+                ? Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Divider(color: c.border, height: 16),
+                      hasSummary
+                          ? Text(widget.article.summary!,
+                              style: TextStyle(color: c.text, fontSize: 12, height: 1.55))
+                          : Text('Sin descripción disponible',
+                              style: TextStyle(color: c.muted, fontSize: 12,
+                                  fontStyle: FontStyle.italic)),
+                    ]),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ]),
+      ),
     );
   }
 }

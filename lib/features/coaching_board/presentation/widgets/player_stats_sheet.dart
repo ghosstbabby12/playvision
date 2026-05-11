@@ -317,7 +317,11 @@ class _PlayerStatsSheetState extends State<PlayerStatsSheet> {
               onNext: () => _navigate(1),
               c: c,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+
+            // ── Quick stats row ───────────────────────────────────────────
+            _QuickStatsRow(token: _current, profile: _profile, c: c),
+            const SizedBox(height: 14),
 
             // ── Tab pills ─────────────────────────────────────────────────
             _TabPills(
@@ -360,6 +364,68 @@ class _PlayerStatsSheetState extends State<PlayerStatsSheet> {
       ),
     );
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Quick stats row (4 pills below the header)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _QuickStatsRow extends StatelessWidget {
+  final PlayerToken token;
+  final PlayerProfile? profile;
+  final AppColorTokens c;
+  const _QuickStatsRow({required this.token, required this.profile, required this.c});
+
+  @override
+  Widget build(BuildContext context) {
+    final s        = token.stats;
+    final rating   = (profile?.overall?.toDouble() ?? (s['rating'] as num?)?.toDouble() ?? 7.0);
+    final goals    = (s['goals']        as num?)?.toInt()    ?? 0;
+    final assists  = (s['assists']      as num?)?.toInt()    ?? 0;
+    final distance = (s['distance']     as num?)?.toDouble() ?? 0.0;
+    final passAcc  = (s['passAccuracy'] as num?)?.toInt()    ?? 0;
+
+    return Row(children: [
+      _QStat(label: 'Rating',  value: rating.toStringAsFixed(1), icon: Icons.star_rounded,            color: c.accent,                 c: c),
+      const SizedBox(width: 8),
+      _QStat(label: 'Goles',   value: '$goals',                  icon: Icons.sports_soccer_rounded,   color: const Color(0xFF10B981),  c: c),
+      const SizedBox(width: 8),
+      _QStat(label: 'Asist.',  value: '$assists',                icon: Icons.assistant_rounded,        color: const Color(0xFF3B82F6),  c: c),
+      const SizedBox(width: 8),
+      _QStat(label: 'Km',      value: distance.toStringAsFixed(1), icon: Icons.directions_run_rounded, color: const Color(0xFF8B5CF6), c: c),
+      const SizedBox(width: 8),
+      _QStat(label: 'Pases%',  value: '$passAcc%',               icon: Icons.track_changes_rounded,   color: const Color(0xFFF59E0B),  c: c),
+    ]);
+  }
+}
+
+class _QStat extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+  final AppColorTokens c;
+  const _QStat({required this.label, required this.value, required this.icon,
+      required this.color, required this.c});
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.20)),
+      ),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Icon(icon, color: color, size: 13),
+        const SizedBox(height: 3),
+        Text(value, style: TextStyle(
+            color: color, fontSize: 13, fontWeight: FontWeight.w900)),
+        Text(label, style: TextStyle(color: c.dim, fontSize: 8, fontWeight: FontWeight.w500)),
+      ]),
+    ),
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -551,7 +617,7 @@ class _CoachTab extends StatelessWidget {
       GestureDetector(
         onTapUp: (details) => _handleRadarTap(details.localPosition, onAxisTap),
         child: SizedBox(
-          height: 180,
+          height: 220,
           child: DualRadarChart(
             values: token.radarValues,
             compValues: compVals,
@@ -618,41 +684,95 @@ class _InsightRow extends StatelessWidget {
   final AppColorTokens c;
   const _InsightRow({required this.insight, required this.c});
 
+  static (Color, IconData) _meta(_Level level) => switch (level) {
+    _Level.positive => (const Color(0xFF32FF88), Icons.trending_up_rounded),
+    _Level.warning  => (const Color(0xFFF59E0B), Icons.warning_amber_rounded),
+    _Level.neutral  => (const Color(0xFF8B5CF6), Icons.swap_horiz_rounded),
+    _Level.info     => (const Color(0xFF3B82F6), Icons.lightbulb_outline_rounded),
+  };
+
+  // Extract trailing metric token (e.g. "7.2 ★", "9.8 km", "82%")
+  static (String, String) _splitText(String text) {
+    final patterns = [
+      RegExp(r'^(.*?)\s*·\s*(.+)$'),
+    ];
+    for (final rx in patterns) {
+      final m = rx.firstMatch(text);
+      if (m != null) return (m.group(1)!.trim(), m.group(2)!.trim());
+    }
+    return (text, '');
+  }
+
   @override
   Widget build(BuildContext context) {
-    final Color accent;
-    final Color bg;
-    switch (insight.level) {
-      case _Level.positive:
-        accent = c.accent;
-        bg     = c.accentLo;
-      case _Level.warning:
-        accent = const Color(0xFFF59E0B);
-        bg     = const Color(0xFFF59E0B).withValues(alpha: 0.08);
-      case _Level.neutral:
-        accent = const Color(0xFF8B5CF6);
-        bg     = const Color(0xFF8B5CF6).withValues(alpha: 0.08);
-      case _Level.info:
-        accent = const Color(0xFF3B82F6);
-        bg     = const Color(0xFF3B82F6).withValues(alpha: 0.08);
-    }
+    final (color, iconData) = _meta(insight.level);
+    final (mainText, metric) = _splitText(insight.text);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: bg,
+        color: color.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: accent.withValues(alpha: 0.25)),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
-      child: Row(children: [
-        Text(insight.emoji, style: const TextStyle(fontSize: 16)),
-        const SizedBox(width: 10),
-        Expanded(child: Text(insight.text,
-            style: TextStyle(color: c.text, fontSize: 12,
-                fontWeight: FontWeight.w500))),
-      ]),
+      child: IntrinsicHeight(
+        child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          // Left accent bar
+          Container(
+            width: 4,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+            ),
+          ),
+          const SizedBox(width: 10),
+          // Icon
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 11),
+            child: Icon(iconData, color: color, size: 16),
+          ),
+          const SizedBox(width: 10),
+          // Main text
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min, children: [
+                Text(mainText, style: TextStyle(
+                    color: c.text, fontSize: 12, fontWeight: FontWeight.w600, height: 1.2)),
+                if (insight.level == _Level.warning || insight.level == _Level.info)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(_levelHint(insight.level),
+                        style: TextStyle(color: c.dim, fontSize: 9)),
+                  ),
+              ]),
+            ),
+          ),
+          // Metric badge on right
+          if (metric.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(metric, style: TextStyle(
+                    color: color, fontSize: 11, fontWeight: FontWeight.w800)),
+              ),
+            ),
+        ]),
+      ),
     );
   }
+
+  String _levelHint(_Level l) => switch (l) {
+    _Level.warning => 'Requiere atención',
+    _Level.info    => 'Sugerencia IA',
+    _            => '',
+  };
 }
 
 class _AxisDetailCard extends StatelessWidget {
@@ -744,49 +864,53 @@ class _CompBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isAbove = player >= reference;
+    final isAbove    = player >= reference;
+    final playerVal  = (player * 100).round();
+    final refVal     = (reference * 100).round();
+    final diff       = playerVal - refVal;
+    final diffStr    = diff >= 0 ? '+$diff' : '$diff';
+    final diffColor  = isAbove ? c.accent : const Color(0xFFF59E0B);
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(children: [
-        SizedBox(
-          width: 58,
-          child: Text(label,
-              style: TextStyle(
-                color: isHighlight ? c.accent : c.dim,
-                fontSize: 10,
-                fontWeight: isHighlight ? FontWeight.w700 : FontWeight.w500,
-              )),
+        SizedBox(width: 58,
+          child: Text(label, style: TextStyle(
+            color: isHighlight ? c.accent : c.dim,
+            fontSize: 10, fontWeight: isHighlight ? FontWeight.w700 : FontWeight.w500,
+          )),
         ),
         Expanded(
           child: Stack(children: [
-            // Reference bar (grey)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(3),
+            ClipRRect(borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
-                value: reference,
-                backgroundColor: c.border,
-                valueColor: const AlwaysStoppedAnimation(Colors.white12),
-                minHeight: 6,
-              ),
-            ),
-            // Player bar
-            ClipRRect(
-              borderRadius: BorderRadius.circular(3),
+                value: reference, backgroundColor: c.border,
+                valueColor: const AlwaysStoppedAnimation(Colors.white12), minHeight: 8,
+              )),
+            ClipRRect(borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
-                value: player,
-                backgroundColor: Colors.transparent,
+                value: player, backgroundColor: Colors.transparent,
                 valueColor: AlwaysStoppedAnimation(
-                    c.accent.withValues(alpha: isHighlight ? 1.0 : 0.75)),
-                minHeight: 6,
-              ),
-            ),
+                    c.accent.withValues(alpha: isHighlight ? 1.0 : 0.70)),
+                minHeight: 8,
+              )),
           ]),
         ),
         const SizedBox(width: 8),
-        Icon(
-          isAbove ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
-          color: isAbove ? c.accent : const Color(0xFFF59E0B),
-          size: 12,
+        // Player score
+        SizedBox(width: 26,
+          child: Text('$playerVal', textAlign: TextAlign.right,
+              style: TextStyle(color: c.textHi, fontSize: 11, fontWeight: FontWeight.w800))),
+        const SizedBox(width: 4),
+        // Diff badge
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+          decoration: BoxDecoration(
+            color: diffColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(diffStr, style: TextStyle(
+              color: diffColor, fontSize: 9, fontWeight: FontWeight.w800)),
         ),
       ]),
     );
@@ -1042,21 +1166,43 @@ class _StatCell extends StatelessWidget {
   const _StatCell({required this.emoji, required this.label,
       required this.value, required this.c});
 
+  static Color _emojiColor(String emoji) => switch (emoji) {
+    '⚽'  => const Color(0xFF10B981),
+    '🅰️' => const Color(0xFF3B82F6),
+    '📏'  => const Color(0xFF8B5CF6),
+    '🎯'  => const Color(0xFFF59E0B),
+    '✅'  => const Color(0xFF32FF88),
+    _     => const Color(0xFF6B7280),
+  };
+
   @override
   Widget build(BuildContext context) {
+    final color = _emojiColor(emoji);
     return Container(
       decoration: BoxDecoration(
-        color: c.elevated,
+        color: color.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: c.border),
+        border: Border.all(color: color.withValues(alpha: 0.20)),
       ),
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Text(emoji, style: const TextStyle(fontSize: 18)),
-        const SizedBox(height: 4),
-        Text(value, style: TextStyle(color: c.textHi, fontSize: 16,
-            fontWeight: FontWeight.w800)),
-        Text(label, style: TextStyle(color: c.muted, fontSize: 9)),
-      ]),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Container(
+            width: 30, height: 30,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: Center(child: Text(emoji, style: const TextStyle(fontSize: 14))),
+          ),
+          const SizedBox(height: 6),
+          Text(value, style: TextStyle(color: c.textHi, fontSize: 17,
+              fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+          const SizedBox(height: 2),
+          Text(label, style: TextStyle(color: c.muted, fontSize: 9,
+              fontWeight: FontWeight.w500)),
+        ]),
+      ),
     );
   }
 }
