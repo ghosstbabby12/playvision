@@ -108,18 +108,18 @@ def save_player_stats(match_id: int, players: list) -> None:
             "player_id":     None,
             "track_id":      p["track_id"],
             "distance":      p["distance_km"],
-            "velocity":      p["speed_ms"],
+            "velocity":      p.get("speed_ms"),
             "speed_kmh":     p.get("speed_kmh"),
-            "possession":    p["possession_pct"],
-            "presence":      p["presence_pct"],
-            "zone":          p["zone"],
+            "possession":    p.get("possession_pct"),
+            "presence":      p.get("presence_pct"),
+            "zone":          p.get("zone"),
             "best_position": p.get("best_position"),
             "created_at":    now,
             "updated_at":    now,
         }
         for p in players
     ]
-    _db().table("player_match_stats").insert(rows).execute()
+    _db().table("player_match_stats").upsert(rows, on_conflict="match_id,track_id").execute()
 
 
 def get_player_history(track_id: int, limit: int = 10) -> list:

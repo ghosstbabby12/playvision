@@ -1,3 +1,4 @@
+import traceback
 from fastapi import APIRouter, HTTPException
 from analysis.exporter import get_player_history, _db
 from app.api.routers.insights import _generate_insights
@@ -16,18 +17,17 @@ def _aggregate(stats: list) -> dict:
     best_pos   = max(set(positions), key=positions.count) if positions else "Unknown"
 
     return {
-        "avg_distance_km":   avg("distance"),
-        "avg_speed_kmh":     avg("speed_kmh"),
+        "avg_distance_km":    avg("distance"),
+        "avg_speed_kmh":      avg("speed_kmh"),
         "avg_possession_pct": avg("possession"),
-        "avg_presence_pct":  avg("presence"),
-        "dominant_zone":     top_zone,
-        "best_position":     best_pos,
-        "matches_analyzed":  len(stats),
+        "avg_presence_pct":   avg("presence"),
+        "dominant_zone":      top_zone,
+        "best_position":      best_pos,
+        "matches_analyzed":   len(stats),
     }
 
 
 def _player_insight(agg: dict) -> list[str]:
-    # Build a fake player dict compatible with _generate_insights
     proxy = {
         "best_position":  agg["best_position"],
         "distance_km":    agg["avg_distance_km"],
@@ -45,7 +45,6 @@ def team_board(team_id: int, limit: int = 10):
     try:
         db = _db()
 
-        # Recent matches
         matches_res = (
             db.table("matches")
             .select("id, opponent, match_date, video_url, status")
@@ -56,7 +55,6 @@ def team_board(team_id: int, limit: int = 10):
         )
         matches = matches_res.data or []
 
-        # Last match report for summary stats
         last_report = None
         if matches:
             report_res = (
@@ -70,23 +68,26 @@ def team_board(team_id: int, limit: int = 10):
             if report_res.data:
                 last_report = report_res.data[0].get("summary_json", {})
 
-        # Aggregate stats across all matches
-        stats_res = (
-            db.table("player_match_stats")
-            .select("distance, velocity, speed_kmh, possession, presence, zone, best_position")
-            .in_("match_id", [m["id"] for m in matches] if matches else [0])
-            .execute()
-        )
-        rows = stats_res.data or []
+        # Try to get AI-stats; fall back to empty if columns don't exist yet
+        try:
+            stats_res = (
+                db.table("player_match_stats")
+                .select("distance, speed_kmh, possession, presence, zone, best_position")
+                .in_("match_id", [m["id"] for m in matches] if matches else [0])
+                .execute()
+            )
+            rows = stats_res.data or []
+        except Exception:
+            rows = []
 
         def avg(key):
             vals = [r[key] for r in rows if r.get(key) is not None]
             return round(sum(vals) / len(vals), 2) if vals else 0.0
 
         team_stats = {
-            "total_matches":     len(matches),
-            "avg_distance_km":   avg("distance"),
-            "avg_speed_kmh":     avg("speed_kmh"),
+            "total_matches":      len(matches),
+            "avg_distance_km":    avg("distance"),
+            "avg_speed_kmh":      avg("speed_kmh"),
             "avg_possession_pct": avg("possession"),
         }
 
@@ -98,34 +99,37 @@ def team_board(team_id: int, limit: int = 10):
         }
 
     except Exception as exc:
+        traceback.print_exc()
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @router.get("/player/{track_id}")
 def get_player(track_id: int, limit: int = 10):
-    """
-    Full player profile aggregated across recent matches.
-    Uses track_id (the detection ID assigned during analysis).
-    """
-    history = get_player_history(track_id, limit=limit)
+    """Full player profile aggregated across recent matches."""
+    try:
+        history = get_player_history(track_id, limit=limit)
+    except Exception as exc:
+        traceback.print_exc()
+        raise HTTPException(status_code=502, detail=f"DB error: {exc}") from exc
+
     if not history:
         raise HTTPException(status_code=404, detail="Player not found")
 
     agg = _aggregate(history)
 
     return {
-        "track_id":       track_id,
-        "summary":        agg,
-        "insights":       _player_insight(agg),
+        "track_id":      track_id,
+        "summary":       agg,
+        "insights":      _player_insight(agg),
         "match_history": [
             {
-                "match_id":      s["match_id"],
-                "distance_km":   s.get("distance"),
-                "speed_kmh":     s.get("speed_kmh"),
+                "match_id":       s["match_id"],
+                "distance_km":    s.get("distance"),
+                "speed_kmh":      s.get("speed_kmh"),
                 "possession_pct": s.get("possession"),
-                "zone":          s.get("zone"),
-                "best_position": s.get("best_position"),
-                "date":          s.get("created_at", "")[:10],
+                "zone":           s.get("zone") or "Unknown",
+                "best_position":  s.get("best_position") or "Unknown",
+                "date":           (s.get("created_at") or "")[:10],
             }
             for s in history
         ],
