@@ -191,7 +191,7 @@ class _LoginPageState extends State<LoginPage> {
                           size: 12),
                       const SizedBox(width: 6),
                       Text(
-                        'AI Football Analysis',
+                        l10n.loginAiBadge,
                         style: TextStyle(
                           color: isDark ? const Color(0xFF39D353) : const Color(0xFF1A7A40),
                           fontSize: 11,
@@ -203,7 +203,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Donde los datos se convierten en estrategia',
+                    l10n.loginTagline,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: isDark
@@ -324,7 +324,7 @@ class _LoginPageState extends State<LoginPage> {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 16),
                                 child: Text(
-                                  'O',
+                                  l10n.loginDividerOr,
                                   style: TextStyle(
                                     color: isDark
                                         ? Colors.white.withValues(alpha: 0.45)
@@ -607,7 +607,7 @@ class _LanguageToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     final localeProvider =
         Provider.of<LocaleProvider?>(context, listen: true);
-    final isEn = (localeProvider?.locale?.languageCode ?? 'es') == 'en';
+    final isEn = (localeProvider?.locale.languageCode ?? 'es') == 'en';
     const h = 32.0;
 
     return GestureDetector(

@@ -46,7 +46,7 @@
   "statusError": "Error",
   "statusUploaded": "Uploaded",
   "noAnalysesYet": "No analyses yet",
-  "selectTeamAndAnalyseDesc": "Select a team on the home screen\\nand analyse a match video.",
+  "selectTeamAndAnalyseDesc": "Select a team on the home screen\nand analyse a match video.",
   "analysisTitle": "Analysis",
   "aiPoweredPerformance": "AI-powered performance",
   "uploadVideoBtn": "Upload video",
@@ -69,12 +69,10 @@
   "distanceByPlayer": "DISTANCE BY PLAYER",
   "liveTitle": "Live 🔴",
   "liveRefreshTooltip": "Refresh",
-  "liveLoadError": "An error occurred: {error}\\nIs the Python server running?",
+  "liveLoadError": "An error occurred: {error}\nIs the Python server running?",
   "@liveLoadError": {
     "placeholders": {
-      "error": {
-        "type": "String"
-      }
+      "error": { "type": "String" }
     }
   },
   "liveNoMatches": "No live matches at the moment.",
@@ -83,35 +81,29 @@
   "fieldOpponent": "OPPONENT",
   "fieldFormation": "Formation",
   "fieldPlayers": "Players",
-  "fieldAvgSpeed": "Avg speed",
-  "fieldHighActivity": "High activity",
+  "fieldAvgSpeed": "Avg. speed",
+  "fieldHighActivity": "High",
   "fieldMedium": "Medium",
   "fieldLow": "Low",
   "fieldPlayerLabel": "Player {rank} · {zone}",
   "@fieldPlayerLabel": {
     "placeholders": {
-      "rank": {
-        "type": "int"
-      },
-      "zone": {
-        "type": "String"
-      }
+      "rank": { "type": "int" },
+      "zone": { "type": "String" }
     }
   },
   "fieldDistance": "Distance",
   "fieldSpeed": "Speed",
   "fieldPresence": "Presence",
-  "tableZone": "ZONE",
-  "tableDist": "DIST",
-  "tablePoss": "POSS",
-  "tablePres": "PRES",
+  "tableZone": "Zone",
+  "tableDist": "Dist.",
+  "tablePoss": "Poss.",
+  "tablePres": "Pres.",
   "playersSection": "PLAYERS",
   "playerLabel": "Player {rank}",
   "@playerLabel": {
     "placeholders": {
-      "rank": {
-        "type": "int"
-      }
+      "rank": { "type": "int" }
     }
   },
   "detailsBtn": "Details",
@@ -123,25 +115,6 @@
   "detailBallPossession": "Ball possession",
   "detailFieldPresence": "Field presence",
   "detailMainZone": "Main zone",
-  "insightHighActivity": "High-activity player. Covered {km} km and reached {spd} m/s average speed.",
-  "@insightHighActivity": {
-    "placeholders": {
-      "km": {
-        "type": "String"
-      },
-      "spd": {
-        "type": "String"
-      }
-    }
-  },
-  "insightModerateActivity": "Moderate-activity player. Held position in the {zone} zone.",
-  "@insightModerateActivity": {
-    "placeholders": {
-      "zone": {
-        "type": "String"
-      }
-    }
-  },
   "summaryPlayers": "Players",
   "summaryTotalDist": "Total dist.",
   "summaryAvgDist": "Avg. dist.",
@@ -152,75 +125,68 @@
   "summaryMostActive": "Most active",
   "summaryMostPossession": "Most possession",
   "summaryLeastActive": "Least active",
-  "summaryPlayerRef": "Player {id}",
+  "summaryPlayerRef": "Player {player}",
   "@summaryPlayerRef": {
     "placeholders": {
-      "id": {
-        "type": "String"
-      }
+      "player": { "type": "String" }
     }
   },
-  "insightTotalKm": "The team covered {km} km in total during the analysis.",
+  "insightTotalKm": "The team covered {km} km in total during the match.",
   "@insightTotalKm": {
     "placeholders": {
-      "km": {
-        "type": "String"
-      }
+      "km": { "type": "String" }
     }
   },
-  "insightPossession": "Ball possession: {pct}% of analysed time.",
+  "insightPossession": "Recorded {pct}% average ball possession.",
   "@insightPossession": {
     "placeholders": {
-      "pct": {
-        "type": "String"
-      }
+      "pct": { "type": "String" }
     }
   },
-  "insightActivePlayers": "{count} active players were detected on the field.",
+  "insightActivePlayers": "{count} players were active on the field.",
   "@insightActivePlayers": {
     "placeholders": {
-      "count": {
-        "type": "int"
-      }
+      "count": { "type": "String" }
     }
   },
-  "insightFastestPlayer": "Player {rank} reached the highest speed: {spd} m/s.",
+  "insightFastestPlayer": "Player {rank} reached the highest speed at {speed} m/s.",
   "@insightFastestPlayer": {
     "placeholders": {
-      "rank": {
-        "type": "String"
-      },
-      "spd": {
-        "type": "String"
-      }
+      "rank": { "type": "String" },
+      "speed": { "type": "String" }
     }
   },
-  "insightTopZone": "The team was mainly concentrated in the {zone} zone.",
+  "insightTopZone": "The most active zone was {zone}.",
   "@insightTopZone": {
     "placeholders": {
-      "zone": {
-        "type": "String"
-      }
+      "zone": { "type": "String" }
+    }
+  },
+  "insightHighActivity": "High-activity player: covered {km} km and reached {speed} m/s.",
+  "@insightHighActivity": {
+    "placeholders": {
+      "km": { "type": "String" },
+      "speed": { "type": "String" }
+    }
+  },
+  "insightModerateActivity": "Moderate activity concentrated in zone {zone}.",
+  "@insightModerateActivity": {
+    "placeholders": {
+      "zone": { "type": "String" }
     }
   },
   "videoErrorTitle": "Error loading video",
-  "videoErrorNetwork": "Network error: {error}\\nURL: {url}",
+  "videoErrorNetwork": "Network error: {error}\nURL: {url}",
   "@videoErrorNetwork": {
     "placeholders": {
-      "error": {
-        "type": "String"
-      },
-      "url": {
-        "type": "String"
-      }
+      "error": { "type": "String" },
+      "url": { "type": "String" }
     }
   },
   "videoErrorLocal": "Local error: {error}",
   "@videoErrorLocal": {
     "placeholders": {
-      "error": {
-        "type": "String"
-      }
+      "error": { "type": "String" }
     }
   },
   "videoErrorWebLocal": "Local files cannot be played directly on web.",
@@ -233,35 +199,27 @@
   "scenePlayerShort": "P{rank}",
   "@scenePlayerShort": {
     "placeholders": {
-      "rank": {
-        "type": "int"
-      }
+      "rank": { "type": "int" }
     }
   },
   "sceneVideoNotAvailable": "Video not available",
-  "sceneNetworkError": "Network error: {error}\\n{url}",
+  "sceneNetworkError": "Network error: {error}\n{url}",
   "@sceneNetworkError": {
     "placeholders": {
-      "error": {
-        "type": "String"
-      },
-      "url": {
-        "type": "String"
-      }
+      "error": { "type": "String" },
+      "url": { "type": "String" }
     }
   },
   "sceneLocalError": "Local file error: {error}",
   "@sceneLocalError": {
     "placeholders": {
-      "error": {
-        "type": "String"
-      }
+      "error": { "type": "String" }
     }
   },
   "sceneWebError": "Local files cannot be played on web. Run the backend to get a network URL.",
   "sceneNoSource": "No video source available.",
   "sceneSelectPlayerAbove": "Select a player above to view their heat video.",
-  "sceneHeatNotAvailable": "Heat video not available.\\nRe-analyse to generate it.",
+  "sceneHeatNotAvailable": "Heat video not available.\nRe-analyse to generate it.",
   "sceneTeamHeatmapTitle": "Team Heatmap",
   "sceneTeamHeatmapSub": "Combined movement of all detected players",
   "sceneZoneDensity": "Zone Density",
@@ -272,20 +230,21 @@
   "scenePlayerInfo": "Player {rank} · {zone}",
   "@scenePlayerInfo": {
     "placeholders": {
-      "rank": {
-        "type": "int"
-      },
-      "zone": {
-        "type": "String"
-      }
+      "rank": { "type": "int" },
+      "zone": { "type": "String" }
     }
   },
   "scenePlayerKm": "{km} km",
   "@scenePlayerKm": {
     "placeholders": {
-      "km": {
-        "type": "String"
-      }
+      "km": { "type": "String" }
+    }
+  },
+  "sceneUnknownZone": "Unknown",
+  "scenePlayerCount": "{count}p",
+  "@scenePlayerCount": {
+    "placeholders": {
+      "count": { "type": "int" }
     }
   },
   "uploadFromDevice": "From device",
@@ -293,27 +252,148 @@
   "uploadAnalysing": "Analysing with AI...",
   "uploadStartAnalysis": "Start analysis",
   "uploadHowItWorks": "HOW IT WORKS",
-  "uploadStep1Title": "Choose source",
-  "uploadStep1Desc": "Upload from device or paste a direct video URL",
-  "uploadStep2Title": "AI analyses",
-  "uploadStep2Desc": "YOLO detects and tracks each player in real time",
-  "uploadStep3Title": "View results",
-  "uploadStep3Desc": "Get stats, field map and automatic AI insights",
-  "uploadVideoReady": "Video ready to analyse",
-  "uploadSelectVideo": "Select match video",
-  "uploadTapGallery": "Tap to open gallery",
-  "uploadUrlLabel": "Video URL",
-  "uploadUrlHint": "YouTube, direct .mp4, Vimeo…",
-  "uploadUrlSupports": "Supports YouTube, Vimeo and direct .mp4/.mov links",
+  "uploadStep1Title": "Upload your video",
+  "uploadStep1Desc": "From your device or via URL",
+  "uploadStep2Title": "AI Processing",
+  "uploadStep2Desc": "We detect players and events in real time",
+  "uploadStep3Title": "Get results",
+  "uploadStep3Desc": "Heat map, statistics and key scenes",
+  "uploadVideoReady": "Video ready",
+  "uploadSelectVideo": "Select video",
+  "uploadTapGallery": "Tap to choose from gallery",
+  "uploadUrlLabel": "VIDEO URL",
+  "uploadUrlHint": "https://example.com/video.mp4",
+  "uploadUrlSupports": "Supports direct MP4, MOV links and YouTube URLs",
   "uploadReqTitle": "VIDEO REQUIREMENTS",
   "uploadReqFormat": "Format",
-  "uploadReqFormatDesc": "MP4, MOV or AVI",
+  "uploadReqFormatDesc": "MP4, MOV",
   "uploadReqResolution": "Resolution",
-  "uploadReqResolutionDesc": "Minimum 720p recommended",
+  "uploadReqResolutionDesc": "720p+",
   "uploadReqDuration": "Duration",
-  "uploadReqDurationDesc": "Between 30 sec and 10 minutes",
-  "uploadReqAngle": "Camera angle",
-  "uploadReqAngleDesc": "Full lateral field view",
-  "uploadReqSize": "Max size",
-  "uploadReqSizeDesc": "500 MB per video"
+  "uploadReqDurationDesc": "5-90 min",
+  "uploadReqAngle": "Angle",
+  "uploadReqAngleDesc": "Side view",
+  "uploadReqSize": "Size",
+  "uploadReqSizeDesc": "< 500 MB",
+  "uploadCancelAnalysis": "Cancel analysis",
+  "loginAiBadge": "AI Football Analysis",
+  "loginTagline": "Where data becomes strategy",
+  "loginDividerOr": "OR",
+  "languageSpanish": "Spanish",
+  "languageEnglish": "English",
+  "logoutErrorDebug": "Error signing out",
+  "appVersionLabel": "v1.0.0",
+  "appVersionNumber": "1.0.0",
+  "aboutLegalese": "© 2026 PlayVision. All rights reserved.",
+  "teamEditTitle": "Edit team",
+  "teamNewTitle": "New team",
+  "teamLogoSelected": "Logo selected",
+  "teamLogoTapToAdd": "Tap to add logo",
+  "teamFieldName": "Name",
+  "teamFieldCategory": "Category",
+  "teamFieldClub": "Club",
+  "teamDialogCancel": "Cancel",
+  "teamDialogSave": "Save",
+  "teamDialogCreate": "Create",
+  "teamDeleteTitle": "Delete team",
+  "teamDeleteConfirm": "Delete team \"{name}\"? This cannot be undone.",
+  "@teamDeleteConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "teamDeleteButton": "Delete",
+  "featureRivalAnalysisTitle": "Rival Analysis",
+  "featureRivalAnalysisDesc": "Anticipate the opponent",
+  "featureTacticsTitle": "Pre-Match Tactics",
+  "featureTacticsDesc": "Prepare each match",
+  "featureIndividualStatsTitle": "Individual Stats",
+  "featureIndividualStatsDesc": "Player tracking",
+  "matchUnknownOpponent": "Unknown opponent",
+  "matchVersusOpponent": "vs {opponent}",
+  "@matchVersusOpponent": {
+    "placeholders": {
+      "opponent": { "type": "String" }
+    }
+  },
+  "matchLoadAnalysisFailed": "Failed to load analysis for this match.",
+  "matchNotAnalysedYet": "This match is not analysed yet.",
+  "heroAiAccuracy": "AI Accuracy",
+  "heroLatest": "Latest",
+  "searchTeamHint": "Search team...",
+  "searchTeamButton": "Search team",
+  "searchLast5": "Last 5",
+  "searchNoRecentMatches": "No recent matches",
+  "liveLabel": "LIVE",
+  "todayLabel": "Today",
+  "todayMatchesCount": "{count} matches",
+  "@todayMatchesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "matchHomeTeam": "Home",
+  "matchAwayTeam": "Away",
+  "matchStatusFT": "FT",
+  "matchLive": "LIVE",
+  "matchVS": "VS",
+  "matchStatusLive": "Live",
+  "matchStatusFinished": "Finished",
+  "matchStatusNotStarted": "Not started",
+  "newsRefreshButton": "Refresh news",
+  "newsErrorTitle": "Could not load news",
+  "newsErrorSubtitle": "Check your connection",
+  "newsRetryButton": "Retry",
+  "analysisInProgressTitle": "Analysis in progress",
+  "analysisLeaveWarning": "If you leave now, the analysis will be canceled and you will lose your progress. Do you want to continue?",
+  "analysisStayButton": "Stay",
+  "analysisExitButton": "Exit",
+  "analysisProcessingWithAI": "Processing with AI...",
+  "analysisCancelButton": "Cancel",
+  "analysisProcessingBanner": "Analyzing video with artificial intelligence. This may take a few minutes.",
+  "editPlayerTitle": "Edit player",
+  "editPlayerNameLabel": "Name",
+  "editPlayerNumberLabel": "Number",
+  "editPlayerPositionLabel": "Position",
+  "editPlayerDefaultName": "Player {rank}",
+  "@editPlayerDefaultName": {
+    "placeholders": {
+      "rank": { "type": "int" }
+    }
+  },
+  "cancelBtn": "Cancel",
+  "saveBtn": "Save", 
+  "coachingBoardTitle": "Coaching Board",
+  "coachingBoardSubtitle": "Choose a team to build the tactical board",
+  "coachingBoardNoTeams": "No teams",
+  "coachingBoardNoTeamsHint": "Create a team in the Home tab",
+  "coachingBoardReset": "Reset",
+  "coachingBoardSwapHint": "Long press = swap",
+  "coachingBoardSwapBanner": "Tap another player to swap",
+  "coachingBoardTitle": "Coaching Board",
+  "coachingBoardSelectTeamTitle": "Select a team",
+  "coachingBoardSelectTeamSubtitle": "Choose a team to build the tactical board",
+  "coachingBoardNoTeams": "No teams",
+  "coachingBoardNoTeamsHint": "Create a team in the Home tab",
+  "coachingBoardSave": "Save",
+  "coachingBoardReset": "Reset",
+  "coachingBoardSwapHint": "Long press = swap",
+  "coachingBoardSwapBanner": "Tap another player to swap",
+
+  "coachingBoardAnalyzingTitle": "Analyzing {teamName}",
+  "@coachingBoardAnalyzingTitle": {
+    "placeholders": {
+      "teamName": { "type": "String" }
+    }
+  },
+  "coachingBoardAnalyzingSubtitle": "Building the tactical board with AI",
+
+  "coachingBoardStepLoadingPlayers": "Loading players...",
+  "coachingBoardStepReadingStats": "Reading statistics...",
+  "coachingBoardStepComputingPositions": "Computing optimal positions...",
+  "coachingBoardStepBuildingBoard": "Building tactical board...",
+
+  "coachingBoardSaveSuccess": "Formation saved ✓",
+  "coachingBoardSaveError": "Error while saving the formation"
+  
 }

@@ -14,10 +14,10 @@ class CoachingBoardController extends ChangeNotifier {
   // Analysis progress
   int _completedSteps = 0;
   static const analysisSteps = [
-    'Loading players...',
-    'Reading statistics...',
-    'Computing optimal positions...',
-    'Building tactical board...',
+    'Loading players...',           // <- texto en inglés
+    'Reading statistics...',        // <- texto en inglés
+    'Computing optimal positions...', // <- texto en inglés
+    'Building tactical board...',   // <- texto en inglés
   ];
 
   // Board state
@@ -47,7 +47,12 @@ class CoachingBoardController extends ChangeNotifier {
     _savedMessage = null;
   }
 
-  static const List<String> availableFormations = ['4-3-3', '4-4-2', '4-2-3-1', '3-5-2'];
+  static const List<String> availableFormations = [
+    '4-3-3',
+    '4-4-2',
+    '4-2-3-1',
+    '3-5-2',
+  ];
 
   // ── Team loading ────────────────────────────────────────────────────────────
   Future<void> loadTeams() async {
@@ -90,21 +95,23 @@ class CoachingBoardController extends ChangeNotifier {
     // Always try to load real Supabase players first
     List<Map<String, dynamic>> supaPlayers = [];
     try {
-      supaPlayers = await SupabaseService.instance.getPlayersByTeam(teamId);
+      supaPlayers =
+          await SupabaseService.instance.getPlayersByTeam(teamId);
     } catch (_) {}
 
     // Try to restore a previously saved formation (positions only)
     try {
-      final saved = await SupabaseService.instance.getFormation(teamId);
+      final saved =
+          await SupabaseService.instance.getFormation(teamId);
       if (saved != null) {
-        final f       = saved['formation'] as String? ?? '4-3-3';
-        final rawList = saved['players']   as List?;
+        final f = saved['formation'] as String? ?? '4-3-3';
+        final rawList = saved['players'] as List?;
         if (rawList != null && rawList.isNotEmpty) {
           _formation = f;
           // Build a map of saved positions keyed by player id
           final posById = <int, (double, double)>{};
           for (final p in rawList) {
-            final m  = p as Map<String, dynamic>;
+            final m = p as Map<String, dynamic>;
             final id = (m['id'] as num).toInt();
             posById[id] = (
               (m['dx'] as num).toDouble(),
@@ -115,19 +122,22 @@ class CoachingBoardController extends ChangeNotifier {
           if (supaPlayers.isNotEmpty) {
             // Merge: real player data + saved positions
             _players = _assignRealPlayersWithSavedPos(
-              supaPlayers, posById, _mockFormations[_formation]!);
+              supaPlayers,
+              posById,
+              _mockFormations[_formation]!,
+            );
           } else {
             // No real players → restore saved formation as-is (may be mock names)
             _players = rawList.map((p) {
               final m = p as Map<String, dynamic>;
               return PlayerToken(
-                id:       (m['id'] as num).toInt(),
-                name:     m['name'] as String? ?? '',
-                number:   (m['number'] as num?)?.toInt() ?? 0,
+                id: (m['id'] as num).toInt(),
+                name: m['name'] as String? ?? '',
+                number: (m['number'] as num?)?.toInt() ?? 0,
                 position: m['position'] as String? ?? 'CM',
-                dx:       (m['dx'] as num).toDouble(),
-                dy:       (m['dy'] as num).toDouble(),
-                stats:    Map<String, dynamic>.from(_defaultStats),
+                dx: (m['dx'] as num).toDouble(),
+                dy: (m['dy'] as num).toDouble(),
+                stats: Map<String, dynamic>.from(_defaultStats),
               );
             }).toList();
           }
@@ -138,7 +148,10 @@ class CoachingBoardController extends ChangeNotifier {
 
     // No saved formation — place real players in default formation positions
     if (supaPlayers.isNotEmpty) {
-      _players = _assignRealPlayers(supaPlayers, _mockFormations[_formation]!);
+      _players = _assignRealPlayers(
+        supaPlayers,
+        _mockFormations[_formation]!,
+      );
       return;
     }
 
@@ -165,51 +178,69 @@ class CoachingBoardController extends ChangeNotifier {
         final (dx, dy) = posById[pid]!;
         final slot = defaultSlots.firstWhere(
           (s) => s[2] == (p['position'] as String? ?? 'CM'),
-          orElse: () => defaultSlots[result.length % defaultSlots.length],
+          orElse: () =>
+              defaultSlots[result.length % defaultSlots.length],
         );
-        result.add(PlayerToken(
-          id:       pid,
-          name:     p['name'] as String? ?? '',
-          number:   (p['shirt_number'] as num?)?.toInt() ?? 0,
-          position: slot[2] as String,
-          dx:       dx,
-          dy:       dy,
-          stats:    Map<String, dynamic>.from(mockStats[result.length % mockStats.length]),
-        ));
+        result.add(
+          PlayerToken(
+            id: pid,
+            name: p['name'] as String? ?? '',
+            number: (p['shirt_number'] as num?)?.toInt() ?? 0,
+            position: slot[2] as String,
+            dx: dx,
+            dy: dy,
+            stats: Map<String, dynamic>.from(
+              mockStats[result.length % mockStats.length],
+            ),
+          ),
+        );
         usedIds.add(pid);
       }
     }
 
     // Remaining players that weren't in the saved formation → assign to empty slots
-    final remaining = available.where((p) => !usedIds.contains((p['id'] as num).toInt())).toList();
-    final usedSlots  = result.length;
-    for (int i = 0; i < remaining.length && (usedSlots + i) < defaultSlots.length; i++) {
+    final remaining = available
+        .where((p) => !usedIds.contains((p['id'] as num).toInt()))
+        .toList();
+    final usedSlots = result.length;
+    for (int i = 0;
+        i < remaining.length && (usedSlots + i) < defaultSlots.length;
+        i++) {
       final slot = defaultSlots[usedSlots + i];
-      final p    = remaining[i];
-      result.add(PlayerToken(
-        id:       (p['id'] as num).toInt(),
-        name:     p['name'] as String? ?? '',
-        number:   (p['shirt_number'] as num?)?.toInt() ?? slot[1] as int,
-        position: slot[2] as String,
-        dx:       (slot[3] as num).toDouble(),
-        dy:       (slot[4] as num).toDouble(),
-        stats:    Map<String, dynamic>.from(mockStats[(usedSlots + i) % mockStats.length]),
-      ));
+      final p = remaining[i];
+      result.add(
+        PlayerToken(
+          id: (p['id'] as num).toInt(),
+          name: p['name'] as String? ?? '',
+          number:
+              (p['shirt_number'] as num?)?.toInt() ?? slot[1] as int,
+          position: slot[2] as String,
+          dx: (slot[3] as num).toDouble(),
+          dy: (slot[4] as num).toDouble(),
+          stats: Map<String, dynamic>.from(
+            mockStats[(usedSlots + i) % mockStats.length],
+          ),
+        ),
+      );
     }
 
     // Fill remaining slots with mock if fewer than 11 real players
     while (result.length < defaultSlots.length) {
-      final i    = result.length;
+      final i = result.length;
       final slot = defaultSlots[i];
-      result.add(PlayerToken(
-        id:       -(i + 1),
-        name:     slot[0] as String,
-        number:   slot[1] as int,
-        position: slot[2] as String,
-        dx:       (slot[3] as num).toDouble(),
-        dy:       (slot[4] as num).toDouble(),
-        stats:    Map<String, dynamic>.from(mockStats[i % mockStats.length]),
-      ));
+      result.add(
+        PlayerToken(
+          id: -(i + 1),
+          name: slot[0] as String,
+          number: slot[1] as int,
+          position: slot[2] as String,
+          dx: (slot[3] as num).toDouble(),
+          dy: (slot[4] as num).toDouble(),
+          stats: Map<String, dynamic>.from(
+            mockStats[i % mockStats.length],
+          ),
+        ),
+      );
     }
 
     return result;
@@ -224,7 +255,7 @@ class CoachingBoardController extends ChangeNotifier {
     final mockStats = List<Map<String, dynamic>>.from(_mockStats);
 
     return List.generate(positions.length, (i) {
-      final slot    = positions[i];
+      final slot = positions[i];
       final wantPos = slot[2] as String;
 
       // Try to find a player whose position matches (or is compatible)
@@ -238,45 +269,61 @@ class CoachingBoardController extends ChangeNotifier {
       } else {
         // No real player available → use mock slot
         return PlayerToken(
-          id:       i + 1,
-          name:     slot[0] as String,
-          number:   slot[1] as int,
+          id: i + 1,
+          name: slot[0] as String,
+          number: slot[1] as int,
           position: wantPos,
-          dx:       (slot[3] as num).toDouble(),
-          dy:       (slot[4] as num).toDouble(),
-          stats:    Map<String, dynamic>.from(mockStats[i % mockStats.length]),
+          dx: (slot[3] as num).toDouble(),
+          dy: (slot[4] as num).toDouble(),
+          stats: Map<String, dynamic>.from(
+            mockStats[i % mockStats.length],
+          ),
         );
       }
 
       return PlayerToken(
-        id:       (chosen['id'] as num).toInt(),
-        name:     chosen['name'] as String? ?? slot[0] as String,
-        number:   (chosen['shirt_number'] as num?)?.toInt() ?? slot[1] as int,
+        id: (chosen['id'] as num).toInt(),
+        name: chosen['name'] as String? ?? slot[0] as String,
+        number:
+            (chosen['shirt_number'] as num?)?.toInt() ?? slot[1] as int,
         position: wantPos,
-        dx:       (slot[3] as num).toDouble(),
-        dy:       (slot[4] as num).toDouble(),
-        stats:    Map<String, dynamic>.from(mockStats[i % mockStats.length]),
+        dx: (slot[3] as num).toDouble(),
+        dy: (slot[4] as num).toDouble(),
+        stats: Map<String, dynamic>.from(
+          mockStats[i % mockStats.length],
+        ),
       );
     });
   }
 
-  static int _findBestPlayer(List<Map<String, dynamic>> pool, String wantPos) {
+  static int _findBestPlayer(
+    List<Map<String, dynamic>> pool,
+    String wantPos,
+  ) {
     // Exact match first
     for (int i = 0; i < pool.length; i++) {
-      if ((pool[i]['position'] as String? ?? '') == wantPos) return i;
+      if ((pool[i]['position'] as String? ?? '') == wantPos) {
+        return i;
+      }
     }
     // Group match (GK→GK, DEF→CB/RB/LB, MID→CM/CDM, FWD→ST/RW/LW)
     final group = _posGroup(wantPos);
     for (int i = 0; i < pool.length; i++) {
-      if (_posGroup(pool[i]['position'] as String? ?? '') == group) return i;
+      if (_posGroup(pool[i]['position'] as String? ?? '') == group) {
+        return i;
+      }
     }
     return -1;
   }
 
   static String _posGroup(String pos) {
     if (pos == 'GK') return 'GK';
-    if ({'CB','RB','LB','WB','RWB','LWB'}.contains(pos)) return 'DEF';
-    if ({'ST','CF','RW','LW','SS'}.contains(pos)) return 'FWD';
+    if ({'CB', 'RB', 'LB', 'WB', 'RWB', 'LWB'}.contains(pos)) {
+      return 'DEF';
+    }
+    if ({'ST', 'CF', 'RW', 'LW', 'SS'}.contains(pos)) {
+      return 'FWD';
+    }
     return 'MID';
   }
 
@@ -297,7 +344,8 @@ class CoachingBoardController extends ChangeNotifier {
   }
 
   void selectPlayer(PlayerToken? player) {
-    _selectedPlayer = (_selectedPlayer?.id == player?.id) ? null : player;
+    _selectedPlayer =
+        (_selectedPlayer?.id == player?.id) ? null : player;
     notifyListeners();
   }
 
@@ -326,13 +374,20 @@ class CoachingBoardController extends ChangeNotifier {
   void finishSwap(PlayerToken target) {
     final src = _swapSource;
     _swapSource = null;
-    if (src == null || src.id == target.id) { notifyListeners(); return; }
+    if (src == null || src.id == target.id) {
+      notifyListeners();
+      return;
+    }
     final srcIdx = _players.indexWhere((p) => p.id == src.id);
     final tgtIdx = _players.indexWhere((p) => p.id == target.id);
-    if (srcIdx == -1 || tgtIdx == -1) { notifyListeners(); return; }
+    if (srcIdx == -1 || tgtIdx == -1) {
+      notifyListeners();
+      return;
+    }
     final list = List.of(_players);
     final (sx, sy) = (list[srcIdx].dx, list[srcIdx].dy);
-    list[srcIdx] = list[srcIdx].copyWith(dx: list[tgtIdx].dx, dy: list[tgtIdx].dy);
+    list[srcIdx] =
+        list[srcIdx].copyWith(dx: list[tgtIdx].dx, dy: list[tgtIdx].dy);
     list[tgtIdx] = list[tgtIdx].copyWith(dx: sx, dy: sy);
     _players = list;
     notifyListeners();
@@ -348,14 +403,22 @@ class CoachingBoardController extends ChangeNotifier {
       await SupabaseService.instance.saveFormation(
         teamId: teamId,
         formation: _formation,
-        players: _players.map((p) => {
-          'id': p.id, 'name': p.name, 'number': p.number,
-          'position': p.position, 'dx': p.dx, 'dy': p.dy,
-        }).toList(),
+        players: _players
+            .map(
+              (p) => {
+                'id': p.id,
+                'name': p.name,
+                'number': p.number,
+                'position': p.position,
+                'dx': p.dx,
+                'dy': p.dy,
+              },
+            )
+            .toList(),
       );
-      _savedMessage = 'Formación guardada ✓';
+      _savedMessage = 'Formación guardada ✓'; // <- español
     } catch (_) {
-      _savedMessage = 'Error al guardar la formación';
+      _savedMessage = 'Error al guardar la formación'; // <- español
     }
     _isSaving = false;
     notifyListeners();
@@ -363,90 +426,197 @@ class CoachingBoardController extends ChangeNotifier {
 
   // ── Mock fallback data ─────────────────────────────────────────────────────
   static const _defaultStats = {
-    'rating': 7.0, 'distance': 9.0, 'passes': 50,
-    'passAccuracy': 82, 'goals': 0, 'assists': 0, 'tackles': 5, 'minutes': 90,
+    'rating': 7.0,
+    'distance': 9.0,
+    'passes': 50,
+    'passAccuracy': 82,
+    'goals': 0,
+    'assists': 0,
+    'tackles': 5,
+    'minutes': 90,
   };
 
   static const _mockFormations = <String, List<List<dynamic>>>{
     '4-3-3': [
-      ['García',    1,  'GK',  0.50, 0.88],
-      ['Pérez',     2,  'RB',  0.82, 0.72],
-      ['López',     3,  'CB',  0.62, 0.72],
-      ['Rodríguez', 4,  'CB',  0.38, 0.72],
-      ['González',  5,  'LB',  0.18, 0.72],
-      ['Díaz',      6,  'CM',  0.72, 0.52],
-      ['Morales',   7,  'CDM', 0.50, 0.55],
-      ['Fernández', 8,  'CM',  0.28, 0.52],
-      ['Torres',    9,  'RW',  0.80, 0.28],
-      ['Sánchez',   10, 'ST',  0.50, 0.22],
-      ['Ramírez',   11, 'LW',  0.20, 0.28],
+      ['García', 1, 'GK', 0.50, 0.88],
+      ['Pérez', 2, 'RB', 0.82, 0.72],
+      ['López', 3, 'CB', 0.62, 0.72],
+      ['Rodríguez', 4, 'CB', 0.38, 0.72],
+      ['González', 5, 'LB', 0.18, 0.72],
+      ['Díaz', 6, 'CM', 0.72, 0.52],
+      ['Morales', 7, 'CDM', 0.50, 0.55],
+      ['Fernández', 8, 'CM', 0.28, 0.52],
+      ['Torres', 9, 'RW', 0.80, 0.28],
+      ['Sánchez', 10, 'ST', 0.50, 0.22],
+      ['Ramírez', 11, 'LW', 0.20, 0.28],
     ],
     '4-4-2': [
-      ['García',    1,  'GK',  0.50, 0.88],
-      ['Pérez',     2,  'RB',  0.82, 0.72],
-      ['López',     3,  'CB',  0.62, 0.72],
-      ['Rodríguez', 4,  'CB',  0.38, 0.72],
-      ['González',  5,  'LB',  0.18, 0.72],
-      ['Díaz',      6,  'RM',  0.82, 0.52],
-      ['Morales',   7,  'CM',  0.60, 0.52],
-      ['Fernández', 8,  'CM',  0.40, 0.52],
-      ['Torres',    9,  'LM',  0.18, 0.52],
-      ['Sánchez',   10, 'ST',  0.62, 0.26],
-      ['Ramírez',   11, 'ST',  0.38, 0.26],
+      ['García', 1, 'GK', 0.50, 0.88],
+      ['Pérez', 2, 'RB', 0.82, 0.72],
+      ['López', 3, 'CB', 0.62, 0.72],
+      ['Rodríguez', 4, 'CB', 0.38, 0.72],
+      ['González', 5, 'LB', 0.18, 0.72],
+      ['Díaz', 6, 'RM', 0.82, 0.52],
+      ['Morales', 7, 'CM', 0.60, 0.52],
+      ['Fernández', 8, 'CM', 0.40, 0.52],
+      ['Torres', 9, 'LM', 0.18, 0.52],
+      ['Sánchez', 10, 'ST', 0.62, 0.26],
+      ['Ramírez', 11, 'ST', 0.38, 0.26],
     ],
     '4-2-3-1': [
-      ['García',    1,  'GK',  0.50, 0.88],
-      ['Pérez',     2,  'RB',  0.82, 0.74],
-      ['López',     3,  'CB',  0.62, 0.74],
-      ['Rodríguez', 4,  'CB',  0.38, 0.74],
-      ['González',  5,  'LB',  0.18, 0.74],
-      ['Díaz',      6,  'CDM', 0.62, 0.58],
-      ['Morales',   7,  'CDM', 0.38, 0.58],
-      ['Fernández', 8,  'RAM', 0.78, 0.38],
-      ['Torres',    9,  'CAM', 0.50, 0.38],
-      ['Sánchez',   10, 'LAM', 0.22, 0.38],
-      ['Ramírez',   11, 'ST',  0.50, 0.20],
+      ['García', 1, 'GK', 0.50, 0.88],
+      ['Pérez', 2, 'RB', 0.82, 0.74],
+      ['López', 3, 'CB', 0.62, 0.74],
+      ['Rodríguez', 4, 'CB', 0.38, 0.74],
+      ['González', 5, 'LB', 0.18, 0.74],
+      ['Díaz', 6, 'CDM', 0.62, 0.58],
+      ['Morales', 7, 'CDM', 0.38, 0.58],
+      ['Fernández', 8, 'RAM', 0.78, 0.38],
+      ['Torres', 9, 'CAM', 0.50, 0.38],
+      ['Sánchez', 10, 'LAM', 0.22, 0.38],
+      ['Ramírez', 11, 'ST', 0.50, 0.20],
     ],
     '3-5-2': [
-      ['García',    1,  'GK',  0.50, 0.88],
-      ['Pérez',     2,  'CB',  0.72, 0.74],
-      ['López',     3,  'CB',  0.50, 0.74],
-      ['Rodríguez', 4,  'CB',  0.28, 0.74],
-      ['González',  5,  'RM',  0.90, 0.52],
-      ['Díaz',      6,  'CM',  0.67, 0.52],
-      ['Morales',   7,  'CDM', 0.50, 0.56],
-      ['Fernández', 8,  'CM',  0.33, 0.52],
-      ['Torres',    9,  'LM',  0.10, 0.52],
-      ['Sánchez',   10, 'ST',  0.62, 0.26],
-      ['Ramírez',   11, 'ST',  0.38, 0.26],
+      ['García', 1, 'GK', 0.50, 0.88],
+      ['Pérez', 2, 'CB', 0.72, 0.74],
+      ['López', 3, 'CB', 0.50, 0.74],
+      ['Rodríguez', 4, 'CB', 0.28, 0.74],
+      ['González', 5, 'RM', 0.90, 0.52],
+      ['Díaz', 6, 'CM', 0.67, 0.52],
+      ['Morales', 7, 'CDM', 0.50, 0.56],
+      ['Fernández', 8, 'CM', 0.33, 0.52],
+      ['Torres', 9, 'LM', 0.10, 0.52],
+      ['Sánchez', 10, 'ST', 0.62, 0.26],
+      ['Ramírez', 11, 'ST', 0.38, 0.26],
     ],
   };
 
   static const _mockStats = [
-    {'rating': 7.2, 'distance': 5.8,  'passes': 42, 'passAccuracy': 91, 'goals': 0, 'assists': 0, 'tackles': 2,  'minutes': 90},
-    {'rating': 7.0, 'distance': 10.2, 'passes': 55, 'passAccuracy': 84, 'goals': 0, 'assists': 2, 'tackles': 8,  'minutes': 90},
-    {'rating': 7.5, 'distance': 9.8,  'passes': 61, 'passAccuracy': 88, 'goals': 1, 'assists': 0, 'tackles': 12, 'minutes': 90},
-    {'rating': 7.1, 'distance': 9.6,  'passes': 58, 'passAccuracy': 86, 'goals': 0, 'assists': 0, 'tackles': 10, 'minutes': 90},
-    {'rating': 7.3, 'distance': 10.8, 'passes': 52, 'passAccuracy': 83, 'goals': 0, 'assists': 3, 'tackles': 7,  'minutes': 90},
-    {'rating': 7.8, 'distance': 11.4, 'passes': 72, 'passAccuracy': 87, 'goals': 1, 'assists': 2, 'tackles': 6,  'minutes': 90},
-    {'rating': 7.6, 'distance': 12.1, 'passes': 68, 'passAccuracy': 89, 'goals': 0, 'assists': 1, 'tackles': 9,  'minutes': 90},
-    {'rating': 7.4, 'distance': 11.2, 'passes': 65, 'passAccuracy': 86, 'goals': 1, 'assists': 1, 'tackles': 5,  'minutes': 90},
-    {'rating': 8.1, 'distance': 10.5, 'passes': 45, 'passAccuracy': 79, 'goals': 2, 'assists': 3, 'tackles': 3,  'minutes': 87},
-    {'rating': 8.5, 'distance': 9.2,  'passes': 38, 'passAccuracy': 74, 'goals': 3, 'assists': 1, 'tackles': 2,  'minutes': 90},
-    {'rating': 7.9, 'distance': 10.8, 'passes': 48, 'passAccuracy': 81, 'goals': 2, 'assists': 2, 'tackles': 4,  'minutes': 83},
+    {
+      'rating': 7.2,
+      'distance': 5.8,
+      'passes': 42,
+      'passAccuracy': 91,
+      'goals': 0,
+      'assists': 0,
+      'tackles': 2,
+      'minutes': 90
+    },
+    {
+      'rating': 7.0,
+      'distance': 10.2,
+      'passes': 55,
+      'passAccuracy': 84,
+      'goals': 0,
+      'assists': 2,
+      'tackles': 8,
+      'minutes': 90
+    },
+    {
+      'rating': 7.5,
+      'distance': 9.8,
+      'passes': 61,
+      'passAccuracy': 88,
+      'goals': 1,
+      'assists': 0,
+      'tackles': 12,
+      'minutes': 90
+    },
+    {
+      'rating': 7.1,
+      'distance': 9.6,
+      'passes': 58,
+      'passAccuracy': 86,
+      'goals': 0,
+      'assists': 0,
+      'tackles': 10,
+      'minutes': 90
+    },
+    {
+      'rating': 7.3,
+      'distance': 10.8,
+      'passes': 52,
+      'passAccuracy': 83,
+      'goals': 0,
+      'assists': 3,
+      'tackles': 7,
+      'minutes': 90
+    },
+    {
+      'rating': 7.8,
+      'distance': 11.4,
+      'passes': 72,
+      'passAccuracy': 87,
+      'goals': 1,
+      'assists': 2,
+      'tackles': 6,
+      'minutes': 90
+    },
+    {
+      'rating': 7.6,
+      'distance': 12.1,
+      'passes': 68,
+      'passAccuracy': 89,
+      'goals': 0,
+      'assists': 1,
+      'tackles': 9,
+      'minutes': 90
+    },
+    {
+      'rating': 7.4,
+      'distance': 11.2,
+      'passes': 65,
+      'passAccuracy': 86,
+      'goals': 1,
+      'assists': 1,
+      'tackles': 5,
+      'minutes': 90
+    },
+    {
+      'rating': 8.1,
+      'distance': 10.5,
+      'passes': 45,
+      'passAccuracy': 79,
+      'goals': 2,
+      'assists': 3,
+      'tackles': 3,
+      'minutes': 87
+    },
+    {
+      'rating': 8.5,
+      'distance': 9.2,
+      'passes': 38,
+      'passAccuracy': 74,
+      'goals': 3,
+      'assists': 1,
+      'tackles': 2,
+      'minutes': 90
+    },
+    {
+      'rating': 7.9,
+      'distance': 10.8,
+      'passes': 48,
+      'passAccuracy': 81,
+      'goals': 2,
+      'assists': 2,
+      'tackles': 4,
+      'minutes': 83
+    },
   ];
 
-  static List<PlayerToken> _buildMockPlayers(List<List<dynamic>> positions) {
+  static List<PlayerToken> _buildMockPlayers(
+    List<List<dynamic>> positions,
+  ) {
     return List.generate(positions.length, (i) {
       final p = positions[i];
       return PlayerToken(
-        id:       i + 1,
-        name:     p[0] as String,
-        number:   p[1] as int,
+        id: i + 1,
+        name: p[0] as String,
+        number: p[1] as int,
         position: p[2] as String,
-        dx:       (p[3] as num).toDouble(),
-        dy:       (p[4] as num).toDouble(),
-        stats:    Map<String, dynamic>.from(_mockStats[i]),
+        dx: (p[3] as num).toDouble(),
+        dy: (p[4] as num).toDouble(),
+        stats: Map<String, dynamic>.from(_mockStats[i]),
       );
     });
   }

@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_color_tokens.dart';
-import '../../../../../l10n/generated/app_localizations.dart'; // IMPORTANTE
+import '../../../../../l10n/generated/app_localizations.dart';
 
 class FieldMapTab extends StatefulWidget {
   final List players;

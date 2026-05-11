@@ -123,7 +123,7 @@ class _MatchScheduleSectionState extends State<MatchScheduleSection> {
                         textInputAction: TextInputAction.search,
                         onSubmitted: (_) => _submitSearch(),
                         decoration: InputDecoration(
-                          hintText: 'Buscar equipo...',
+                          hintText: l10n.searchTeamHint,
                           hintStyle: TextStyle(color: c.muted, fontSize: 14),
                           prefixIcon:
                               Icon(Icons.search, color: c.dim, size: 18),
@@ -175,7 +175,7 @@ class _MatchScheduleSectionState extends State<MatchScheduleSection> {
               : Row(key: const ValueKey('search_closed'),
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Resultados',
+                    Text(l10n.resultsTab,
                         style: TextStyle(
                             color: c.textHi,
                             fontSize: 20,
@@ -193,7 +193,7 @@ class _MatchScheduleSectionState extends State<MatchScheduleSection> {
                         child: Row(mainAxisSize: MainAxisSize.min, children: [
                           Icon(Icons.search, color: c.accent, size: 16),
                           const SizedBox(width: 6),
-                          Text('Buscar equipo',
+                          Text(l10n.searchTeamButton,
                               style: TextStyle(
                                   color: c.accent,
                                   fontSize: 12,
@@ -264,7 +264,7 @@ class _MatchScheduleSectionState extends State<MatchScheduleSection> {
                 color: c.accentLo,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Text('Últimos 5',
+              child: Text(l10n.searchLast5,
                   style: TextStyle(
                       color: c.accent,
                       fontSize: 11,
@@ -275,7 +275,7 @@ class _MatchScheduleSectionState extends State<MatchScheduleSection> {
         if (widget.searchedMatches.isEmpty)
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-            child: Text('Sin partidos recientes',
+            child: Text(l10n.searchNoRecentMatches,
                 style: TextStyle(color: c.muted, fontSize: 13)),
           )
         else
@@ -315,7 +315,7 @@ class _MatchScheduleSectionState extends State<MatchScheduleSection> {
                   color: Color(0xFFE91E63), shape: BoxShape.circle),
             ),
             const SizedBox(width: 8),
-            Text('EN VIVO',
+            Text(l10n.liveLabel,
                 style: TextStyle(
                     color: c.textHi,
                     fontSize: 13,
@@ -373,7 +373,7 @@ class _MatchScheduleSectionState extends State<MatchScheduleSection> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Hoy',
+              Text(l10n.todayLabel,
                   style: TextStyle(
                       color: c.textHi,
                       fontSize: 18,
@@ -385,7 +385,7 @@ class _MatchScheduleSectionState extends State<MatchScheduleSection> {
                     color: c.accentLo,
                     borderRadius: BorderRadius.circular(20)),
                 child: Text(
-                    '${filteredSections.values.fold(0, (s, l) => s + l.length)} partidos',
+                    l10n.todayMatchesCount(filteredSections.values.fold(0, (s, l) => s + l.length)),
                     style: TextStyle(
                         color: c.accent,
                         fontSize: 11,
@@ -474,9 +474,10 @@ class FeaturedMatchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
 
-    final homeTeam    = match['teams']?['home']?['name'] as String? ?? 'Home';
-    final awayTeam    = match['teams']?['away']?['name'] as String? ?? 'Away';
+    final homeTeam    = match['teams']?['home']?['name'] as String? ?? l10n.matchHomeTeam;
+    final awayTeam    = match['teams']?['away']?['name'] as String? ?? l10n.matchAwayTeam;
     final homeLogo    = _logo(match['teams']?['home']);
     final awayLogo    = _logo(match['teams']?['away']);
     final homeGoals   = match['goals']?['home'];
@@ -548,7 +549,7 @@ class FeaturedMatchCard extends StatelessWidget {
                 if (isLive)
                   LiveBadge(time: timeText)
                 else if (isFinished)
-                  const StatusPill(label: 'FT')
+                  StatusPill(label: l10n.matchStatusFT)
                 else if (timeText.isNotEmpty)
                   StatusPill(label: timeText),
               ]),
@@ -597,8 +598,8 @@ class FeaturedMatchCard extends StatelessWidget {
                                     letterSpacing: -1,
                                   )),
                             ])
-                          : const Text('VS',
-                              style: TextStyle(
+                          : Text(l10n.matchVS,
+                              style: const TextStyle(
                                   color: Colors.white54,
                                   fontSize: 22,
                                   fontWeight: FontWeight.w800,
@@ -633,6 +634,7 @@ class LiveBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -646,7 +648,7 @@ class LiveBadge extends StatelessWidget {
             decoration: const BoxDecoration(
                 color: Colors.white, shape: BoxShape.circle)),
         const SizedBox(width: 5),
-        Text(time.isEmpty ? 'LIVE' : 'LIVE  $time',
+        Text(time.isEmpty ? l10n.matchLive : '${l10n.matchLive}  $time',
             style: const TextStyle(
                 color: Colors.white,
                 fontSize: 11,
@@ -787,9 +789,10 @@ class MatchRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
 
-    final homeTeam    = match['teams']?['home']?['name'] as String? ?? 'Local';
-    final awayTeam    = match['teams']?['away']?['name'] as String? ?? 'Away';
+    final homeTeam    = match['teams']?['home']?['name'] as String? ?? l10n.matchHomeTeam;
+    final awayTeam    = match['teams']?['away']?['name'] as String? ?? l10n.matchAwayTeam;
     final homeLogo    = _resolveLogoUrl(match['teams']?['home']);
     final awayLogo    = _resolveLogoUrl(match['teams']?['away']);
     final homeGoals   = match['goals']?['home'];
@@ -808,11 +811,11 @@ class MatchRow extends StatelessWidget {
     String dateLabel = '';
     String statusLabel = '';
     if (isLive) {
-      timeLabel   = elapsed != null ? "$elapsed'" : 'LIVE';
-      statusLabel = 'En vivo';
+      timeLabel   = elapsed != null ? "$elapsed'" : l10n.matchLive;
+      statusLabel = l10n.matchStatusLive;
     } else if (isFinished) {
       timeLabel   = '${homeGoals ?? 0}  –  ${awayGoals ?? 0}';
-      statusLabel = 'Finalizado';
+      statusLabel = l10n.matchStatusFinished;
       if (dateStr.isNotEmpty) {
         try { dateLabel = DateFormat('dd MMM').format(DateTime.parse(dateStr).toLocal()); } catch (_) {}
       }
@@ -821,7 +824,7 @@ class MatchRow extends StatelessWidget {
         final dt  = DateTime.parse(dateStr).toLocal();
         timeLabel   = DateFormat('HH:mm').format(dt);
         dateLabel   = DateFormat('dd MMM').format(dt);
-        statusLabel = 'No iniciado';
+        statusLabel = l10n.matchStatusNotStarted;
       } catch (_) {}
     }
 
@@ -869,7 +872,7 @@ class MatchRow extends StatelessWidget {
                   Container(width: 5, height: 5,
                       decoration: const BoxDecoration(color: liveRed, shape: BoxShape.circle)),
                   const SizedBox(width: 4),
-                  const Text('LIVE', style: TextStyle(color: liveRed, fontSize: 9, fontWeight: FontWeight.w800)),
+                  Text(l10n.matchLive, style: const TextStyle(color: liveRed, fontSize: 9, fontWeight: FontWeight.w800)),
                 ]),
               ),
             ],
@@ -989,4 +992,3 @@ class _MatchLogo extends StatelessWidget {
     );
   }
 }
-

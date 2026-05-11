@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:playvision/core/theme/app_color_tokens.dart';
 import 'package:playvision/shared/widgets/form_text_field.dart';
 import 'package:playvision/features/analysis/presentation/analysis_page.dart';
+import 'package:playvision/l10n/generated/app_localizations.dart';
 
 import '../data/live_matches_service.dart';
 import 'home_controller.dart';
@@ -262,12 +263,13 @@ class _HomePageState extends State<HomePage> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDlg) {
           final c = ctx.colors;
+          final l10n = AppLocalizations.of(ctx)!;
           return AlertDialog(
             backgroundColor: c.surface,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20)),
             title: Text(
-              isEdit ? 'Edit team' : 'New team',
+              isEdit ? l10n.teamEditTitle : l10n.teamNewTitle,
               style: TextStyle(color: c.text, fontWeight: FontWeight.w700),
             ),
             content: SingleChildScrollView(
@@ -324,21 +326,21 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  pickedLogo != null ? 'Logo selected' : 'Tap to add logo',
+                  pickedLogo != null ? l10n.teamLogoSelected : l10n.teamLogoTapToAdd,
                   style: TextStyle(color: c.muted, fontSize: 11),
                 ),
                 const SizedBox(height: 16),
-                FormTextField(controller: nameCtrl,     label: 'Name'),
+                FormTextField(controller: nameCtrl, label: l10n.teamFieldName),
                 const SizedBox(height: 10),
-                FormTextField(controller: categoryCtrl, label: 'Category'),
+                FormTextField(controller: categoryCtrl, label: l10n.teamFieldCategory),
                 const SizedBox(height: 10),
-                FormTextField(controller: clubCtrl,     label: 'Club'),
+                FormTextField(controller: clubCtrl, label: l10n.teamFieldClub),
               ]),
             ),
             actions: [
               TextButton(
                 onPressed: isSaving ? null : () => Navigator.pop(ctx),
-                child: Text('Cancel', style: TextStyle(color: c.muted)),
+                child: Text(l10n.teamDialogCancel, style: TextStyle(color: c.muted)),
               ),
               TextButton(
                 onPressed: isSaving
@@ -396,7 +398,7 @@ class _HomePageState extends State<HomePage> {
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: context.colors.accent))
                     : Text(
-                        isEdit ? 'Save' : 'Create',
+                        isEdit ? l10n.teamDialogSave : l10n.teamDialogCreate,
                         style: TextStyle(
                             color: context.colors.accent,
                             fontWeight: FontWeight.w700),
@@ -414,23 +416,24 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (ctx) {
         final c = ctx.colors;
+        final l10n = AppLocalizations.of(ctx)!;
         return AlertDialog(
           backgroundColor: c.surface,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20)),
-          title: Text('Delete team',
+          title: Text(l10n.teamDeleteTitle,
               style: TextStyle(color: c.text, fontWeight: FontWeight.w700)),
           content: Text(
-            'Delete team "${team['name']}"? This cannot be undone.',
+            l10n.teamDeleteConfirm(team['name'] as String),
             style: TextStyle(color: c.muted, fontSize: 13, height: 1.5),
           ),
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: Text('Cancel', style: TextStyle(color: c.muted))),
+                child: Text(l10n.teamDialogCancel, style: TextStyle(color: c.muted))),
             TextButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                child: Text('Delete', style: TextStyle(color: c.danger))),
+                child: Text(l10n.teamDeleteButton, style: TextStyle(color: c.danger))),
           ],
         );
       },
@@ -445,16 +448,17 @@ class _HomePageState extends State<HomePage> {
 class _FeatureSection extends StatelessWidget {
   const _FeatureSection();
 
-  static const _cards = [
-    (Icons.radar_rounded,          'Análisis Rival',    'Anticipa al oponente', '94%'),
-    (Icons.sports_soccer_rounded,  'Táctica Previa',    'Prepara cada partido',  '87%'),
-    (Icons.person_search_rounded,  'Stats Individuales','Seguimiento de jugadores','91%'),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     const accent = Color(0xFF32FF88);
+
+    final cards = [
+      (Icons.radar_rounded, l10n.featureRivalAnalysisTitle, l10n.featureRivalAnalysisDesc, '94%'),
+      (Icons.sports_soccer_rounded, l10n.featureTacticsTitle, l10n.featureTacticsDesc, '87%'),
+      (Icons.person_search_rounded, l10n.featureIndividualStatsTitle, l10n.featureIndividualStatsDesc, '91%'),
+    ];
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 8, 0, 4),
@@ -463,10 +467,10 @@ class _FeatureSection extends StatelessWidget {
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: _cards.length,
+          itemCount: cards.length,
           separatorBuilder: (_, __) => const SizedBox(width: 10),
           itemBuilder: (context, i) {
-            final card   = _cards[i];
+            final card   = cards[i];
             final isDark = Theme.of(context).brightness == Brightness.dark;
             final cardAccent = isDark ? accent : c.accent;
             return ClipRRect(

@@ -14,7 +14,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
 
-  final supabaseUrl     = dotenv.env['SUPABASE_URL'];
+  final supabaseUrl = dotenv.env['SUPABASE_URL'];
   final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'];
 
   if (supabaseUrl == null || supabaseUrl.isEmpty) {
@@ -26,10 +26,13 @@ Future<void> main() async {
 
   await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
 
+  final localeProvider = LocaleProvider();
+  await localeProvider.loadSavedLocale();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => LocaleProvider()),
+        ChangeNotifierProvider(create: (_) => localeProvider),
         ChangeNotifierProvider.value(value: themeController),
       ],
       child: const PlayVisionApp(),
@@ -42,9 +45,9 @@ class PlayVisionApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final session        = Supabase.instance.client.auth.currentSession;
+    final session = Supabase.instance.client.auth.currentSession;
     final localeProvider = Provider.of<LocaleProvider>(context);
-    final theme          = Provider.of<ThemeController>(context);
+    final theme = Provider.of<ThemeController>(context);
 
     return MaterialApp(
       title: 'PlayVision',
@@ -60,8 +63,8 @@ class PlayVisionApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
-        Locale('es', ''),
-        Locale('en', ''),
+        Locale('es'),
+        Locale('en'),
       ],
       initialRoute: session != null ? AppRoutes.main : AppRoutes.login,
       routes: AppRoutes.routes,

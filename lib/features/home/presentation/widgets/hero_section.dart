@@ -86,10 +86,10 @@ class HeroSection extends StatelessWidget {
                 const SizedBox(width: 10),
                 Icon(Icons.sports_soccer_outlined, color: c.accent, size: 20),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'PlayVision',
-                    style: TextStyle(
+                    l10n.appTitle,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
@@ -120,9 +120,9 @@ class HeroSection extends StatelessWidget {
                 const SizedBox(width: 8),
                 _StatPill(label: l10n.analysed,      value: '$done'),
                 const SizedBox(width: 8),
-                _StatPill(label: 'Precisión AI',     value: '94%'),
+                _StatPill(label: l10n.heroAiAccuracy, value: '94%'),
                 const SizedBox(width: 8),
-                _StatPill(label: 'Último',           value: todayStr),
+                _StatPill(label: l10n.heroLatest,     value: todayStr),
               ]),
             ]),
           ),

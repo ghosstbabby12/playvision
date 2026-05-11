@@ -83,7 +83,7 @@ class SummaryTab extends StatelessWidget {
 
     if (totalKm > 0) { insights.add(l10n.insightTotalKm(totalKm.toStringAsFixed(2))); }
     if (poss > 0)    { insights.add(l10n.insightPossession(poss.toStringAsFixed(1))); }
-    if (count > 0)   { insights.add(l10n.insightActivePlayers(count)); }
+    if (count > 0)   { insights.add(l10n.insightActivePlayers(count.toString())); }
 
     if (players.isNotEmpty) {
       final fastest = players.reduce((a, b) =>

@@ -38,6 +38,7 @@ class _AnalysisPageState extends State<AnalysisPage>
 
   Future<bool> _onWillPop() async {
     if (!_controller.isAnalyzing) return true;
+    final l10n = AppLocalizations.of(context)!;
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) {
@@ -51,18 +52,18 @@ class _AnalysisPageState extends State<AnalysisPage>
           title: Row(children: [
             Icon(Icons.warning_amber_rounded, color: dc.accent, size: 22),
             const SizedBox(width: 10),
-            Text('Análisis en curso',
+            Text(l10n.analysisInProgressTitle,
                 style: TextStyle(color: dc.text, fontWeight: FontWeight.w700, fontSize: 17)),
           ]),
           content: Text(
-            'Si sales ahora, el análisis se cancelará y perderás el progreso. ¿Deseas continuar?',
+            l10n.analysisLeaveWarning,
             style: TextStyle(color: dc.dim, fontSize: 14, height: 1.5),
           ),
           actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text('Volver', style: TextStyle(color: dc.dim)),
+              child: Text(l10n.analysisStayButton, style: TextStyle(color: dc.dim)),
             ),
             GestureDetector(
               onTap: () {
@@ -76,8 +77,8 @@ class _AnalysisPageState extends State<AnalysisPage>
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: const Color(0xFFE53E3E).withValues(alpha: 0.5)),
                 ),
-                child: const Text('Salir',
-                    style: TextStyle(
+                child: Text(l10n.analysisExitButton,
+                    style: const TextStyle(
                         color: Color(0xFFFC8181),
                         fontWeight: FontWeight.w600)),
               ),
@@ -143,7 +144,7 @@ class _AnalysisPageState extends State<AnalysisPage>
                                 fontWeight: FontWeight.w800, letterSpacing: -0.3)),
                         const SizedBox(height: 3),
                         Text(
-                          isAnalyzing ? 'Procesando con IA...' : l10n.aiPoweredPerformance,
+                          isAnalyzing ? l10n.analysisProcessingWithAI : l10n.aiPoweredPerformance,
                           style: TextStyle(
                             color: isAnalyzing ? c.accent : c.dim,
                             fontSize: 13,
@@ -168,8 +169,8 @@ class _AnalysisPageState extends State<AnalysisPage>
                             Icon(Icons.stop_circle_outlined,
                                 color: const Color(0xFFFC8181), size: 16),
                             const SizedBox(width: 6),
-                            const Text('Cancelar',
-                                style: TextStyle(
+                            Text(l10n.analysisCancelButton,
+                                style: const TextStyle(
                                     color: Color(0xFFFC8181),
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500)),
@@ -237,7 +238,7 @@ class _AnalysisPageState extends State<AnalysisPage>
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Analizando video con inteligencia artificial. Esto puede tardar unos minutos.',
+                            l10n.analysisProcessingBanner,
                             style: TextStyle(color: c.accent, fontSize: 12, height: 1.4),
                           ),
                         ),

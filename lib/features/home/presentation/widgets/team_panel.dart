@@ -549,9 +549,10 @@ class _MatchItemState extends State<MatchItem> {
   @override
   Widget build(BuildContext context) {
     final c          = context.colors;
+    final l10n       = AppLocalizations.of(context)!;
     final isDark     = Theme.of(context).brightness == Brightness.dark;
     final controller = widget.controller;
-    final opponent   = widget.match['opponent'] as String? ?? 'Unknown opponent';
+    final opponent   = widget.match['opponent'] as String? ?? l10n.matchUnknownOpponent;
     final dateStr    = widget.match['match_date'] as String? ?? '';
     final status     = widget.match['status'] as String? ?? 'uploaded';
     final matchId    = widget.match['id'] as int;
@@ -566,13 +567,13 @@ class _MatchItemState extends State<MatchItem> {
     String statusLabel;
     if (status == AppConstants.statusDone) {
       statusColor = c.success;
-      statusLabel = AppConstants.labelAnalysed;
+      statusLabel = l10n.statusAnalysed;
     } else if (status == AppConstants.statusProcessing) {
       statusColor = c.warning;
-      statusLabel = AppConstants.labelProcessing;
+      statusLabel = l10n.statusProcessing;
     } else {
       statusColor = c.dim;
-      statusLabel = AppConstants.labelUploaded;
+      statusLabel = l10n.statusUploaded;
     }
 
     return GestureDetector(
@@ -588,7 +589,7 @@ class _MatchItemState extends State<MatchItem> {
             widget.onTap();
           } else {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: const Text('Failed to load analysis for this match.'),
+              content: Text(l10n.matchLoadAnalysisFailed),
               backgroundColor: c.danger,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -596,7 +597,7 @@ class _MatchItemState extends State<MatchItem> {
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: const Text('This match is not analysed yet.'),
+            content: Text(l10n.matchNotAnalysedYet),
             backgroundColor: c.warning,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -633,7 +634,7 @@ class _MatchItemState extends State<MatchItem> {
           ),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('vs $opponent',
+            Text(l10n.matchVersusOpponent(opponent),
                 style: TextStyle(color: c.text, fontSize: 14, fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
             Row(children: [

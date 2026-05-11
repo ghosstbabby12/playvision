@@ -148,7 +148,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectTeamAndAnalyseDesc =>
-      'Select a team on the home screen\\nand analyse a match video.';
+      'Select a team on the home screen\nand analyse a match video.';
 
   @override
   String get analysisTitle => 'Analysis';
@@ -218,7 +218,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String liveLoadError(String error) {
-    return 'An error occurred: $error\\nIs the Python server running?';
+    return 'An error occurred: $error\nIs the Python server running?';
   }
 
   @override
@@ -240,10 +240,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldPlayers => 'Players';
 
   @override
-  String get fieldAvgSpeed => 'Avg speed';
+  String get fieldAvgSpeed => 'Avg. speed';
 
   @override
-  String get fieldHighActivity => 'High activity';
+  String get fieldHighActivity => 'High';
 
   @override
   String get fieldMedium => 'Medium';
@@ -266,16 +266,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldPresence => 'Presence';
 
   @override
-  String get tableZone => 'ZONE';
+  String get tableZone => 'Zone';
 
   @override
-  String get tableDist => 'DIST';
+  String get tableDist => 'Dist.';
 
   @override
-  String get tablePoss => 'POSS';
+  String get tablePoss => 'Poss.';
 
   @override
-  String get tablePres => 'PRES';
+  String get tablePres => 'Pres.';
 
   @override
   String get playersSection => 'PLAYERS';
@@ -313,16 +313,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get detailMainZone => 'Main zone';
 
   @override
-  String insightHighActivity(String km, String spd) {
-    return 'High-activity player. Covered $km km and reached $spd m/s average speed.';
-  }
-
-  @override
-  String insightModerateActivity(String zone) {
-    return 'Moderate-activity player. Held position in the $zone zone.';
-  }
-
-  @override
   String get summaryPlayers => 'Players';
 
   @override
@@ -353,33 +343,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get summaryLeastActive => 'Least active';
 
   @override
-  String summaryPlayerRef(String id) {
-    return 'Player $id';
+  String summaryPlayerRef(String player) {
+    return 'Player $player';
   }
 
   @override
   String insightTotalKm(String km) {
-    return 'The team covered $km km in total during the analysis.';
+    return 'The team covered $km km in total during the match.';
   }
 
   @override
   String insightPossession(String pct) {
-    return 'Ball possession: $pct% of analysed time.';
+    return 'Recorded $pct% average ball possession.';
   }
 
   @override
-  String insightActivePlayers(int count) {
-    return '$count active players were detected on the field.';
+  String insightActivePlayers(String count) {
+    return '$count players were active on the field.';
   }
 
   @override
-  String insightFastestPlayer(String rank, String spd) {
-    return 'Player $rank reached the highest speed: $spd m/s.';
+  String insightFastestPlayer(String rank, String speed) {
+    return 'Player $rank reached the highest speed at $speed m/s.';
   }
 
   @override
   String insightTopZone(String zone) {
-    return 'The team was mainly concentrated in the $zone zone.';
+    return 'The most active zone was $zone.';
+  }
+
+  @override
+  String insightHighActivity(String km, String speed) {
+    return 'High-activity player: covered $km km and reached $speed m/s.';
+  }
+
+  @override
+  String insightModerateActivity(String zone) {
+    return 'Moderate activity concentrated in zone $zone.';
   }
 
   @override
@@ -387,7 +387,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String videoErrorNetwork(String error, String url) {
-    return 'Network error: $error\\nURL: $url';
+    return 'Network error: $error\nURL: $url';
   }
 
   @override
@@ -427,7 +427,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String sceneNetworkError(String error, String url) {
-    return 'Network error: $error\\n$url';
+    return 'Network error: $error\n$url';
   }
 
   @override
@@ -448,7 +448,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sceneHeatNotAvailable =>
-      'Heat video not available.\\nRe-analyse to generate it.';
+      'Heat video not available.\nRe-analyse to generate it.';
 
   @override
   String get sceneTeamHeatmapTitle => 'Team Heatmap';
@@ -482,6 +482,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get sceneUnknownZone => 'Unknown';
+
+  @override
+  String scenePlayerCount(int count) {
+    return '${count}p';
+  }
+
+  @override
   String get uploadFromDevice => 'From device';
 
   @override
@@ -497,44 +505,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get uploadHowItWorks => 'HOW IT WORKS';
 
   @override
-  String get uploadStep1Title => 'Choose source';
+  String get uploadStep1Title => 'Upload your video';
 
   @override
-  String get uploadStep1Desc =>
-      'Upload from device or paste a direct video URL';
+  String get uploadStep1Desc => 'From your device or via URL';
 
   @override
-  String get uploadStep2Title => 'AI analyses';
+  String get uploadStep2Title => 'AI Processing';
 
   @override
-  String get uploadStep2Desc =>
-      'YOLO detects and tracks each player in real time';
+  String get uploadStep2Desc => 'We detect players and events in real time';
 
   @override
-  String get uploadStep3Title => 'View results';
+  String get uploadStep3Title => 'Get results';
 
   @override
-  String get uploadStep3Desc =>
-      'Get stats, field map and automatic AI insights';
+  String get uploadStep3Desc => 'Heat map, statistics and key scenes';
 
   @override
-  String get uploadVideoReady => 'Video ready to analyse';
+  String get uploadVideoReady => 'Video ready';
 
   @override
-  String get uploadSelectVideo => 'Select match video';
+  String get uploadSelectVideo => 'Select video';
 
   @override
-  String get uploadTapGallery => 'Tap to open gallery';
+  String get uploadTapGallery => 'Tap to choose from gallery';
 
   @override
-  String get uploadUrlLabel => 'Video URL';
+  String get uploadUrlLabel => 'VIDEO URL';
 
   @override
-  String get uploadUrlHint => 'YouTube, direct .mp4, Vimeo…';
+  String get uploadUrlHint => 'https://example.com/video.mp4';
 
   @override
   String get uploadUrlSupports =>
-      'Supports YouTube, Vimeo and direct .mp4/.mov links';
+      'Supports direct MP4, MOV links and YouTube URLs';
 
   @override
   String get uploadReqTitle => 'VIDEO REQUIREMENTS';
@@ -543,29 +548,304 @@ class AppLocalizationsEn extends AppLocalizations {
   String get uploadReqFormat => 'Format';
 
   @override
-  String get uploadReqFormatDesc => 'MP4, MOV or AVI';
+  String get uploadReqFormatDesc => 'MP4, MOV';
 
   @override
   String get uploadReqResolution => 'Resolution';
 
   @override
-  String get uploadReqResolutionDesc => 'Minimum 720p recommended';
+  String get uploadReqResolutionDesc => '720p+';
 
   @override
   String get uploadReqDuration => 'Duration';
 
   @override
-  String get uploadReqDurationDesc => 'Between 30 sec and 10 minutes';
+  String get uploadReqDurationDesc => '5-90 min';
 
   @override
-  String get uploadReqAngle => 'Camera angle';
+  String get uploadReqAngle => 'Angle';
 
   @override
-  String get uploadReqAngleDesc => 'Full lateral field view';
+  String get uploadReqAngleDesc => 'Side view';
 
   @override
-  String get uploadReqSize => 'Max size';
+  String get uploadReqSize => 'Size';
 
   @override
-  String get uploadReqSizeDesc => '500 MB per video';
+  String get uploadReqSizeDesc => '< 500 MB';
+
+  @override
+  String get uploadCancelAnalysis => 'Cancel analysis';
+
+  @override
+  String get loginAiBadge => 'AI Football Analysis';
+
+  @override
+  String get loginTagline => 'Where data becomes strategy';
+
+  @override
+  String get loginDividerOr => 'OR';
+
+  @override
+  String get languageSpanish => 'Spanish';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get logoutErrorDebug => 'Error signing out';
+
+  @override
+  String get appVersionLabel => 'v1.0.0';
+
+  @override
+  String get appVersionNumber => '1.0.0';
+
+  @override
+  String get aboutLegalese => '© 2026 PlayVision. All rights reserved.';
+
+  @override
+  String get teamEditTitle => 'Edit team';
+
+  @override
+  String get teamNewTitle => 'New team';
+
+  @override
+  String get teamLogoSelected => 'Logo selected';
+
+  @override
+  String get teamLogoTapToAdd => 'Tap to add logo';
+
+  @override
+  String get teamFieldName => 'Name';
+
+  @override
+  String get teamFieldCategory => 'Category';
+
+  @override
+  String get teamFieldClub => 'Club';
+
+  @override
+  String get teamDialogCancel => 'Cancel';
+
+  @override
+  String get teamDialogSave => 'Save';
+
+  @override
+  String get teamDialogCreate => 'Create';
+
+  @override
+  String get teamDeleteTitle => 'Delete team';
+
+  @override
+  String teamDeleteConfirm(String name) {
+    return 'Delete team \"$name\"? This cannot be undone.';
+  }
+
+  @override
+  String get teamDeleteButton => 'Delete';
+
+  @override
+  String get featureRivalAnalysisTitle => 'Rival Analysis';
+
+  @override
+  String get featureRivalAnalysisDesc => 'Anticipate the opponent';
+
+  @override
+  String get featureTacticsTitle => 'Pre-Match Tactics';
+
+  @override
+  String get featureTacticsDesc => 'Prepare each match';
+
+  @override
+  String get featureIndividualStatsTitle => 'Individual Stats';
+
+  @override
+  String get featureIndividualStatsDesc => 'Player tracking';
+
+  @override
+  String get matchUnknownOpponent => 'Unknown opponent';
+
+  @override
+  String matchVersusOpponent(String opponent) {
+    return 'vs $opponent';
+  }
+
+  @override
+  String get matchLoadAnalysisFailed =>
+      'Failed to load analysis for this match.';
+
+  @override
+  String get matchNotAnalysedYet => 'This match is not analysed yet.';
+
+  @override
+  String get heroAiAccuracy => 'AI Accuracy';
+
+  @override
+  String get heroLatest => 'Latest';
+
+  @override
+  String get searchTeamHint => 'Search team...';
+
+  @override
+  String get searchTeamButton => 'Search team';
+
+  @override
+  String get searchLast5 => 'Last 5';
+
+  @override
+  String get searchNoRecentMatches => 'No recent matches';
+
+  @override
+  String get liveLabel => 'LIVE';
+
+  @override
+  String get todayLabel => 'Today';
+
+  @override
+  String todayMatchesCount(int count) {
+    return '$count matches';
+  }
+
+  @override
+  String get matchHomeTeam => 'Home';
+
+  @override
+  String get matchAwayTeam => 'Away';
+
+  @override
+  String get matchStatusFT => 'FT';
+
+  @override
+  String get matchLive => 'LIVE';
+
+  @override
+  String get matchVS => 'VS';
+
+  @override
+  String get matchStatusLive => 'Live';
+
+  @override
+  String get matchStatusFinished => 'Finished';
+
+  @override
+  String get matchStatusNotStarted => 'Not started';
+
+  @override
+  String get newsRefreshButton => 'Refresh news';
+
+  @override
+  String get newsErrorTitle => 'Could not load news';
+
+  @override
+  String get newsErrorSubtitle => 'Check your connection';
+
+  @override
+  String get newsRetryButton => 'Retry';
+
+  @override
+  String get analysisInProgressTitle => 'Analysis in progress';
+
+  @override
+  String get analysisLeaveWarning =>
+      'If you leave now, the analysis will be canceled and you will lose your progress. Do you want to continue?';
+
+  @override
+  String get analysisStayButton => 'Stay';
+
+  @override
+  String get analysisExitButton => 'Exit';
+
+  @override
+  String get analysisProcessingWithAI => 'Processing with AI...';
+
+  @override
+  String get analysisCancelButton => 'Cancel';
+
+  @override
+  String get analysisProcessingBanner =>
+      'Analyzing video with artificial intelligence. This may take a few minutes.';
+
+  @override
+  String get editPlayerTitle => 'Edit player';
+
+  @override
+  String get editPlayerNameLabel => 'Name';
+
+  @override
+  String get editPlayerNumberLabel => 'Number';
+
+  @override
+  String get editPlayerPositionLabel => 'Position';
+
+  @override
+  String editPlayerDefaultName(int rank) {
+    return 'Player $rank';
+  }
+
+  @override
+  String get cancelBtn => 'Cancel';
+
+  @override
+  String get saveBtn => 'Save';
+
+  @override
+  String get coachingBoardTitle => 'Coaching Board';
+
+  @override
+  String get coachingBoardSubtitle =>
+      'Choose a team to build the tactical board';
+
+  @override
+  String get coachingBoardNoTeams => 'No teams';
+
+  @override
+  String get coachingBoardNoTeamsHint => 'Create a team in the Home tab';
+
+  @override
+  String get coachingBoardReset => 'Reset';
+
+  @override
+  String get coachingBoardSwapHint => 'Long press = swap';
+
+  @override
+  String get coachingBoardSwapBanner => 'Tap another player to swap';
+
+  @override
+  String get coachingBoardSelectTeamTitle => 'Select a team';
+
+  @override
+  String get coachingBoardSelectTeamSubtitle =>
+      'Choose a team to build the tactical board';
+
+  @override
+  String get coachingBoardSave => 'Save';
+
+  @override
+  String coachingBoardAnalyzingTitle(String teamName) {
+    return 'Analyzing $teamName';
+  }
+
+  @override
+  String get coachingBoardAnalyzingSubtitle =>
+      'Building the tactical board with AI';
+
+  @override
+  String get coachingBoardStepLoadingPlayers => 'Loading players...';
+
+  @override
+  String get coachingBoardStepReadingStats => 'Reading statistics...';
+
+  @override
+  String get coachingBoardStepComputingPositions =>
+      'Computing optimal positions...';
+
+  @override
+  String get coachingBoardStepBuildingBoard => 'Building tactical board...';
+
+  @override
+  String get coachingBoardSaveSuccess => 'Formation saved ✓';
+
+  @override
+  String get coachingBoardSaveError => 'Error while saving the formation';
 }

@@ -106,8 +106,8 @@ class _VideoUploadViewState extends State<VideoUploadView> {
                       color: const Color(0xFFFC8181), strokeWidth: 1.5),
                 ),
                 const SizedBox(width: 12),
-                const Text('Cancelar análisis',
-                    style: TextStyle(
+                Text(l10n.uploadCancelAnalysis,
+                    style: const TextStyle(
                         color: Color(0xFFFC8181),
                         fontSize: 14,
                         fontWeight: FontWeight.w600)),

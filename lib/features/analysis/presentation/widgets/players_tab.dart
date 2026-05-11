@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_color_tokens.dart';
-import '../../../../../l10n/generated/app_localizations.dart'; // IMPORTANTE
+import '../../../../../l10n/generated/app_localizations.dart';
 import '../../../../../shared/widgets/section_label.dart';
 
 class PlayersTab extends StatefulWidget {
@@ -250,8 +250,9 @@ class _EditPlayerDialogState extends State<_EditPlayerDialog> {
   void initState() {
     super.initState();
     final rank = widget.player['rank'] as int;
+    final l10n = AppLocalizations.of(context)!;
     _nameCtrl   = TextEditingController(
-        text: widget.player['custom_name'] as String? ?? 'Jugador $rank');
+        text: widget.player['custom_name'] as String? ?? l10n.editPlayerDefaultName(rank));
     _numberCtrl = TextEditingController(
         text: '${widget.player['custom_number'] ?? rank}');
     _posCtrl    = TextEditingController(
@@ -269,26 +270,27 @@ class _EditPlayerDialogState extends State<_EditPlayerDialog> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
       backgroundColor: c.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: Text('Editar jugador',
+      title: Text(l10n.editPlayerTitle,
           style: TextStyle(color: c.text, fontSize: 17, fontWeight: FontWeight.w700)),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
-        _Field(controller: _nameCtrl,   label: 'Nombre'),
+        _Field(controller: _nameCtrl,   label: l10n.editPlayerNameLabel),
         const SizedBox(height: 12),
-        _Field(controller: _numberCtrl, label: 'Número', inputType: TextInputType.number),
+        _Field(controller: _numberCtrl, label: l10n.editPlayerNumberLabel, inputType: TextInputType.number),
         const SizedBox(height: 12),
-        _Field(controller: _posCtrl,    label: 'Posición'),
+        _Field(controller: _posCtrl,    label: l10n.editPlayerPositionLabel),
       ]),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text('Cancelar', style: TextStyle(color: c.dim)),
+          child: Text(l10n.cancelBtn, style: TextStyle(color: c.dim)),
         ),
         TextButton(
           onPressed: _save,
-          child: Text('Guardar',
+          child: Text(l10n.saveBtn,
               style: TextStyle(color: c.accent, fontWeight: FontWeight.w700)),
         ),
       ],

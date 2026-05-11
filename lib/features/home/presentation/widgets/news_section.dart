@@ -4,6 +4,8 @@ import 'package:playvision/core/theme/app_color_tokens.dart';
 import 'package:playvision/features/home/data/news_service.dart';
 import 'package:playvision/shared/widgets/glass_card.dart';
 
+import '../../../../../../l10n/generated/app_localizations.dart';
+
 class NewsSection extends StatefulWidget {
   const NewsSection({super.key});
 
@@ -44,7 +46,8 @@ class _NewsSectionState extends State<NewsSection> {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
+    final c    = context.colors;
+    final l10n = AppLocalizations.of(context)!;
 
     if (_loading) {
       return Padding(
@@ -80,7 +83,7 @@ class _NewsSectionState extends State<NewsSection> {
             child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               Icon(Icons.refresh_rounded, color: c.accent, size: 14),
               const SizedBox(width: 6),
-              Text('Refresh news', style: TextStyle(color: c.accent, fontSize: 12, fontWeight: FontWeight.w600)),
+              Text(l10n.newsRefreshButton, style: TextStyle(color: c.accent, fontSize: 12, fontWeight: FontWeight.w600)),
             ]),
           ),
         ),
@@ -95,22 +98,23 @@ class ErrorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
+    final c    = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     return GlassCard(
       padding: const EdgeInsets.all(24),
       child: Column(children: [
         Icon(Icons.wifi_off_rounded, color: c.dim, size: 32),
         const SizedBox(height: 10),
-        Text('Could not load news', style: TextStyle(color: c.text, fontSize: 14, fontWeight: FontWeight.w600)),
+        Text(l10n.newsErrorTitle, style: TextStyle(color: c.text, fontSize: 14, fontWeight: FontWeight.w600)),
         const SizedBox(height: 6),
-        Text('Check your connection', style: TextStyle(color: c.muted, fontSize: 12)),
+        Text(l10n.newsErrorSubtitle, style: TextStyle(color: c.muted, fontSize: 12)),
         const SizedBox(height: 14),
         GestureDetector(
           onTap: onRetry,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             decoration: BoxDecoration(color: c.accentLo, borderRadius: BorderRadius.circular(8)),
-            child: Text('Retry', style: TextStyle(color: c.accent, fontSize: 13, fontWeight: FontWeight.w700)),
+            child: Text(l10n.newsRetryButton, style: TextStyle(color: c.accent, fontSize: 13, fontWeight: FontWeight.w700)),
           ),
         ),
       ]),

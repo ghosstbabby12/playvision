@@ -2,27 +2,46 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocaleProvider extends ChangeNotifier {
-  Locale? _locale;
-  Locale? get locale => _locale;
+  static const String _languageCodeKey = 'languageCode';
 
-  LocaleProvider() {
-    _loadSavedLocale(); 
-  }
+  Locale _locale = const Locale('es');
 
-  Future<void> _loadSavedLocale() async {
+  Locale get locale => _locale;
+
+  LocaleProvider();
+
+  Future<void> loadSavedLocale() async {
     final prefs = await SharedPreferences.getInstance();
-    final String? languageCode = prefs.getString('languageCode');
-    if (languageCode != null) {
+    final String? languageCode = prefs.getString(_languageCodeKey);
+
+    if (languageCode != null && ['en', 'es'].contains(languageCode)) {
       _locale = Locale(languageCode);
-      notifyListeners();
+    } else {
+      _locale = const Locale('es');
     }
+
+    notifyListeners();
   }
 
-  void setLocale(Locale locale) async {
+  Future<void> setLocale(Locale locale) async {
     if (!['en', 'es'].contains(locale.languageCode)) return;
+
     _locale = locale;
-    notifyListeners(); 
+    notifyListeners();
+
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('languageCode', locale.languageCode);
+    await prefs.setString(_languageCodeKey, locale.languageCode);
   }
+
+  Future<void> clearLocale() async {
+    _locale = const Locale('es');
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_languageCodeKey);
+  }
+
+  bool get isSpanish => _locale.languageCode == 'es';
+
+  bool get isEnglish => _locale.languageCode == 'en';
 }
