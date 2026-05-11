@@ -19,7 +19,7 @@ class Settings:
     sports_api_url: str  = os.getenv("SPORTS_API_URL", "https://v3.football.api-sports.io")
 
     # football-data.org (activo)
-    football_data_api_key: str = os.getenv("FOOTBALL_DATA_API_KEY", "50178df659244bf6ad29edf7d6284bbf")
+    football_data_api_key: str = os.getenv("FOOTBALL_DATA_API_KEY", "")
     football_data_url: str     = os.getenv("FOOTBALL_DATA_URL", "https://api.football-data.org/v4")
 
     api_key_news: str  = os.getenv("API_KEY_NEWS", "")
