@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_color_tokens.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pv_back_button.dart';
+import '../../../features/analysis/data/analysis_store.dart';
 import 'analysis_controller.dart';
 import 'widgets/field_map_tab.dart';
 import 'widgets/players_tab.dart';
@@ -279,12 +280,16 @@ class _AnalysisPageState extends State<AnalysisPage>
                       ? TabBarView(controller: _tabs, children: [
                           SummaryTab(data: _controller.result!),
                           FieldMapTab(players: _controller.result!['players'] as List),
-                          PlayersTab(players: _controller.result!['players'] as List),
+                          PlayersTab(
+                            players: _controller.result!['players'] as List,
+                            teamId:  AnalysisStore.instance.selectedTeamId,
+                            matchId: _controller.result!['match_id'] as int?
+                                  ?? _controller.result!['match']?['id'] as int?,
+                          ),
                           VideoScenesTab(
                             videoUrl: (_controller.result!['video_url'] as String?) ??
                                       (_controller.result!['videoUrl'] as String?) ??
                                       (_controller.result!['match']?['video_url'] as String?),
-                            heatmapVideoUrl: _controller.result!['heatmap_video_url'] as String?,
                             localFile: _controller.videoFile,
                             players: _controller.result!['players'] as List,
                           ),

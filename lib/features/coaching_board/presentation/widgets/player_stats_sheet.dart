@@ -617,12 +617,13 @@ class _CoachTab extends StatelessWidget {
       GestureDetector(
         onTapUp: (details) => _handleRadarTap(details.localPosition, onAxisTap),
         child: SizedBox(
-          height: 220,
+          height: 240,
           child: DualRadarChart(
             values: token.radarValues,
             compValues: compVals,
             highlightAxis: axisDetail,
             accentColor: c.accent,
+            showValues: true,
           ),
         ),
       ),
@@ -985,90 +986,119 @@ class _ProfileTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final attrs = profile?.attributes;
 
-    if (attrs == null) {
-      return SizedBox(
-        height: 200,
+    final statTiles = attrs != null
+        ? [
+            ('PAC', attrs.pace,      'Pace',      const Color(0xFF10B981)),
+            ('SHO', attrs.shooting,  'Shooting',  const Color(0xFFEF4444)),
+            ('PAS', attrs.passing,   'Passing',   const Color(0xFF3B82F6)),
+            ('DRI', attrs.dribbling, 'Dribbling', const Color(0xFFF59E0B)),
+            ('DEF', attrs.defending, 'Defending', const Color(0xFF8B5CF6)),
+            ('PHY', attrs.physical,  'Physical',  const Color(0xFF94A3B8)),
+          ]
+        : <(String, int, String, Color)>[];
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      // ── Big radar with values ────────────────────────────────────────────
+      Container(
+        height: 260,
+        decoration: BoxDecoration(
+          color: c.elevated,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: c.border),
+        ),
         child: DualRadarChart(
           values: token.radarValues,
           accentColor: c.accent,
+          showValues: true,
         ),
-      );
-    }
-
-    final bars = [
-      ('PAC', attrs.pace,      const Color(0xFF10B981)),
-      ('SHO', attrs.shooting,  const Color(0xFFEF4444)),
-      ('PAS', attrs.passing,   const Color(0xFF3B82F6)),
-      ('DRI', attrs.dribbling, const Color(0xFFF59E0B)),
-      ('DEF', attrs.defending, const Color(0xFF8B5CF6)),
-      ('PHY', attrs.physical,  const Color(0xFF6B7280)),
-    ];
-
-    return Column(children: [
-      GridView.count(
-        crossAxisCount: 2,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 8, crossAxisSpacing: 8,
-        childAspectRatio: 3.2,
-        children: bars
-            .map((b) => _AttrBar(label: b.$1, value: b.$2, color: b.$3, c: c))
-            .toList(),
       ),
-      const SizedBox(height: 16),
-      if (profile?.heightCm != null)
+
+      // ── Attribute tiles ──────────────────────────────────────────────────
+      if (statTiles.isNotEmpty) ...[
+        const SizedBox(height: 16),
+        GridView.count(
+          crossAxisCount: 3,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          childAspectRatio: 1.55,
+          children: statTiles
+              .map((b) => _AttrTile(
+                    shortLabel: b.$1,
+                    fullLabel: b.$3,
+                    value: b.$2,
+                    color: b.$4,
+                    c: c,
+                  ))
+              .toList(),
+        ),
+      ],
+
+      // ── Physical info ────────────────────────────────────────────────────
+      if (profile?.heightCm != null) ...[
+        const SizedBox(height: 16),
         Row(children: [
-          Icon(Icons.height_rounded, color: c.dim, size: 16),
-          const SizedBox(width: 6),
+          Icon(Icons.height_rounded, color: c.dim, size: 15),
+          const SizedBox(width: 5),
           Text('${profile!.heightCm} cm',
               style: TextStyle(color: c.muted, fontSize: 12)),
           const SizedBox(width: 16),
           Icon(Icons.sports_soccer, color: c.dim, size: 14),
-          const SizedBox(width: 6),
+          const SizedBox(width: 5),
           Text('${profile!.foot} foot',
               style: TextStyle(color: c.muted, fontSize: 12)),
         ]),
+      ],
     ]);
   }
 }
 
-class _AttrBar extends StatelessWidget {
-  final String label;
+class _AttrTile extends StatelessWidget {
+  final String shortLabel;
+  final String fullLabel;
   final int value;
   final Color color;
   final AppColorTokens c;
-  const _AttrBar({required this.label, required this.value,
-      required this.color, required this.c});
+  const _AttrTile({
+    required this.shortLabel, required this.fullLabel,
+    required this.value, required this.color, required this.c,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
-        color: c.elevated,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: c.border),
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
-      child: Row(children: [
-        SizedBox(width: 30,
-          child: Text(label, style: TextStyle(
-              color: c.muted, fontSize: 10, fontWeight: FontWeight.w700))),
-        const SizedBox(width: 6),
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(shortLabel,
+              style: TextStyle(
+                  color: color, fontSize: 11, fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5)),
+          const SizedBox(height: 4),
+          Text('$value',
+              style: TextStyle(
+                  color: c.textHi, fontSize: 22,
+                  fontWeight: FontWeight.w900, height: 1)),
+          const SizedBox(height: 2),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(2),
             child: LinearProgressIndicator(
               value: value / 100,
-              backgroundColor: c.border,
+              backgroundColor: color.withValues(alpha: 0.15),
               valueColor: AlwaysStoppedAnimation(color),
-              minHeight: 6,
+              minHeight: 3,
             ),
           ),
-        ),
-        const SizedBox(width: 8),
-        Text('$value', style: TextStyle(
-            color: c.textHi, fontSize: 13, fontWeight: FontWeight.w800)),
-      ]),
+        ],
+      ),
     );
   }
 }
@@ -1216,6 +1246,7 @@ class DualRadarChart extends StatelessWidget {
   final List<double>? compValues;
   final int? highlightAxis;
   final Color accentColor;
+  final bool showValues;
 
   static const _labels = ['Speed', 'Pass', 'Shoot', 'Defend', 'Physical'];
 
@@ -1225,6 +1256,7 @@ class DualRadarChart extends StatelessWidget {
     this.compValues,
     this.highlightAxis,
     required this.accentColor,
+    this.showValues = false,
   });
 
   @override
@@ -1244,16 +1276,26 @@ class DualRadarChart extends StatelessWidget {
           final highlighted = i == highlightAxis;
           final tx = 0.5 + (r + 0.10) * math.cos(angle);
           final ty = 0.5 + (r + 0.10) * math.sin(angle);
+          final valInt = (values[i] * 100).round();
           return Align(
             alignment: Alignment(tx * 2 - 1, ty * 2 - 1),
-            child: Text(_labels[i],
-                style: TextStyle(
-                  color: highlighted ? accentColor : Colors.white54,
-                  fontSize: 10,
-                  fontWeight: highlighted
-                      ? FontWeight.w800
-                      : FontWeight.w600,
-                )),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Text(_labels[i],
+                  style: TextStyle(
+                    color: highlighted ? accentColor : Colors.white60,
+                    fontSize: 10,
+                    fontWeight: highlighted ? FontWeight.w800 : FontWeight.w600,
+                  )),
+              if (showValues)
+                Text('$valInt',
+                    style: TextStyle(
+                      color: highlighted
+                          ? accentColor
+                          : accentColor.withValues(alpha: 0.75),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    )),
+            ]),
           );
         })),
       ),
@@ -1356,15 +1398,23 @@ class _DualRadarPainter extends CustomPainter {
       }
     }
     dataPath.close();
+    // Outer glow fill
     canvas.drawPath(dataPath,
         Paint()
-          ..color = accentColor.withValues(alpha: 0.20)
+          ..color = accentColor.withValues(alpha: 0.10)
+          ..style = PaintingStyle.fill
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6));
+    // Main fill
+    canvas.drawPath(dataPath,
+        Paint()
+          ..color = accentColor.withValues(alpha: 0.30)
           ..style = PaintingStyle.fill);
+    // Stroke
     canvas.drawPath(dataPath,
         Paint()
           ..color = accentColor
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.2
+          ..strokeWidth = 2.4
           ..strokeJoin = StrokeJoin.round);
 
     // Dots on player polygon
@@ -1372,11 +1422,12 @@ class _DualRadarPainter extends CustomPainter {
       final a    = (i * 2 * math.pi / n) - math.pi / 2;
       final rv   = r * values[i];
       final hlt  = i == highlightAxis;
-      canvas.drawCircle(
-        Offset(cx + rv * math.cos(a), cy + rv * math.sin(a)),
-        hlt ? 5.0 : 3.5,
-        Paint()..color = accentColor,
-      );
+      final dotOff = Offset(cx + rv * math.cos(a), cy + rv * math.sin(a));
+      // White outer ring
+      canvas.drawCircle(dotOff, hlt ? 6.5 : 5.0,
+          Paint()..color = Colors.white.withValues(alpha: 0.25));
+      canvas.drawCircle(dotOff, hlt ? 4.5 : 3.5,
+          Paint()..color = accentColor);
     }
   }
 

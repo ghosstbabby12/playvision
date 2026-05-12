@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -41,9 +42,10 @@ class _SquadPageState extends State<SquadPage> {
 
     final nameCtrl   = TextEditingController();
     final numberCtrl = TextEditingController();
-    String    selectedPos = 'MID';
-    DateTime? birthDate;
-    XFile?    photoFile;
+    String      selectedPos  = 'MID';
+    DateTime?   birthDate;
+    Uint8List?  photoBytes;
+    String?     photoExt;
 
     await showDialog(
       context: context,
@@ -60,14 +62,19 @@ class _SquadPageState extends State<SquadPage> {
             title: Text('Nuevo jugador',
                 style: TextStyle(
                     color: dc.text, fontWeight: FontWeight.w700, fontSize: 17)),
-            content: SingleChildScrollView(
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
                 // Photo picker
                 GestureDetector(
                   onTap: () async {
                     final f = await ImagePicker()
                         .pickImage(source: ImageSource.gallery, imageQuality: 80);
-                    if (f != null) setS(() => photoFile = f);
+                    if (f == null) return;
+                    final bytes = await f.readAsBytes();
+                    final ext   = f.name.split('.').last.toLowerCase();
+                    setS(() { photoBytes = bytes; photoExt = ext; });
                   },
                   child: Container(
                     height: 90,
@@ -76,14 +83,11 @@ class _SquadPageState extends State<SquadPage> {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: dc.border2),
                     ),
-                    child: photoFile != null
+                    child: photoBytes != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(11),
-                            child: Image.network(photoFile!.path,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                errorBuilder: (_, __, ___) =>
-                                    _PhotoPlaceholder(dc: dc)),
+                            child: Image.memory(photoBytes!,
+                                fit: BoxFit.cover),
                           )
                         : _PhotoPlaceholder(dc: dc),
                   ),
@@ -136,6 +140,7 @@ class _SquadPageState extends State<SquadPage> {
                 ),
               ]),
             ),
+            ),
             actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             actions: [
               TextButton(
@@ -155,11 +160,11 @@ class _SquadPageState extends State<SquadPage> {
                   );
                   if (!mounted) return;
 
-                  if (id != null && photoFile != null) {
-                    final bytes = await photoFile!.readAsBytes();
-                    final ext   = photoFile!.name.split('.').last.toLowerCase();
+                  if (id != null && photoBytes != null) {
                     await _ctrl.uploadPhoto(
-                        playerId: id, bytes: bytes, extension: ext);
+                        playerId: id,
+                        bytes:    photoBytes!,
+                        extension: photoExt ?? 'jpg');
                   }
 
                   if (!mounted) return;
@@ -228,7 +233,8 @@ class _SquadPageState extends State<SquadPage> {
     if (bd != null && bd.isNotEmpty) {
       try { birthDate = DateTime.parse(bd); } catch (_) {}
     }
-    XFile? photoFile;
+    Uint8List? photoBytes;
+    String?    photoExt;
     final int playerId = player['id'] as int;
 
     await showDialog(
@@ -277,14 +283,19 @@ class _SquadPageState extends State<SquadPage> {
                 ),
               ),
             ]),
-            content: SingleChildScrollView(
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
                 // Photo picker
                 GestureDetector(
                   onTap: () async {
                     final f = await ImagePicker()
                         .pickImage(source: ImageSource.gallery, imageQuality: 80);
-                    if (f != null) setS(() => photoFile = f);
+                    if (f == null) return;
+                    final bytes = await f.readAsBytes();
+                    final ext   = f.name.split('.').last.toLowerCase();
+                    setS(() { photoBytes = bytes; photoExt = ext; });
                   },
                   child: Container(
                     height: 90,
@@ -293,14 +304,11 @@ class _SquadPageState extends State<SquadPage> {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: dc.border2),
                     ),
-                    child: photoFile != null
+                    child: photoBytes != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(11),
-                            child: Image.network(photoFile!.path,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                errorBuilder: (_, __, ___) =>
-                                    _PhotoPlaceholder(dc: dc)))
+                            child: Image.memory(photoBytes!,
+                                fit: BoxFit.cover))
                         : (player['photo_url'] as String?)?.isNotEmpty == true
                             ? Stack(fit: StackFit.expand, children: [
                                 ClipRRect(
@@ -408,6 +416,7 @@ class _SquadPageState extends State<SquadPage> {
                 ),
               ]),
             ),
+            ),
             actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             actions: [
               TextButton(
@@ -431,11 +440,11 @@ class _SquadPageState extends State<SquadPage> {
                   if (!mounted) return;
 
                   // Upload new photo if selected
-                  if (ok && photoFile != null) {
-                    final bytes = await photoFile!.readAsBytes();
-                    final ext   = photoFile!.name.split('.').last.toLowerCase();
+                  if (ok && photoBytes != null) {
                     await _ctrl.uploadPhoto(
-                        playerId: playerId, bytes: bytes, extension: ext);
+                        playerId: playerId,
+                        bytes:    photoBytes!,
+                        extension: photoExt ?? 'jpg');
                   }
 
                   if (!mounted) return;

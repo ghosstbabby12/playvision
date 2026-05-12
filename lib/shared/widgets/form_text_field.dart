@@ -12,17 +12,17 @@ class FormTextField extends StatelessWidget {
     final c = context.colors;
     return TextField(
       controller: controller,
-      style: TextStyle(color: c.text, fontSize: 14),
+      style: TextStyle(color: c.textHi, fontSize: 14, fontWeight: FontWeight.w500),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: c.dim, fontSize: 13),
+        labelStyle: TextStyle(color: c.text, fontSize: 13),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: c.border2),
-          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: c.border2.withValues(alpha: 0.7)),
+          borderRadius: BorderRadius.circular(12),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: c.accent),
-          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: c.accent, width: 1.5),
+          borderRadius: BorderRadius.circular(12),
         ),
         filled: true,
         fillColor: c.elevated,

@@ -248,10 +248,8 @@ class _HomePageState extends State<HomePage> {
   Future<void> _openTeamDialog({Map<String, dynamic>? team}) async {
     final nameCtrl =
         TextEditingController(text: team?['name'] as String? ?? '');
-    final categoryCtrl =
-        TextEditingController(text: team?['category'] as String? ?? '');
-    final clubCtrl =
-        TextEditingController(text: team?['club'] as String? ?? '');
+    String? selectedCategory = team?['category'] as String?;
+    String? selectedCountry  = team?['club']     as String?;
     final isEdit = team != null;
 
     XFile? pickedLogo;
@@ -332,9 +330,21 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 16),
                 FormTextField(controller: nameCtrl, label: l10n.teamFieldName),
                 const SizedBox(height: 10),
-                FormTextField(controller: categoryCtrl, label: l10n.teamFieldCategory),
+                _DropdownField(
+                  label: 'País',
+                  value: selectedCountry,
+                  options: _kCountries,
+                  onSelected: (v) => setDlg(() => selectedCountry = v),
+                  c: c,
+                ),
                 const SizedBox(height: 10),
-                FormTextField(controller: clubCtrl, label: l10n.teamFieldClub),
+                _DropdownField(
+                  label: 'Categoría',
+                  value: selectedCategory,
+                  options: _kCategories,
+                  onSelected: (v) => setDlg(() => selectedCategory = v),
+                  c: c,
+                ),
               ]),
             ),
             actions: [
@@ -368,23 +378,15 @@ class _HomePageState extends State<HomePage> {
                           await _controller.updateTeam(
                             id: team['id'] as int,
                             name: nameCtrl.text.trim(),
-                            category: categoryCtrl.text.trim().isEmpty
-                                ? null
-                                : categoryCtrl.text.trim(),
-                            club: clubCtrl.text.trim().isEmpty
-                                ? null
-                                : clubCtrl.text.trim(),
+                            category: selectedCategory,
+                            club: selectedCountry,
                             logoUrl: logoUrl,
                           );
                         } else {
                           await _controller.createTeam(
                             name: nameCtrl.text.trim(),
-                            category: categoryCtrl.text.trim().isEmpty
-                                ? null
-                                : categoryCtrl.text.trim(),
-                            club: clubCtrl.text.trim().isEmpty
-                                ? null
-                                : clubCtrl.text.trim(),
+                            category: selectedCategory,
+                            club: selectedCountry,
                             logoUrl: logoUrl,
                           );
                         }
@@ -440,6 +442,161 @@ class _HomePageState extends State<HomePage> {
     );
 
     if (confirm == true) await _controller.deleteTeam(team['id'] as int);
+  }
+}
+
+// ── Team form constants ───────────────────────────────────────────────────────
+
+const _kCategories = [
+  'Sub-6', 'Sub-8', 'Sub-10', 'Sub-12', 'Sub-14', 'Sub-16', 'Sub-18',
+  'Sub-20', 'Sub-23',
+  'Amateur', 'Semiprofesional', 'Profesional',
+  'Femenino Sub-12', 'Femenino Sub-16', 'Femenino Sub-18', 'Femenino',
+  'Mixto',
+];
+
+const _kCountries = [
+  'Argentina', 'Bolivia', 'Brasil', 'Chile', 'Colombia', 'Costa Rica',
+  'Cuba', 'Ecuador', 'El Salvador', 'España', 'Estados Unidos',
+  'Guatemala', 'Honduras', 'México', 'Nicaragua', 'Panamá', 'Paraguay',
+  'Perú', 'Puerto Rico', 'República Dominicana', 'Uruguay', 'Venezuela',
+  'Otro',
+];
+
+// ── Dropdown field widget ─────────────────────────────────────────────────────
+
+class _DropdownField extends StatelessWidget {
+  final String label;
+  final String? value;
+  final List<String> options;
+  final void Function(String) onSelected;
+  final AppColorTokens c;
+
+  const _DropdownField({
+    required this.label,
+    required this.value,
+    required this.options,
+    required this.onSelected,
+    required this.c,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasValue = value != null && value!.isNotEmpty;
+    return GestureDetector(
+      onTap: () => _showPicker(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: c.elevated,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: hasValue
+                ? c.accent.withValues(alpha: 0.5)
+                : c.border2.withValues(alpha: 0.7),
+          ),
+        ),
+        child: Row(children: [
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(label,
+                  style: TextStyle(
+                      color: hasValue ? c.accent : c.text,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500)),
+              if (hasValue) ...[
+                const SizedBox(height: 2),
+                Text(value!,
+                    style: TextStyle(
+                        color: c.textHi,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600)),
+              ],
+            ]),
+          ),
+          Icon(Icons.expand_more_rounded,
+              color: hasValue ? c.accent : c.muted, size: 20),
+        ]),
+      ),
+    );
+  }
+
+  void _showPicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => Container(
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.6),
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          border: Border(top: BorderSide(color: c.border)),
+        ),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          const SizedBox(height: 8),
+          Container(
+              width: 36, height: 4,
+              decoration: BoxDecoration(
+                  color: c.border2, borderRadius: BorderRadius.circular(2))),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+            child: Row(children: [
+              Text(label,
+                  style: TextStyle(
+                      color: c.textHi, fontSize: 16,
+                      fontWeight: FontWeight.w800)),
+            ]),
+          ),
+          Flexible(
+            child: ListView.builder(
+              shrinkWrap: true,
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
+              itemCount: options.length,
+              itemBuilder: (_, i) {
+                final opt = options[i];
+                final selected = opt == value;
+                return GestureDetector(
+                  onTap: () { onSelected(opt); Navigator.pop(context); },
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 6),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? c.accent.withValues(alpha: 0.12)
+                          : c.elevated,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: selected
+                            ? c.accent.withValues(alpha: 0.4)
+                            : c.border,
+                      ),
+                    ),
+                    child: Row(children: [
+                      Expanded(
+                        child: Text(opt,
+                            style: TextStyle(
+                              color: selected ? c.accent : c.textHi,
+                              fontSize: 14,
+                              fontWeight: selected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                            )),
+                      ),
+                      if (selected)
+                        Icon(Icons.check_rounded,
+                            color: c.accent, size: 18),
+                    ]),
+                  ),
+                );
+              },
+            ),
+          ),
+        ]),
+      ),
+    );
   }
 }
 

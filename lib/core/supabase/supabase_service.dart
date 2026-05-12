@@ -384,7 +384,7 @@ class SupabaseService {
     if (statsList.isEmpty) return;
     await client
         .from('player_match_stats')
-        .insert(statsList)
+        .upsert(statsList, onConflict: 'match_id, track_id')
         .timeout(_kTimeout);
   }
 
@@ -479,12 +479,14 @@ class SupabaseService {
     String? description,
     String? imageUrl,
     int? teamId,
+    List<Map<String, dynamic>> exercises = const [],
   }) async {
     await client.from('training_sessions').insert({
       'title': title,
       'category': category,
       'duration_minutes': durationMinutes,
       'user_id': _currentUserId,
+      'exercises': exercises,
       if (description != null) 'description': description,
       if (imageUrl != null) 'image_url': imageUrl,
       if (teamId != null) 'team_id': teamId,

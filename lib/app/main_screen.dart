@@ -94,11 +94,11 @@ class _GlassNavBar extends StatelessWidget {
   const _GlassNavBar({required this.currentIndex, required this.onTap});
 
   static const _items = [
-    (icon: Icons.home_outlined,              activeIcon: Icons.home_rounded),
-    (icon: Icons.analytics_outlined,         activeIcon: Icons.analytics_rounded),
-    (icon: Icons.sports_soccer_outlined,     activeIcon: Icons.sports_soccer),
-    (icon: Icons.fitness_center_outlined,    activeIcon: Icons.fitness_center),
-    (icon: Icons.space_dashboard_outlined,   activeIcon: Icons.space_dashboard_rounded),
+    (icon: Icons.home_outlined,           activeIcon: Icons.home_rounded,           label: 'Inicio'),
+    (icon: Icons.play_circle_outline,     activeIcon: Icons.play_circle_filled,     label: 'Análisis'),
+    (icon: Icons.people_outline,          activeIcon: Icons.people_rounded,         label: 'Jugadores'),
+    (icon: Icons.timer_outlined,          activeIcon: Icons.timer_rounded,          label: 'Entreno'),
+    (icon: Icons.draw_outlined,           activeIcon: Icons.draw_rounded,           label: 'Tablero'),
   ];
 
   @override
@@ -106,16 +106,16 @@ class _GlassNavBar extends StatelessWidget {
     final c      = context.colors;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(32, 0, 32, 28),
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(40),
+        borderRadius: BorderRadius.circular(32),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
-            height: 68,
+            height: 72,
             decoration: BoxDecoration(
               color: isDark ? c.navBg : Colors.white.withValues(alpha: 0.92),
-              borderRadius: BorderRadius.circular(40),
+              borderRadius: BorderRadius.circular(32),
               border: Border.all(
                 color: isDark ? c.navBorder : Colors.black.withValues(alpha: 0.08),
               ),
@@ -129,7 +129,7 @@ class _GlassNavBar extends StatelessWidget {
                       ),
                     ],
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: List.generate(_items.length, (i) {
@@ -139,17 +139,33 @@ class _GlassNavBar extends StatelessWidget {
                   onTap: () => onTap(i),
                   behavior: HitTestBehavior.opaque,
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
+                    duration: const Duration(milliseconds: 220),
                     curve: Curves.easeInOut,
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: active ? c.navActive : Colors.transparent,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Icon(
-                      active ? item.activeIcon : item.icon,
-                      color: active ? c.accent : c.muted,
-                      size: 22,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          active ? item.activeIcon : item.icon,
+                          color: active ? c.accent : c.muted,
+                          size: 21,
+                        ),
+                        const SizedBox(height: 3),
+                        AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 220),
+                          style: TextStyle(
+                            color: active ? c.accent : c.muted,
+                            fontSize: 9.5,
+                            fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+                            letterSpacing: 0.2,
+                          ),
+                          child: Text(item.label),
+                        ),
+                      ],
                     ),
                   ),
                 );

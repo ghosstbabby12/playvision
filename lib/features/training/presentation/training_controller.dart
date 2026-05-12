@@ -39,10 +39,15 @@ class TrainingController extends ChangeNotifier {
     required String category,
     required int    durationMinutes,
     String?         description,
+    List<Map<String, dynamic>>? exercises,
   }) async {
+    final ex = exercises ?? TrainingSession.defaultExercises(category)
+        .map((e) => e.toJson())
+        .toList();
     await SupabaseService.instance.createTrainingSession(
       title: title, category: category,
       durationMinutes: durationMinutes, description: description,
+      exercises: ex,
     );
     await loadSessions();
   }
