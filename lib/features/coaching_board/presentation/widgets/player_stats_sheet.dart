@@ -653,6 +653,7 @@ class _CoachTab extends StatelessWidget {
         player:    token.radarValues[i],
         reference: compVals[i],
         isHighlight: i == axisDetail,
+        axisIndex: i,
         c: c,
       )),
     ]);
@@ -857,29 +858,49 @@ class _CompBar extends StatelessWidget {
   final String label;
   final double player, reference;
   final bool isHighlight;
+  final int axisIndex;
   final AppColorTokens c;
+
+  static const _axisColors = [
+    Color(0xFF22FF88), // 0: Speed  — neon green
+    Color(0xFF60A5FA), // 1: Pass   — blue
+    Color(0xFFF87171), // 2: Shoot  — red
+    Color(0xFFC084FC), // 3: Defend — purple
+    Color(0xFFFB923C), // 4: Physical — orange
+  ];
+
+  static const _axisIcons = ['⚡', '💬', '🎯', '🛡️', '💪'];
+
   const _CompBar({
     required this.label, required this.player,
-    required this.reference, required this.isHighlight, required this.c,
+    required this.reference, required this.isHighlight,
+    required this.axisIndex, required this.c,
   });
 
   @override
   Widget build(BuildContext context) {
+    final idx        = axisIndex.clamp(0, 4);
+    final axisColor  = _axisColors[idx];
     final isAbove    = player >= reference;
     final playerVal  = (player * 100).round();
     final refVal     = (reference * 100).round();
     final diff       = playerVal - refVal;
     final diffStr    = diff >= 0 ? '+$diff' : '$diff';
-    final diffColor  = isAbove ? c.accent : const Color(0xFFF59E0B);
+    final diffColor  = isAbove ? axisColor : const Color(0xFFF59E0B);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(children: [
-        SizedBox(width: 58,
-          child: Text(label, style: TextStyle(
-            color: isHighlight ? c.accent : c.dim,
-            fontSize: 10, fontWeight: isHighlight ? FontWeight.w700 : FontWeight.w500,
-          )),
+        // Icon + label
+        SizedBox(width: 70,
+          child: Row(children: [
+            Text(_axisIcons[idx], style: const TextStyle(fontSize: 11)),
+            const SizedBox(width: 4),
+            Flexible(child: Text(label, style: TextStyle(
+              color: isHighlight ? axisColor : c.dim,
+              fontSize: 10, fontWeight: isHighlight ? FontWeight.w700 : FontWeight.w500,
+            ))),
+          ]),
         ),
         Expanded(
           child: Stack(children: [
@@ -892,18 +913,16 @@ class _CompBar extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: player, backgroundColor: Colors.transparent,
                 valueColor: AlwaysStoppedAnimation(
-                    c.accent.withValues(alpha: isHighlight ? 1.0 : 0.70)),
+                    axisColor.withValues(alpha: isHighlight ? 1.0 : 0.75)),
                 minHeight: 8,
               )),
           ]),
         ),
         const SizedBox(width: 8),
-        // Player score
         SizedBox(width: 26,
           child: Text('$playerVal', textAlign: TextAlign.right,
               style: TextStyle(color: c.textHi, fontSize: 11, fontWeight: FontWeight.w800))),
         const SizedBox(width: 4),
-        // Diff badge
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
           decoration: BoxDecoration(

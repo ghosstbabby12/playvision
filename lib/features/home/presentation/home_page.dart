@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'dart:typed_data';
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -13,10 +11,13 @@ import 'package:playvision/l10n/generated/app_localizations.dart';
 
 import '../data/live_matches_service.dart';
 import 'home_controller.dart';
+import 'widgets/ai_insights_section.dart';
+import 'widgets/continue_analysis_section.dart';
 import 'widgets/hero_section.dart';
 import 'widgets/home_tab_bar.dart';
 import 'widgets/match_schedule_section.dart';
 import 'widgets/news_section.dart';
+import 'widgets/quick_actions_section.dart';
 import 'widgets/settings_drawer.dart';
 import 'widgets/team_panel.dart';
 
@@ -32,15 +33,12 @@ class _HomePageState extends State<HomePage> {
   late final HomeController _controller;
   int _selectedTab = 0;
 
-  // ── Live matches ──────────────────────────────────────────────────────────
   List<dynamic> _liveMatches = [];
   bool _isLoadingLiveMatches = true;
 
-  // ── Featured matches ──────────────────────────────────────────────────────
   Map<String, List<dynamic>> _featuredSections = {};
   bool _isLoadingFeatured = true;
 
-  // ── Team search ───────────────────────────────────────────────────────────
   Map<String, dynamic>? _searchedTeam;
   List<dynamic> _searchedMatches = [];
   bool _isSearching = false;
@@ -101,16 +99,16 @@ class _HomePageState extends State<HomePage> {
     final result = await LiveMatchesService.instance.searchTeam(name.trim());
     if (mounted) {
       setState(() {
-        _searchedTeam    = result?['team'] as Map<String, dynamic>?;
+        _searchedTeam = result?['team'] as Map<String, dynamic>?;
         _searchedMatches = (result?['matches'] as List?) ?? [];
-        _isSearching     = false;
+        _isSearching = false;
       });
     }
   }
 
   void _clearSearch() {
     setState(() {
-      _searchedTeam    = null;
+      _searchedTeam = null;
       _searchedMatches = [];
     });
   }
@@ -126,7 +124,7 @@ class _HomePageState extends State<HomePage> {
     final session = Supabase.instance.client.auth.currentSession;
     if (session == null) return;
 
-    final error   = _controller.errorMessage;
+    final error = _controller.errorMessage;
     final success = _controller.successMessage;
 
     if (error != null || success != null) {
@@ -158,12 +156,22 @@ class _HomePageState extends State<HomePage> {
           endDrawer: const SettingsDrawer(),
           body: CustomScrollView(
             slivers: [
+              // ── 1. Hero (compact + intelligent) ───────────────────────────
               SliverToBoxAdapter(
                 child: HeroSection(controller: _controller),
               ),
 
-              const SliverToBoxAdapter(child: _FeatureSection()),
+              // ── 2. Quick Actions ──────────────────────────────────────────
+              SliverToBoxAdapter(
+                child: QuickActionsSection(
+                  onTabChange: widget.onTabChange,
+                ),
+              ),
 
+              // ── 3. AI Insights ────────────────────────────────────────────
+              const SliverToBoxAdapter(child: AiInsightsSection()),
+
+              // ── 4. My Teams ───────────────────────────────────────────────
               if (!hasTeam)
                 SliverToBoxAdapter(
                   child: TeamSelectorSection(
@@ -172,44 +180,38 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
 
-              if (hasTeam) ...[
+              if (hasTeam)
                 SliverToBoxAdapter(
                   child: SelectedTeamHeader(
                     controller: _controller,
                     onEdit: () =>
                         _openTeamDialog(team: _controller.selectedTeam),
-                    onDelete: () => _deleteTeam(_controller.selectedTeam!),
+                    onDelete: () =>
+                        _deleteTeam(_controller.selectedTeam!),
                   ),
                 ),
+
+              // ── 5. Continue last analysis ─────────────────────────────────
+              if (_controller.hasResult)
                 SliverToBoxAdapter(
-                  child: AnalyseButton(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const AnalysisPage()),
-                    ),
-                  ),
+                  child:
+                      ContinueAnalysisSection(controller: _controller),
                 ),
-                if (_controller.hasResult)
-                  SliverToBoxAdapter(
-                    child: ViewAnalysisButton(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const AnalysisPage()),
-                      ),
-                    ),
-                  ),
+
+              // ── 6. Team match history ─────────────────────────────────────
+              if (hasTeam)
                 SliverToBoxAdapter(
                   child: PreviousAnalysesSection(
                     controller: _controller,
                     onViewAnalysis: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const AnalysisPage()),
+                      MaterialPageRoute(
+                          builder: (_) => const AnalysisPage()),
                     ),
                   ),
                 ),
-              ],
 
+              // ── 7. Resultados / Noticias tabs ──────────────────────────────
               SliverToBoxAdapter(
                 child: HomeTabBar(
                   selected: _selectedTab,
@@ -220,13 +222,10 @@ class _HomePageState extends State<HomePage> {
               if (_selectedTab == 0)
                 SliverToBoxAdapter(
                   child: MatchScheduleSection(
-                    // Live
                     isLoading: _isLoadingLiveMatches,
                     matches: _liveMatches,
-                    // Featured
                     featuredSections: _featuredSections,
                     isLoadingFeatured: _isLoadingFeatured,
-                    // Search
                     onSearchTeam: _searchTeam,
                     onClearSearch: _clearSearch,
                     isSearching: _isSearching,
@@ -249,7 +248,7 @@ class _HomePageState extends State<HomePage> {
     final nameCtrl =
         TextEditingController(text: team?['name'] as String? ?? '');
     String? selectedCategory = team?['category'] as String?;
-    String? selectedCountry  = team?['club']     as String?;
+    String? selectedCountry = team?['club'] as String?;
     final isEdit = team != null;
 
     XFile? pickedLogo;
@@ -268,7 +267,8 @@ class _HomePageState extends State<HomePage> {
                 borderRadius: BorderRadius.circular(20)),
             title: Text(
               isEdit ? l10n.teamEditTitle : l10n.teamNewTitle,
-              style: TextStyle(color: c.text, fontWeight: FontWeight.w700),
+              style:
+                  TextStyle(color: c.text, fontWeight: FontWeight.w700),
             ),
             content: SingleChildScrollView(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -284,57 +284,67 @@ class _HomePageState extends State<HomePage> {
                     final bytes = await file.readAsBytes();
                     setDlg(() {
                       pickedLogo = file;
-                      logoBytes  = bytes;
+                      logoBytes = bytes;
                     });
                   },
-                  child: Stack(alignment: Alignment.bottomRight, children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: c.elevated,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: c.borderGreen, width: 2),
-                        image: logoBytes != null
-                            ? DecorationImage(
-                                image: MemoryImage(logoBytes!),
-                                fit: BoxFit.cover)
-                            : (team?['logo_url'] as String?)?.isNotEmpty == true
+                  child: Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: c.elevated,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: c.borderGreen, width: 2),
+                            image: logoBytes != null
                                 ? DecorationImage(
-                                    image: NetworkImage(
-                                        team!['logo_url'] as String),
+                                    image: MemoryImage(logoBytes!),
                                     fit: BoxFit.cover)
-                                : null,
-                      ),
-                      child: logoBytes == null &&
-                              (team?['logo_url'] as String?) == null
-                          ? Icon(Icons.groups_outlined,
-                              color: c.accent, size: 32)
-                          : null,
-                    ),
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                          color: c.accent, shape: BoxShape.circle),
-                      child: const Icon(Icons.camera_alt,
-                          color: Colors.black, size: 13),
-                    ),
-                  ]),
+                                : (team?['logo_url'] as String?)
+                                            ?.isNotEmpty ==
+                                        true
+                                    ? DecorationImage(
+                                        image: NetworkImage(
+                                            team!['logo_url'] as String),
+                                        fit: BoxFit.cover)
+                                    : null,
+                          ),
+                          child: logoBytes == null &&
+                                  (team?['logo_url'] as String?) == null
+                              ? Icon(Icons.groups_outlined,
+                                  color: c.accent, size: 32)
+                              : null,
+                        ),
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                              color: c.accent,
+                              shape: BoxShape.circle),
+                          child: const Icon(Icons.camera_alt,
+                              color: Colors.black, size: 13),
+                        ),
+                      ]),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  pickedLogo != null ? l10n.teamLogoSelected : l10n.teamLogoTapToAdd,
+                  pickedLogo != null
+                      ? l10n.teamLogoSelected
+                      : l10n.teamLogoTapToAdd,
                   style: TextStyle(color: c.muted, fontSize: 11),
                 ),
                 const SizedBox(height: 16),
-                FormTextField(controller: nameCtrl, label: l10n.teamFieldName),
+                FormTextField(
+                    controller: nameCtrl, label: l10n.teamFieldName),
                 const SizedBox(height: 10),
                 _DropdownField(
                   label: 'País',
                   value: selectedCountry,
                   options: _kCountries,
-                  onSelected: (v) => setDlg(() => selectedCountry = v),
+                  onSelected: (v) =>
+                      setDlg(() => selectedCountry = v),
                   c: c,
                 ),
                 const SizedBox(height: 10),
@@ -342,7 +352,8 @@ class _HomePageState extends State<HomePage> {
                   label: 'Categoría',
                   value: selectedCategory,
                   options: _kCategories,
-                  onSelected: (v) => setDlg(() => selectedCategory = v),
+                  onSelected: (v) =>
+                      setDlg(() => selectedCategory = v),
                   c: c,
                 ),
               ]),
@@ -350,7 +361,8 @@ class _HomePageState extends State<HomePage> {
             actions: [
               TextButton(
                 onPressed: isSaving ? null : () => Navigator.pop(ctx),
-                child: Text(l10n.teamDialogCancel, style: TextStyle(color: c.muted)),
+                child: Text(l10n.teamDialogCancel,
+                    style: TextStyle(color: c.muted)),
               ),
               TextButton(
                 onPressed: isSaving
@@ -363,7 +375,8 @@ class _HomePageState extends State<HomePage> {
                         if (pickedLogo != null && logoBytes != null) {
                           final tmpId = isEdit
                               ? (team['id'] as int)
-                              : DateTime.now().millisecondsSinceEpoch;
+                              : DateTime.now()
+                                  .millisecondsSinceEpoch;
                           final ext = pickedLogo!.name
                               .split('.')
                               .last
@@ -398,9 +411,12 @@ class _HomePageState extends State<HomePage> {
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: context.colors.accent))
+                            strokeWidth: 2,
+                            color: context.colors.accent))
                     : Text(
-                        isEdit ? l10n.teamDialogSave : l10n.teamDialogCreate,
+                        isEdit
+                            ? l10n.teamDialogSave
+                            : l10n.teamDialogCreate,
                         style: TextStyle(
                             color: context.colors.accent,
                             fontWeight: FontWeight.w700),
@@ -424,7 +440,8 @@ class _HomePageState extends State<HomePage> {
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20)),
           title: Text(l10n.teamDeleteTitle,
-              style: TextStyle(color: c.text, fontWeight: FontWeight.w700)),
+              style:
+                  TextStyle(color: c.text, fontWeight: FontWeight.w700)),
           content: Text(
             l10n.teamDeleteConfirm(team['name'] as String),
             style: TextStyle(color: c.muted, fontSize: 13, height: 1.5),
@@ -432,10 +449,12 @@ class _HomePageState extends State<HomePage> {
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: Text(l10n.teamDialogCancel, style: TextStyle(color: c.muted))),
+                child: Text(l10n.teamDialogCancel,
+                    style: TextStyle(color: c.muted))),
             TextButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                child: Text(l10n.teamDeleteButton, style: TextStyle(color: c.danger))),
+                child: Text(l10n.teamDeleteButton,
+                    style: TextStyle(color: c.danger))),
           ],
         );
       },
@@ -445,7 +464,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// ── Team form constants ───────────────────────────────────────────────────────
+// ── Team form constants ────────────────────────────────────────────────────────
 
 const _kCategories = [
   'Sub-6', 'Sub-8', 'Sub-10', 'Sub-12', 'Sub-14', 'Sub-16', 'Sub-18',
@@ -486,7 +505,8 @@ class _DropdownField extends StatelessWidget {
     return GestureDetector(
       onTap: () => _showPicker(context),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           color: c.elevated,
           borderRadius: BorderRadius.circular(12),
@@ -498,21 +518,23 @@ class _DropdownField extends StatelessWidget {
         ),
         child: Row(children: [
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(label,
-                  style: TextStyle(
-                      color: hasValue ? c.accent : c.text,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500)),
-              if (hasValue) ...[
-                const SizedBox(height: 2),
-                Text(value!,
-                    style: TextStyle(
-                        color: c.textHi,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600)),
-              ],
-            ]),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label,
+                      style: TextStyle(
+                          color: hasValue ? c.accent : c.text,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500)),
+                  if (hasValue) ...[
+                    const SizedBox(height: 2),
+                    Text(value!,
+                        style: TextStyle(
+                            color: c.textHi,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600)),
+                  ],
+                ]),
           ),
           Icon(Icons.expand_more_rounded,
               color: hasValue ? c.accent : c.muted, size: 20),
@@ -531,21 +553,25 @@ class _DropdownField extends StatelessWidget {
             maxHeight: MediaQuery.of(context).size.height * 0.6),
         decoration: BoxDecoration(
           color: c.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius:
+              const BorderRadius.vertical(top: Radius.circular(20)),
           border: Border(top: BorderSide(color: c.border)),
         ),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           const SizedBox(height: 8),
           Container(
-              width: 36, height: 4,
+              width: 36,
+              height: 4,
               decoration: BoxDecoration(
-                  color: c.border2, borderRadius: BorderRadius.circular(2))),
+                  color: c.border2,
+                  borderRadius: BorderRadius.circular(2))),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
             child: Row(children: [
               Text(label,
                   style: TextStyle(
-                      color: c.textHi, fontSize: 16,
+                      color: c.textHi,
+                      fontSize: 16,
                       fontWeight: FontWeight.w800)),
             ]),
           ),
@@ -558,7 +584,10 @@ class _DropdownField extends StatelessWidget {
                 final opt = options[i];
                 final selected = opt == value;
                 return GestureDetector(
-                  onTap: () { onSelected(opt); Navigator.pop(context); },
+                  onTap: () {
+                    onSelected(opt);
+                    Navigator.pop(context);
+                  },
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 6),
                     padding: const EdgeInsets.symmetric(
@@ -595,147 +624,6 @@ class _DropdownField extends StatelessWidget {
             ),
           ),
         ]),
-      ),
-    );
-  }
-}
-
-// ── Feature section (premium tactical cards) ──────────────────────────────────
-
-class _FeatureSection extends StatelessWidget {
-  const _FeatureSection();
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    final l10n = AppLocalizations.of(context)!;
-    const accent = Color(0xFF32FF88);
-
-    final cards = [
-      (Icons.radar_rounded, l10n.featureRivalAnalysisTitle, l10n.featureRivalAnalysisDesc, '94%'),
-      (Icons.sports_soccer_rounded, l10n.featureTacticsTitle, l10n.featureTacticsDesc, '87%'),
-      (Icons.person_search_rounded, l10n.featureIndividualStatsTitle, l10n.featureIndividualStatsDesc, '91%'),
-    ];
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 8, 0, 4),
-      child: SizedBox(
-        height: 110,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: cards.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 10),
-          itemBuilder: (context, i) {
-            final card   = cards[i];
-            final isDark = Theme.of(context).brightness == Brightness.dark;
-            final cardAccent = isDark ? accent : c.accent;
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(22),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(
-                  width: 168,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    // Light: glass blanco con tinte verde muy sutil
-                    color: isDark
-                        ? c.elevated.withValues(alpha: 0.80)
-                        : Colors.white.withValues(alpha: 0.88),
-                    borderRadius: BorderRadius.circular(22),
-                    border: Border.all(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.08)
-                          : const Color(0xFF16C86A).withValues(alpha: 0.15),
-                      width: isDark ? 1.0 : 1.2,
-                    ),
-                    boxShadow: isDark
-                        ? [BoxShadow(
-                            color: accent.withValues(alpha: 0.06),
-                            blurRadius: 20,
-                          )]
-                        : [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 24,
-                              offset: const Offset(0, 6),
-                            ),
-                            BoxShadow(
-                              color: cardAccent.withValues(alpha: 0.08),
-                              blurRadius: 16,
-                              spreadRadius: -4,
-                            ),
-                          ],
-                  ),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      // Ícono con glow
-                      Container(
-                        width: 34,
-                        height: 34,
-                        decoration: BoxDecoration(
-                          gradient: isDark
-                              ? null
-                              : LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    cardAccent.withValues(alpha: 0.18),
-                                    cardAccent.withValues(alpha: 0.08),
-                                  ],
-                                ),
-                          color: isDark ? accent.withValues(alpha: 0.12) : null,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: cardAccent.withValues(alpha: isDark ? 0.0 : 0.20),
-                          ),
-                        ),
-                        child: Icon(card.$1, color: cardAccent, size: 16),
-                      ),
-                      // Badge %
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? accent.withValues(alpha: 0.14)
-                              : cardAccent.withValues(alpha: 0.10),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: cardAccent.withValues(alpha: isDark ? 0.0 : 0.25),
-                            width: 0.8,
-                          ),
-                        ),
-                        child: Text(
-                          card.$4,
-                          style: TextStyle(
-                            color: cardAccent,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ]),
-                    const Spacer(),
-                    Text(
-                      card.$2,
-                      style: TextStyle(
-                        color: c.textHi,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.1,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      card.$3,
-                      style: TextStyle(color: c.muted, fontSize: 10, height: 1.3),
-                    ),
-                  ]),
-                ),
-              ),
-            );
-          },
-        ),
       ),
     );
   }

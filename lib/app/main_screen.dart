@@ -20,7 +20,7 @@ class _MainScreenState extends State<MainScreen> {
   List<Widget> get _pages => [
     HomePage(onTabChange: (i) => setState(() => _currentIndex = i)),
     const AnalysesHistoryPage(),
-    const SquadPage(),
+    SquadPage(onTabChange: (i) => setState(() => _currentIndex = i)),
     TrainingPage(onTabChange: (i) => setState(() => _currentIndex = i)),
     const CoachingBoardPage(),
   ];

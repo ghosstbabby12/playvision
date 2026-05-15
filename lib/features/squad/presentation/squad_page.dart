@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/theme/app_color_tokens.dart';
+import '../../../shared/widgets/pv_back_button.dart';
 import 'squad_controller.dart';
 
 class SquadPage extends StatefulWidget {
-  const SquadPage({super.key});
+  final void Function(int)? onTabChange;
+  const SquadPage({super.key, this.onTabChange});
 
   @override
   State<SquadPage> createState() => _SquadPageState();
@@ -558,13 +560,8 @@ class _SquadPageState extends State<SquadPage> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                 child: Row(children: [
-                  Container(
-                    width: 40, height: 40,
-                    decoration: BoxDecoration(
-                        color: c.accent,
-                        borderRadius: BorderRadius.circular(12)),
-                    child: const Icon(Icons.play_arrow_rounded,
-                        color: Colors.white, size: 22),
+                  PvBackButton(
+                    onTap: () => widget.onTabChange?.call(0),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
