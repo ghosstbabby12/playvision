@@ -799,42 +799,31 @@ class _BoardStep extends StatelessWidget {
       return Positioned(
         left: screenPos.dx - PlayerChip.chipW / 2,
         top: screenPos.dy - PlayerChip.chipH / 2,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            PlayerChip(
-              player: player,
-              isSelected: isSelected,
-              isSwapSource: isSwapSrc,
-              onTap: () {
-                if (swapSource != null) {
-                  ctrl.finishSwap(player);
-                } else {
-                  ctrl.selectPlayer(player);
-                  if (!isSelected) {
-                    PlayerStatsSheet.show(
-                      context,
-                      player,
-                      allPlayers: ctrl.players,
-                    );
-                  }
-                }
-              },
-              onLongPress: () => ctrl.startSwap(player),
-              // Perspective-aware drag
-              onDrag: (ddx, ddy) => ctrl.movePlayer(
-                player.id,
-                (player.dx + ddx / proj.rowWidth(player.dy))
-                    .clamp(0.03, 0.97),
-                (player.dy + ddy / proj.colHeight).clamp(0.03, 0.97),
-              ),
-            ),
-            const SizedBox(height: 2),
-            PlayerLabel(
-              player: player,
-              isSelected: isSelected || isSwapSrc,
-            ),
-          ],
+        child: PlayerChip(
+          player: player,
+          isSelected: isSelected,
+          isSwapSource: isSwapSrc,
+          onTap: () {
+            if (swapSource != null) {
+              ctrl.finishSwap(player);
+            } else {
+              ctrl.selectPlayer(player);
+              if (!isSelected) {
+                PlayerStatsSheet.show(
+                  context,
+                  player,
+                  allPlayers: ctrl.players,
+                );
+              }
+            }
+          },
+          onLongPress: () => ctrl.startSwap(player),
+          onDrag: (ddx, ddy) => ctrl.movePlayer(
+            player.id,
+            (player.dx + ddx / proj.rowWidth(player.dy))
+                .clamp(0.03, 0.97),
+            (player.dy + ddy / proj.colHeight).clamp(0.03, 0.97),
+          ),
         ),
       );
     }).toList();
@@ -873,18 +862,28 @@ class _IsometricLinesPainter extends CustomPainter {
       if (entry.value.length < 2) continue;
       final sorted = [...entry.value]
         ..sort((a, b) => a.dx.compareTo(b.dx));
-      final paint = Paint()
-        ..color = _color(entry.key).withValues(alpha: 0.30)
+      final lineColor = _color(entry.key);
+
+      // Glow pass (wide, blurred)
+      final glowPaint = Paint()
+        ..color = lineColor.withValues(alpha: 0.22)
+        ..strokeWidth = 5.0
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+
+      // Sharp pass (thin, vivid)
+      final sharpPaint = Paint()
+        ..color = lineColor.withValues(alpha: 0.55)
         ..strokeWidth = 1.6
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round;
 
       for (int i = 0; i < sorted.length - 1; i++) {
-        canvas.drawLine(
-          proj(sorted[i].dx, sorted[i].dy),
-          proj(sorted[i + 1].dx, sorted[i + 1].dy),
-          paint,
-        );
+        final p1 = proj(sorted[i].dx, sorted[i].dy);
+        final p2 = proj(sorted[i + 1].dx, sorted[i + 1].dy);
+        canvas.drawLine(p1, p2, glowPaint);
+        canvas.drawLine(p1, p2, sharpPaint);
       }
     }
   }
@@ -971,15 +970,7 @@ class _PlayerFooter extends StatelessWidget {
         ),
         child: Row(
           children: [
-            SizedBox(
-              width: 28,
-              height: 32,
-              child: CustomPaint(
-                painter: _MiniJerseyPainter(
-                  color: PlayerChip.positionColor(player.position),
-                ),
-              ),
-            ),
+            _FooterAvatar(player: player),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -1094,47 +1085,47 @@ class _FooterStat extends StatelessWidget {
       );
 }
 
-class _MiniJerseyPainter extends CustomPainter {
-  final Color color;
-  const _MiniJerseyPainter({required this.color});
+class _FooterAvatar extends StatelessWidget {
+  final PlayerToken player;
+  const _FooterAvatar({required this.player});
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-    final p = Path()
-      ..moveTo(w * 0.34, 0)
-      ..lineTo(w * 0.50, h * 0.19)
-      ..lineTo(w * 0.66, 0)
-      ..lineTo(w * 0.96, h * 0.09)
-      ..lineTo(w, h * 0.15)
-      ..lineTo(w, h * 0.43)
-      ..lineTo(w * 0.78, h * 0.43)
-      ..lineTo(w * 0.86, h)
-      ..lineTo(w * 0.14, h)
-      ..lineTo(w * 0.22, h * 0.43)
-      ..lineTo(0, h * 0.43)
-      ..lineTo(0, h * 0.15)
-      ..lineTo(w * 0.04, h * 0.09)
-      ..close();
+  Widget build(BuildContext context) {
+    final posColor = PlayerChip.positionColor(player.position);
+    final rating   = (player.stats['rating'] as num?)?.toDouble() ?? 0.0;
+    final perfColor = PlayerChip.performanceColor(rating);
+    final hasPhoto  = player.photoUrl != null && player.photoUrl!.isNotEmpty;
 
-    canvas.drawPath(
-      p,
-      Paint()
-        ..color = color.withValues(alpha: 0.85)
-        ..style = PaintingStyle.fill,
-    );
-    canvas.drawPath(
-      p,
-      Paint()
-        ..color = color.withValues(alpha: 0.5)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2
-        ..strokeJoin = StrokeJoin.round,
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: posColor.withValues(alpha: 0.18),
+        border: Border.all(
+          color: rating > 0 ? perfColor : posColor,
+          width: 2.0,
+        ),
+        image: hasPhoto
+            ? DecorationImage(
+                image: NetworkImage(player.photoUrl!),
+                fit: BoxFit.cover,
+              )
+            : null,
+      ),
+      child: hasPhoto
+          ? null
+          : Center(
+              child: Text(
+                '#${player.number}',
+                style: TextStyle(
+                  color: posColor,
+                  fontSize: player.number > 9 ? 10 : 12,
+                  fontWeight: FontWeight.w900,
+                  height: 1,
+                ),
+              ),
+            ),
     );
   }
-
-  @override
-  bool shouldRepaint(covariant _MiniJerseyPainter old) =>
-      old.color != color;
 }

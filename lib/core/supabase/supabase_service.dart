@@ -125,8 +125,9 @@ class SupabaseService {
   Future<List<Map<String, dynamic>>> getPlayersByTeam(int teamId) async {
     final response = await client
         .from('players')
-        .select()
+        .select('*, teams!inner(name, user_id)')
         .eq('team_id', teamId)
+        .eq('teams.user_id', _currentUserId)
         .order('created_at', ascending: false)
         .timeout(_kTimeout);
     return List<Map<String, dynamic>>.from(response);
@@ -337,6 +338,17 @@ class SupabaseService {
     } catch (e) {
       debugPrint('Error al obtener reporte del partido: $e');
       return null;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getLatestMatchStatsByTeam(int teamId) async {
+    try {
+      final matches = await getMatchesByTeam(teamId);
+      if (matches.isEmpty) return [];
+      final matchId = matches.first['id'] as int;
+      return await getPlayerMatchStats(matchId);
+    } catch (_) {
+      return [];
     }
   }
 

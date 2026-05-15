@@ -818,10 +818,17 @@ class _PlayerCard extends StatelessWidget {
     'MID': [Color(0xFF052E16), Color(0xFF14532D)],
     'FWD': [Color(0xFF1E0A3C), Color(0xFF4C1D95)],
   };
+  static const _lightGrad = {
+    'GK':  [Color(0xFFFFFBEE), Color(0xFFFFF0C2)],
+    'DEF': [Color(0xFFEFF5FF), Color(0xFFD6E8FF)],
+    'MID': [Color(0xFFEBFBF2), Color(0xFFCCF2DF)],
+    'FWD': [Color(0xFFF5EEFF), Color(0xFFEAD8FF)],
+  };
 
   Color _accent(String p) => _accents[p] ?? const Color(0xFF6B7280);
-  List<Color> _grad(String p) =>
-      _darkGrad[p] ?? [const Color(0xFF111827), const Color(0xFF1F2937)];
+  List<Color> _grad(String p, bool isDark) => isDark
+      ? (_darkGrad[p] ?? [const Color(0xFF111827), const Color(0xFF1F2937)])
+      : (_lightGrad[p] ?? [const Color(0xFFF4F6F2), const Color(0xFFE8EDF2)]);
 
   int _age(String? b) {
     if (b == null || b.isEmpty) return 0;
@@ -888,6 +895,7 @@ class _PlayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark   = Theme.of(context).brightness == Brightness.dark;
     final pos      = (player['position'] as String? ?? 'MID').toUpperCase();
     final number   = player['shirt_number'] as int? ?? 0;
     final name     = player['name'] as String? ?? '—';
@@ -899,7 +907,7 @@ class _PlayerCard extends StatelessWidget {
     final ovr      = _ovr();
     final form     = _form(ovr);
     final accent   = _accent(pos);
-    final grad     = _grad(pos);
+    final grad     = _grad(pos, isDark);
     final bars     = _bars(pos);
 
     // Initials for avatar fallback
@@ -914,11 +922,14 @@ class _PlayerCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: grad[0],
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: accent.withValues(alpha: 0.3)),
+          border: Border.all(color: accent.withValues(alpha: isDark ? 0.3 : 0.25)),
           boxShadow: [
             BoxShadow(
-              color: grad[1].withValues(alpha: 0.5),
-              blurRadius: 14, offset: const Offset(0, 4),
+              color: isDark
+                  ? grad[1].withValues(alpha: 0.5)
+                  : accent.withValues(alpha: 0.10),
+              blurRadius: isDark ? 14 : 20,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -957,7 +968,7 @@ class _PlayerCard extends StatelessWidget {
                       stops: const [0.4, 1.0],
                       colors: [
                         Colors.transparent,
-                        grad[0].withValues(alpha: 0.95),
+                        grad[0].withValues(alpha: isDark ? 0.95 : 0.85),
                       ],
                     ),
                   ),
@@ -1009,7 +1020,9 @@ class _PlayerCard extends StatelessWidget {
                 child: Text(
                   number > 0 ? '#$number' : '',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.6)
+                        : c.muted,
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                   ),
@@ -1024,13 +1037,17 @@ class _PlayerCard extends StatelessWidget {
                     child: Container(
                       width: 28, height: 28,
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.45),
+                        color: isDark
+                            ? Colors.black.withValues(alpha: 0.45)
+                            : Colors.white.withValues(alpha: 0.75),
                         shape: BoxShape.circle,
                         border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.25)),
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.25)
+                                : c.border2),
                       ),
-                      child: const Icon(Icons.edit_outlined,
-                          color: Colors.white, size: 14),
+                      child: Icon(Icons.edit_outlined,
+                          color: isDark ? Colors.white : c.text, size: 14),
                     ),
                   ),
                 ),
@@ -1046,8 +1063,8 @@ class _PlayerCard extends StatelessWidget {
               children: [
                 // Name
                 Text(name,
-                    style: const TextStyle(
-                        color: Colors.white,
+                    style: TextStyle(
+                        color: isDark ? Colors.white : c.textHi,
                         fontSize: 13,
                         fontWeight: FontWeight.w800),
                     maxLines: 1,
@@ -1057,7 +1074,9 @@ class _PlayerCard extends StatelessWidget {
                 Text(
                   age > 0 ? '$teamName · $age a' : teamName,
                   style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.5)
+                          : c.muted,
                       fontSize: 10),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -1083,8 +1102,9 @@ class _PlayerCard extends StatelessWidget {
                             width: 26,
                             child: Text(b.$1,
                                 style: TextStyle(
-                                    color: Colors.white
-                                        .withValues(alpha: 0.45),
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.45)
+                                        : c.muted,
                                     fontSize: 9,
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: 0.5)),
@@ -1123,8 +1143,9 @@ class _PlayerCard extends StatelessWidget {
                             width: 26,
                             child: Text(lbl,
                                 style: TextStyle(
-                                    color: Colors.white
-                                        .withValues(alpha: 0.2),
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.2)
+                                        : c.dim,
                                     fontSize: 9,
                                     fontWeight: FontWeight.w700)),
                           ),
@@ -1147,8 +1168,9 @@ class _PlayerCard extends StatelessWidget {
                             child: Text('—',
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
-                                    color: Colors.white
-                                        .withValues(alpha: 0.2),
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.2)
+                                        : c.dim,
                                     fontSize: 10,
                                     fontWeight: FontWeight.w700)),
                           ),

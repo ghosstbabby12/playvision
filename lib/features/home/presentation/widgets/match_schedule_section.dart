@@ -172,36 +172,57 @@ class _MatchScheduleSectionState extends State<MatchScheduleSection> {
                   ),
                 ])
               // Botón para abrir búsqueda
-              : Row(key: const ValueKey('search_closed'),
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(l10n.resultsTab,
+              : Builder(builder: (ctx) {
+                  final isDark = Theme.of(ctx).brightness == Brightness.dark;
+                  return Row(
+                    key: const ValueKey('search_closed'),
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.resultsTab,
                         style: TextStyle(
-                            color: c.textHi,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800)),
-                    GestureDetector(
-                      onTap: () => setState(() => _showSearch = true),
-                      child: Container(
-                        height: 38,
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        decoration: BoxDecoration(
-                          color: c.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: c.border),
+                          color: c.textHi,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.3,
                         ),
-                        child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          Icon(Icons.search, color: c.accent, size: 16),
-                          const SizedBox(width: 6),
-                          Text(l10n.searchTeamButton,
-                              style: TextStyle(
+                      ),
+                      GestureDetector(
+                        onTap: () => setState(() => _showSearch = true),
+                        child: Container(
+                          height: 38,
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          decoration: BoxDecoration(
+                            color: isDark ? c.surface : Colors.white.withValues(alpha: 0.85),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: isDark
+                                  ? c.border
+                                  : const Color(0xFF16C86A).withValues(alpha: 0.20),
+                            ),
+                            boxShadow: isDark
+                                ? null
+                                : [BoxShadow(
+                                    color: const Color(0xFF16C86A).withValues(alpha: 0.08),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 2),
+                                  )],
+                          ),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            Icon(Icons.search, color: c.accent, size: 16),
+                            const SizedBox(width: 6),
+                            Text(l10n.searchTeamButton,
+                                style: TextStyle(
                                   color: c.accent,
                                   fontSize: 12,
-                                  fontWeight: FontWeight.w600)),
-                        ]),
+                                  fontWeight: FontWeight.w600,
+                                )),
+                          ]),
+                        ),
                       ),
-                    ),
-                  ]),
+                    ],
+                  );
+                }),
         ),
       ),
 
@@ -405,22 +426,48 @@ class _MatchScheduleSectionState extends State<MatchScheduleSection> {
         // Empty state cuando no hay partidos hoy
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: c.surface,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: c.border),
-            ),
-            child: Center(
-              child: Column(children: [
-                Icon(Icons.sports_soccer_outlined, color: c.dim, size: 28),
-                const SizedBox(height: 8),
-                Text(l10n.noRealMatchesToday,
-                    style: TextStyle(color: c.muted, fontSize: 13)),
-              ]),
-            ),
-          ),
+          child: Builder(builder: (ctx) {
+            final isDark = Theme.of(ctx).brightness == Brightness.dark;
+            return Container(
+              padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+              decoration: BoxDecoration(
+                color: c.surface,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: c.border),
+                boxShadow: isDark
+                    ? null
+                    : [BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 24,
+                        offset: const Offset(0, 6),
+                      )],
+              ),
+              child: Center(
+                child: Column(children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: c.accentLo,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.sports_soccer_outlined,
+                      color: c.accent,
+                      size: 26,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(l10n.noRealMatchesToday,
+                      style: TextStyle(
+                        color: c.muted,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      )),
+                ]),
+              ),
+            );
+          }),
         ),
 
       const SizedBox(height: 16),
@@ -435,13 +482,32 @@ class _SectionSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: List.generate(3, (_) => Container(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Column(children: List.generate(3, (i) => Container(
       margin: const EdgeInsets.only(bottom: 12),
-      height: 64,
+      height: 72,
       decoration: BoxDecoration(
         color: c.surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: c.border),
+        boxShadow: isDark
+            ? null
+            : [BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 16,
+                offset: const Offset(0, 3),
+              )],
+      ),
+      // Efecto shimmer simple con opacidad escalonada
+      child: Opacity(
+        opacity: 1.0 - i * 0.15,
+        child: Container(
+          margin: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: c.border,
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
       ),
     )));
   }
@@ -727,38 +793,97 @@ class LeagueGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
+    final c      = context.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      // Cabecera de liga — pill premium
       Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
-        child: Row(children: [
-          if (leagueLogo.isNotEmpty)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: CachedNetworkImage(
-                imageUrl: leagueLogo, width: 26, height: 26,
-                httpHeaders: _kImgHeaders,
-                fit: BoxFit.contain,
-                errorWidget: (_, __, ___) =>
-                    Icon(Icons.emoji_events, color: c.accent, size: 18),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: isDark
+              ? null
+              : BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.70),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: const Color(0xFF16C86A).withValues(alpha: 0.10),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 12,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+          child: Row(children: [
+            if (leagueLogo.isNotEmpty)
+              Container(
+                width: 30,
+                height: 30,
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: isDark ? c.elevated : Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: isDark
+                      ? null
+                      : [BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.06),
+                          blurRadius: 6,
+                        )],
+                ),
+                child: CachedNetworkImage(
+                  imageUrl: leagueLogo,
+                  httpHeaders: _kImgHeaders,
+                  fit: BoxFit.contain,
+                  errorWidget: (_, __, ___) =>
+                      Icon(Icons.emoji_events, color: c.accent, size: 16),
+                ),
+              )
+            else
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: c.accentLo,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(Icons.emoji_events, color: c.accent, size: 16),
               ),
-            )
-          else
-            Icon(Icons.emoji_events, color: c.accent, size: 18),
-          const SizedBox(width: 10),
-          Expanded(
-              child: Text(leagueName,
-                  style: TextStyle(
-                      color: c.text,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700))),
-          Icon(Icons.chevron_right_rounded, color: c.dim, size: 18),
-        ]),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                leagueName,
+                style: TextStyle(
+                  color: c.textHi,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.1,
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+              decoration: BoxDecoration(
+                color: c.accentLo,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '${matches.length}',
+                style: TextStyle(
+                  color: c.accent,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ]),
+        ),
       ),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        child:
-            Column(children: matches.map((m) => MatchRow(match: m)).toList()),
+        child: Column(children: matches.map((m) => MatchRow(match: m)).toList()),
       ),
     ]);
   }
@@ -831,12 +956,37 @@ class MatchRow extends StatelessWidget {
     const liveRed  = Color(0xFFE91E63);
     final timeColor = isLive ? liveRed : isFinished ? c.textHi : c.accent;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: c.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isLive ? liveRed.withValues(alpha: 0.30) : c.border),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isLive
+              ? liveRed.withValues(alpha: 0.35)
+              : isDark
+                  ? c.border
+                  : const Color(0xFF16C86A).withValues(alpha: 0.08),
+          width: isLive ? 1.2 : 1,
+        ),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 20,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 4),
+                ),
+                if (isLive)
+                  BoxShadow(
+                    color: liveRed.withValues(alpha: 0.08),
+                    blurRadius: 16,
+                    spreadRadius: -4,
+                  ),
+              ],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 

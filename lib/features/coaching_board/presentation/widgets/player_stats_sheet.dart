@@ -1165,7 +1165,7 @@ class _MatchTab extends StatelessWidget {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         mainAxisSpacing: 8, crossAxisSpacing: 8,
-        childAspectRatio: 1.6,
+        childAspectRatio: 1.2,
         children: stats
             .map((s) => _StatCell(emoji: s.$1, label: s.$2, value: s.$3, c: c))
             .toList(),

@@ -48,33 +48,34 @@ class _PlayersTabState extends State<PlayersTab> {
 
   void _updatePlayer(int index, Map<String, dynamic> updated) {
     setState(() => _players[index] = updated);
-    // Persist link to player_match_stats if we have a match and a player_id
-    final matchId   = widget.matchId;
-    final playerId  = updated['linked_player_id'] as int?;
-    final trackId   = updated['rank'] as int?;
-    if (matchId != null && playerId != null && trackId != null) {
-      _persistLink(matchId: matchId, playerId: playerId, trackId: trackId, data: updated);
+    final matchId = widget.matchId;
+    final trackId = updated['rank'] as int?;
+    if (matchId != null && trackId != null) {
+      _persistPlayerData(matchId: matchId, trackId: trackId, data: updated);
     }
   }
 
-  Future<void> _persistLink({
+  Future<void> _persistPlayerData({
     required int matchId,
-    required int playerId,
     required int trackId,
     required Map<String, dynamic> data,
   }) async {
     try {
-      await SupabaseService.instance.savePlayerStatsBatch([{
-        'match_id':        matchId,
-        'player_id':       playerId,
-        'track_id':        trackId,
-        'distance':        (data['distance_km'] as num?)?.toDouble() ?? 0,
-        'velocity':        (data['speed_ms']    as num?)?.toDouble() ?? 0,
-        'possession':      (data['possession_pct'] as num?)?.toDouble() ?? 0,
-        'presence':        (data['presence_pct']   as num?)?.toDouble() ?? 0,
-        'zone':            data['zone'] as String? ?? '',
-        'best_position':   data['zone'] as String? ?? '',
-      }]);
+      final playerId = data['linked_player_id'] as int?;
+      final row = <String, dynamic>{
+        'match_id':      matchId,
+        'track_id':      trackId,
+        'distance':      (data['distance_km']    as num?)?.toDouble() ?? 0,
+        'velocity':      (data['speed_ms']       as num?)?.toDouble() ?? 0,
+        'possession':    (data['possession_pct'] as num?)?.toDouble() ?? 0,
+        'presence':      (data['presence_pct']   as num?)?.toDouble() ?? 0,
+        'zone':          data['zone']             as String? ?? '',
+        'best_position': data['best_position']    as String? ?? '',
+        'custom_name':   data['custom_name']      as String?,
+        'custom_number': data['custom_number']    as int?,
+      };
+      if (playerId != null) row['player_id'] = playerId;
+      await SupabaseService.instance.savePlayerStatsBatch([row]);
     } catch (_) {}
   }
 

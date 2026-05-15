@@ -99,37 +99,51 @@ class AppColorTokens extends ThemeExtension<AppColorTokens> {
     dangerBg:    Color(0x1AFF4D4D),
   );
 
+  // ── Premium Light — Glassmorphism · Sage · Futurista ──────────────────────
   static const light = AppColorTokens(
-    bg:          Color(0xFFF0F4FA),
-    surface:     Color(0xFFFFFFFF),
-    elevated:    Color(0xFFF7F9FC),
-    card:        Color(0xFFFFFFFF),
+    // Backgrounds: sage mist base + translucent glass layers
+    bg:          Color(0xFFF4F6F2),  // Sage mist premium
+    surface:     Color(0xF0FFFFFF),  // Glass white 94%
+    elevated:    Color(0xF7FFFFFF),  // Glass white 97%
+    card:        Color(0xEBFFFFFF),  // Glass white 92%
+
+    // Hero (mantiene dark para contraste visual)
     heroTop:     Color(0xFF07111F),
     heroBottom:  Color(0xFF0D1A2E),
-    border:      Color(0x18000000),
-    border2:     Color(0x28000000),
-    borderGreen: Color(0x4016C86A),
-    text:        Color(0xFF1A2332),
-    textHi:      Color(0xFF07111F),
-    muted:       Color(0xFF667085),
-    dim:         Color(0xFFB0BEC5),
-    accent:      Color(0xFF16C86A),
-    accentHi:    Color(0xFF32FF88),
-    accentLo:    Color(0xFFE6FAF1),
-    accentMid:   Color(0xFFC2F0D9),
-    navBg:       Color(0xF2FFFFFF),
-    navActive:   Color(0xFFDDFBEA),
-    navBorder:   Color(0x4016C86A),
+
+    // Borders: ultra-suaves, elegantes
+    border:      Color(0x0D000000),  // 5% negro — casi imperceptible
+    border2:     Color(0x1A000000),  // 10% negro — sutil
+    borderGreen: Color(0x4816C86A),  // 28% verde accent
+
+    // Tipografía premium: azul-pizarra, no negro puro
+    text:        Color(0xFF1D2B3A),  // Slate profundo
+    textHi:      Color(0xFF0B1926),  // Near-black premium
+    muted:       Color(0xFF5E7082),  // Azul-gris cálido
+    dim:         Color(0xFFB4C6D4),  // Gris suave con azul
+
+    // Accent verde — verde neón suave
+    accent:      Color(0xFF16C86A),  // Verde marca
+    accentHi:    Color(0xFF1DE882),  // Verde neón brillante
+    accentLo:    Color(0x2016C86A),  // 12.5% verde — glass tint
+    accentMid:   Color(0x3816C86A),  // 22% verde
+
+    // Navbar glassmorphism
+    navBg:       Color(0xDFF4F6F2),  // Sage glass 87%
+    navActive:   Color(0x2016C86A),  // Verde active 12.5%
+    navBorder:   Color(0x4016C86A),  // Verde border 25%
+
+    // Semáforos premium
     positive:    Color(0xFF16C86A),
-    positiveBg:  Color(0x1A16C86A),
-    negative:    Color(0xFFD32F2F),
-    negativeBg:  Color(0x1AD32F2F),
-    success:     Color(0xFF1E8A45),
-    successBg:   Color(0x1A1E8A45),
-    warning:     Color(0xFFF57C00),
-    warningBg:   Color(0x1AF57C00),
-    danger:      Color(0xFFD32F2F),
-    dangerBg:    Color(0x1AD32F2F),
+    positiveBg:  Color(0x1616C86A),  // 8.6%
+    negative:    Color(0xFFD12D2D),
+    negativeBg:  Color(0x16D12D2D),
+    success:     Color(0xFF1A8840),
+    successBg:   Color(0x161A8840),
+    warning:     Color(0xFFE07600),
+    warningBg:   Color(0x16E07600),
+    danger:      Color(0xFFCC2828),
+    dangerBg:    Color(0x16CC2828),
   );
 
   @override

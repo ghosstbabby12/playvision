@@ -219,21 +219,27 @@ class SelectedTeamHeader extends StatelessWidget {
             decoration: BoxDecoration(
               color: isDark
                   ? const Color(0xFF07111F).withValues(alpha: 0.50)
-                  : Colors.white.withValues(alpha: 0.95),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: c.borderGreen),
+                  : Colors.white.withValues(alpha: 0.92),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: c.borderGreen,
+                width: isDark ? 1 : 1.2,
+              ),
               boxShadow: isDark
-                  ? [
-                      BoxShadow(
-                        color: const Color(0xFF32FF88).withValues(alpha: 0.10),
-                        blurRadius: 24,
-                      ),
-                    ]
+                  ? [BoxShadow(
+                      color: const Color(0xFF32FF88).withValues(alpha: 0.10),
+                      blurRadius: 24,
+                    )]
                   : [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 28,
+                        offset: const Offset(0, 8),
+                      ),
+                      BoxShadow(
+                        color: const Color(0xFF16C86A).withValues(alpha: 0.10),
                         blurRadius: 20,
-                        offset: const Offset(0, 6),
+                        spreadRadius: -6,
                       ),
                     ],
             ),
@@ -374,16 +380,31 @@ class AnalyseButton extends StatelessWidget {
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   )
-                : null,
-            color: isDark ? null : Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: c.borderGreen),
+                : const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white,
+                      Color(0xFFEDF8F3),   // Mint tint premium
+                    ],
+                  ),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: c.borderGreen,
+              width: isDark ? 1 : 1.2,
+            ),
             boxShadow: [
               BoxShadow(
-                color: c.accent.withValues(alpha: isDark ? 0.20 : 0.15),
-                blurRadius: 20,
+                color: c.accent.withValues(alpha: isDark ? 0.18 : 0.14),
+                blurRadius: isDark ? 20 : 28,
                 offset: Offset(0, isDark ? 8 : 6),
               ),
+              if (!isDark)
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
             ],
           ),
           child: Row(children: [
@@ -609,28 +630,39 @@ class _MatchItemState extends State<MatchItem> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: c.surface,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isDark
                 ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.06),
+                : const Color(0xFF16C86A).withValues(alpha: 0.08),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 20,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
         ),
         child: Row(children: [
           Container(
-            width: 44, height: 44,
+            width: 46, height: 46,
             decoration: BoxDecoration(
-              color: c.elevated,
-              borderRadius: BorderRadius.circular(12),
+              color: isDark ? c.elevated : c.accentLo,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: isDark
+                    ? c.border
+                    : const Color(0xFF16C86A).withValues(alpha: 0.15),
+              ),
             ),
-            child: Icon(Icons.sports_soccer_outlined, color: c.dim, size: 20),
+            child: Icon(
+              Icons.sports_soccer_outlined,
+              color: c.accent,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

@@ -631,56 +631,105 @@ class _FeatureSection extends StatelessWidget {
             final isDark = Theme.of(context).brightness == Brightness.dark;
             final cardAccent = isDark ? accent : c.accent;
             return ClipRRect(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(22),
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                 child: Container(
-                  width: 160,
+                  width: 168,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
+                    // Light: glass blanco con tinte verde muy sutil
                     color: isDark
                         ? c.elevated.withValues(alpha: 0.80)
-                        : Colors.white.withValues(alpha: 0.90),
-                    borderRadius: BorderRadius.circular(18),
+                        : Colors.white.withValues(alpha: 0.88),
+                    borderRadius: BorderRadius.circular(22),
                     border: Border.all(
                       color: isDark
                           ? Colors.white.withValues(alpha: 0.08)
-                          : Colors.black.withValues(alpha: 0.08),
+                          : const Color(0xFF16C86A).withValues(alpha: 0.15),
+                      width: isDark ? 1.0 : 1.2,
                     ),
                     boxShadow: isDark
-                        ? [BoxShadow(color: accent.withValues(alpha: 0.06), blurRadius: 16)]
-                        : [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 16, offset: const Offset(0, 4))],
+                        ? [BoxShadow(
+                            color: accent.withValues(alpha: 0.06),
+                            blurRadius: 20,
+                          )]
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 24,
+                              offset: const Offset(0, 6),
+                            ),
+                            BoxShadow(
+                              color: cardAccent.withValues(alpha: 0.08),
+                              blurRadius: 16,
+                              spreadRadius: -4,
+                            ),
+                          ],
                   ),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                      // Ícono con glow
                       Container(
-                        width: 32, height: 32,
+                        width: 34,
+                        height: 34,
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? accent.withValues(alpha: 0.12)
-                              : c.accentLo,
-                          borderRadius: BorderRadius.circular(8),
+                          gradient: isDark
+                              ? null
+                              : LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    cardAccent.withValues(alpha: 0.18),
+                                    cardAccent.withValues(alpha: 0.08),
+                                  ],
+                                ),
+                          color: isDark ? accent.withValues(alpha: 0.12) : null,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: cardAccent.withValues(alpha: isDark ? 0.0 : 0.20),
+                          ),
                         ),
                         child: Icon(card.$1, color: cardAccent, size: 16),
                       ),
+                      // Badge %
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                         decoration: BoxDecoration(
                           color: isDark
                               ? accent.withValues(alpha: 0.14)
-                              : c.accentLo,
+                              : cardAccent.withValues(alpha: 0.10),
                           borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: cardAccent.withValues(alpha: isDark ? 0.0 : 0.25),
+                            width: 0.8,
+                          ),
                         ),
-                        child: Text(card.$4,
-                            style: TextStyle(color: cardAccent, fontSize: 9, fontWeight: FontWeight.w800)),
+                        child: Text(
+                          card.$4,
+                          style: TextStyle(
+                            color: cardAccent,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                       ),
                     ]),
                     const Spacer(),
-                    Text(card.$2,
-                        style: TextStyle(color: c.textHi, fontSize: 12, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 2),
-                    Text(card.$3,
-                        style: TextStyle(color: c.muted, fontSize: 10)),
+                    Text(
+                      card.$2,
+                      style: TextStyle(
+                        color: c.textHi,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.1,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      card.$3,
+                      style: TextStyle(color: c.muted, fontSize: 10, height: 1.3),
+                    ),
                   ]),
                 ),
               ),
