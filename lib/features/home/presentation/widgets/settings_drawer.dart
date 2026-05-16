@@ -14,7 +14,8 @@ class SettingsDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final l10n = AppLocalizations.of(context)!;
-    final themeController = Provider.of<ThemeController?>(context, listen: false);
+    final themeController =
+        Provider.of<ThemeController?>(context, listen: false);
 
     return Drawer(
       backgroundColor: c.surface,
@@ -24,28 +25,41 @@ class SettingsDrawer extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-              child: Row(children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: c.accentLo,
-                    borderRadius: BorderRadius.circular(10),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: c.accentLo,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      Icons.sports_soccer_outlined,
+                      color: c.accent,
+                      size: 20,
+                    ),
                   ),
-                  child: Icon(Icons.sports_soccer_outlined, color: c.accent, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(
-                    l10n.appTitle,
-                    style: TextStyle(color: c.text, fontSize: 16, fontWeight: FontWeight.w700),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.appTitle,
+                        style: TextStyle(
+                          color: c.text,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        l10n.settingsTitle,
+                        style: TextStyle(color: c.dim, fontSize: 12),
+                      ),
+                    ],
                   ),
-                  Text(
-                    l10n.settingsTitle,
-                    style: TextStyle(color: c.dim, fontSize: 12),
-                  ),
-                ]),
-              ]),
+                ],
+              ),
             ),
             Divider(color: c.border, height: 1),
             const SizedBox(height: 12),
@@ -61,11 +75,14 @@ class SettingsDrawer extends StatelessWidget {
               ),
               child: PopupMenuButton<String>(
                 color: c.surface,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 elevation: 4,
                 position: PopupMenuPosition.under,
                 onSelected: (String result) {
-                  final localeProv = Provider.of<LocaleProvider?>(context, listen: false);
+                  final localeProv =
+                      Provider.of<LocaleProvider?>(context, listen: false);
                   if (localeProv != null) {
                     localeProv.setLocale(Locale(result));
                   }
@@ -74,11 +91,17 @@ class SettingsDrawer extends StatelessWidget {
                 itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                   PopupMenuItem<String>(
                     value: 'es',
-                    child: Text(l10n.languageSpanish, style: TextStyle(color: c.text)),
+                    child: Text(
+                      l10n.languageSpanish,
+                      style: TextStyle(color: c.text),
+                    ),
                   ),
                   PopupMenuItem<String>(
                     value: 'en',
-                    child: Text(l10n.languageEnglish, style: TextStyle(color: c.text)),
+                    child: Text(
+                      l10n.languageEnglish,
+                      style: TextStyle(color: c.text),
+                    ),
                   ),
                 ],
                 child: _DrawerItemWidgetOnly(
@@ -110,7 +133,9 @@ class SettingsDrawer extends StatelessWidget {
                 listenable: themeController,
                 builder: (context, _) => ListTile(
                   leading: Icon(
-                    themeController.isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+                    themeController.isDark
+                        ? Icons.light_mode_outlined
+                        : Icons.dark_mode_outlined,
                     color: c.accent,
                     size: 20,
                   ),
@@ -158,7 +183,11 @@ class SettingsDrawer extends StatelessWidget {
               leading: Icon(Icons.logout_rounded, color: c.danger, size: 20),
               title: Text(
                 l10n.logoutButton,
-                style: TextStyle(color: c.danger, fontSize: 14, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: c.danger,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 20),
               visualDensity: const VisualDensity(vertical: -1),
@@ -174,7 +203,11 @@ class SettingsDrawer extends StatelessWidget {
                   await Supabase.instance.client.auth.signOut();
                   if (context.mounted) {
                     Navigator.pop(context);
-                    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      '/login',
+                      (route) => false,
+                    );
                   }
                 } catch (e) {
                   if (context.mounted) Navigator.pop(context);
@@ -184,7 +217,10 @@ class SettingsDrawer extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-              child: Text(l10n.appVersionLabel, style: TextStyle(color: c.dim, fontSize: 11)),
+              child: Text(
+                l10n.appVersionLabel,
+                style: TextStyle(color: c.dim, fontSize: 11),
+              ),
             ),
           ],
         ),
@@ -209,7 +245,11 @@ class _DrawerItem extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _DrawerItem({required this.icon, required this.label, required this.onTap});
+  const _DrawerItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -228,7 +268,10 @@ class _DrawerItemWidgetOnly extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const _DrawerItemWidgetOnly({required this.icon, required this.label});
+  const _DrawerItemWidgetOnly({
+    required this.icon,
+    required this.label,
+  });
 
   @override
   Widget build(BuildContext context) {

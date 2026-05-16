@@ -13,11 +13,12 @@ class CoachingBoardController extends ChangeNotifier {
 
   // Analysis progress
   int _completedSteps = 0;
-  static const analysisSteps = [
-    'Loading players...',           // <- texto en inglés
-    'Reading statistics...',        // <- texto en inglés
-    'Computing optimal positions...', // <- texto en inglés
-    'Building tactical board...',   // <- texto en inglés
+
+  static const analysisStepKeys = [
+    'coachingBoardStepLoadingPlayers',
+    'coachingBoardStepReadingStats',
+    'coachingBoardStepComputingPositions',
+    'coachingBoardStepBuildingBoard',
   ];
 
   // Board state
@@ -32,7 +33,7 @@ class CoachingBoardController extends ChangeNotifier {
 
   // Save state
   bool _isSaving = false;
-  String? _savedMessage;
+  String? _savedMessageKey;
 
   // ── Getters ────────────────────────────────────────────────────────────────
   BoardStep get step => _step;
@@ -45,10 +46,10 @@ class CoachingBoardController extends ChangeNotifier {
   PlayerToken? get selectedPlayer => _selectedPlayer;
   PlayerToken? get swapSource => _swapSource;
   bool get isSaving => _isSaving;
-  String? get savedMessage => _savedMessage;
+  String? get savedMessageKey => _savedMessageKey;
 
   void consumeSavedMessage() {
-    _savedMessage = null;
+    _savedMessageKey = null;
   }
 
   static const List<String> availableFormations = [
@@ -80,14 +81,14 @@ class CoachingBoardController extends ChangeNotifier {
 
     final apiFuture = _fetchBoardFromApi(team['id'] as int);
 
-    for (int i = 0; i < analysisSteps.length - 1; i++) {
+    for (int i = 0; i < analysisStepKeys.length - 1; i++) {
       await Future.delayed(const Duration(milliseconds: 620));
       _completedSteps = i + 1;
       notifyListeners();
     }
 
     await apiFuture;
-    _completedSteps = analysisSteps.length;
+    _completedSteps = analysisStepKeys.length;
     notifyListeners();
 
     await Future.delayed(const Duration(milliseconds: 350));
@@ -96,28 +97,26 @@ class CoachingBoardController extends ChangeNotifier {
   }
 
   Future<void> _fetchBoardFromApi(int teamId) async {
-    // Load real squad players
     List<Map<String, dynamic>> supaPlayers = [];
     try {
       supaPlayers = await SupabaseService.instance.getPlayersByTeam(teamId);
     } catch (_) {}
 
-    // Load latest match stats for this team (to show real analysis data)
     List<Map<String, dynamic>> matchStats = [];
     try {
-      matchStats = await SupabaseService.instance.getLatestMatchStatsByTeam(teamId);
+      matchStats =
+          await SupabaseService.instance.getLatestMatchStatsByTeam(teamId);
     } catch (_) {}
+
     final statsByPlayerId = <int, Map<String, dynamic>>{};
     for (final s in matchStats) {
       final pid = (s['player_id'] as num?)?.toInt();
       if (pid != null) statsByPlayerId[pid] = s;
     }
 
-    // Cache for formation switches
     _cachedRealPlayers = supaPlayers;
     _cachedStats = statsByPlayerId;
 
-    // Try to restore a previously saved formation (positions only)
     try {
       final saved = await SupabaseService.instance.getFormation(teamId);
       if (saved != null) {
@@ -136,13 +135,8 @@ class CoachingBoardController extends ChangeNotifier {
           }
 
           if (supaPlayers.isNotEmpty) {
-            // Only use saved positions if at least one real player ID matches.
-            // If the saved formation contains only old mock IDs (1-11) that
-            // don't correspond to any real player, ignore saved positions and
-            // fall back to default formation slots so real players show up.
-            final realIds = supaPlayers
-                .map((p) => (p['id'] as num).toInt())
-                .toSet();
+            final realIds =
+                supaPlayers.map((p) => (p['id'] as num).toInt()).toSet();
             final hasSavedRealPos =
                 posById.keys.any((id) => realIds.contains(id));
 
@@ -153,7 +147,9 @@ class CoachingBoardController extends ChangeNotifier {
                     _mockFormations[_formation]!,
                   )
                 : _assignRealPlayers(
-                    supaPlayers, _mockFormations[_formation]!);
+                    supaPlayers,
+                    _mockFormations[_formation]!,
+                  );
           } else {
             _players = rawList.map((p) {
               final m = p as Map<String, dynamic>;
@@ -174,18 +170,15 @@ class CoachingBoardController extends ChangeNotifier {
       }
     } catch (_) {}
 
-    // No saved formation — place real players in default formation positions
     if (supaPlayers.isNotEmpty) {
       _players = _assignRealPlayers(supaPlayers, _mockFormations[_formation]!);
       _players = _mergeMatchStats(_players, statsByPlayerId);
       return;
     }
 
-    // Full mock fallback (team has no players)
     _players = _buildMockPlayers(_mockFormations[_formation]!);
   }
 
-  // Replaces mock stats with real analysis stats where available
   static List<PlayerToken> _mergeMatchStats(
     List<PlayerToken> players,
     Map<int, Map<String, dynamic>> statsByPlayerId,
@@ -203,20 +196,19 @@ class CoachingBoardController extends ChangeNotifier {
         dy: token.dy,
         photoUrl: token.photoUrl,
         stats: {
-          'rating':      (stat['rating']    as num?)?.toDouble() ?? 7.0,
-          'distance':    (stat['distance']  as num?)?.toDouble() ?? 9.0,
-          'passes':      (stat['passes_ok'] as num?)?.toInt()    ?? 50,
-          'passAccuracy':(stat['possession'] as num?)?.round()   ?? 82,
-          'goals':       (stat['goals']     as num?)?.toInt()    ?? 0,
-          'assists':     (stat['assists']   as num?)?.toInt()    ?? 0,
-          'tackles':     (stat['tackles']   as num?)?.toInt()    ?? 5,
-          'minutes':     (stat['minutes']   as num?)?.toInt()    ?? 90,
+          'rating': (stat['rating'] as num?)?.toDouble() ?? 7.0,
+          'distance': (stat['distance'] as num?)?.toDouble() ?? 9.0,
+          'passes': (stat['passes_ok'] as num?)?.toInt() ?? 50,
+          'passAccuracy': (stat['possession'] as num?)?.round() ?? 82,
+          'goals': (stat['goals'] as num?)?.toInt() ?? 0,
+          'assists': (stat['assists'] as num?)?.toInt() ?? 0,
+          'tackles': (stat['tackles'] as num?)?.toInt() ?? 5,
+          'minutes': (stat['minutes'] as num?)?.toInt() ?? 90,
         },
       );
     }).toList();
   }
 
-  // Real players + saved (dx,dy) positions by player id
   static List<PlayerToken> _assignRealPlayersWithSavedPos(
     List<Map<String, dynamic>> supaPlayers,
     Map<int, (double, double)> posById,
@@ -225,7 +217,6 @@ class CoachingBoardController extends ChangeNotifier {
     final available = List<Map<String, dynamic>>.from(supaPlayers);
     final mockStats = List<Map<String, dynamic>>.from(_mockStats);
 
-    // Players with a saved position
     final result = <PlayerToken>[];
     final usedIds = <int>{};
 
@@ -235,8 +226,7 @@ class CoachingBoardController extends ChangeNotifier {
         final (dx, dy) = posById[pid]!;
         final slot = defaultSlots.firstWhere(
           (s) => s[2] == (p['position'] as String? ?? 'CM'),
-          orElse: () =>
-              defaultSlots[result.length % defaultSlots.length],
+          orElse: () => defaultSlots[result.length % defaultSlots.length],
         );
         result.add(
           PlayerToken(
@@ -256,11 +246,11 @@ class CoachingBoardController extends ChangeNotifier {
       }
     }
 
-    // Remaining players that weren't in the saved formation → assign to empty slots
     final remaining = available
         .where((p) => !usedIds.contains((p['id'] as num).toInt()))
         .toList();
     final usedSlots = result.length;
+
     for (int i = 0;
         i < remaining.length && (usedSlots + i) < defaultSlots.length;
         i++) {
@@ -270,8 +260,7 @@ class CoachingBoardController extends ChangeNotifier {
         PlayerToken(
           id: (p['id'] as num).toInt(),
           name: p['name'] as String? ?? '',
-          number:
-              (p['shirt_number'] as num?)?.toInt() ?? slot[1] as int,
+          number: (p['shirt_number'] as num?)?.toInt() ?? slot[1] as int,
           position: slot[2] as String,
           dx: (slot[3] as num).toDouble(),
           dy: (slot[4] as num).toDouble(),
@@ -283,7 +272,6 @@ class CoachingBoardController extends ChangeNotifier {
       );
     }
 
-    // Fill remaining slots with mock if fewer than 11 real players
     while (result.length < defaultSlots.length) {
       final i = result.length;
       final slot = defaultSlots[i];
@@ -305,7 +293,6 @@ class CoachingBoardController extends ChangeNotifier {
     return result;
   }
 
-  // Maps real Supabase players onto formation positions by matching positions
   static List<PlayerToken> _assignRealPlayers(
     List<Map<String, dynamic>> supaPlayers,
     List<List<dynamic>> positions,
@@ -317,7 +304,6 @@ class CoachingBoardController extends ChangeNotifier {
       final slot = positions[i];
       final wantPos = slot[2] as String;
 
-      // Try to find a player whose position matches (or is compatible)
       int bestIdx = _findBestPlayer(available, wantPos);
 
       Map<String, dynamic> chosen;
@@ -326,7 +312,6 @@ class CoachingBoardController extends ChangeNotifier {
       } else if (available.isNotEmpty) {
         chosen = available.removeAt(0);
       } else {
-        // No real player available → use mock slot
         return PlayerToken(
           id: i + 1,
           name: slot[0] as String,
@@ -343,8 +328,7 @@ class CoachingBoardController extends ChangeNotifier {
       return PlayerToken(
         id: (chosen['id'] as num).toInt(),
         name: chosen['name'] as String? ?? slot[0] as String,
-        number:
-            (chosen['shirt_number'] as num?)?.toInt() ?? slot[1] as int,
+        number: (chosen['shirt_number'] as num?)?.toInt() ?? slot[1] as int,
         position: wantPos,
         dx: (slot[3] as num).toDouble(),
         dy: (slot[4] as num).toDouble(),
@@ -360,13 +344,12 @@ class CoachingBoardController extends ChangeNotifier {
     List<Map<String, dynamic>> pool,
     String wantPos,
   ) {
-    // Exact match first
     for (int i = 0; i < pool.length; i++) {
       if ((pool[i]['position'] as String? ?? '') == wantPos) {
         return i;
       }
     }
-    // Group match (GK→GK, DEF→CB/RB/LB, MID→CM/CDM, FWD→ST/RW/LW)
+
     final group = _posGroup(wantPos);
     for (int i = 0; i < pool.length; i++) {
       if (_posGroup(pool[i]['position'] as String? ?? '') == group) {
@@ -404,14 +387,14 @@ class CoachingBoardController extends ChangeNotifier {
   }
 
   void selectPlayer(PlayerToken? player) {
-    _selectedPlayer =
-        (_selectedPlayer?.id == player?.id) ? null : player;
+    _selectedPlayer = (_selectedPlayer?.id == player?.id) ? null : player;
     notifyListeners();
   }
 
   void resetFormation() {
     if (_cachedRealPlayers.isNotEmpty) {
-      _players = _assignRealPlayers(_cachedRealPlayers, _mockFormations[_formation]!);
+      _players =
+          _assignRealPlayers(_cachedRealPlayers, _mockFormations[_formation]!);
       _players = _mergeMatchStats(_players, _cachedStats);
     } else {
       _players = _buildMockPlayers(_mockFormations[_formation]!);
@@ -425,7 +408,8 @@ class CoachingBoardController extends ChangeNotifier {
     if (!_mockFormations.containsKey(newFormation)) return;
     _formation = newFormation;
     if (_cachedRealPlayers.isNotEmpty) {
-      _players = _assignRealPlayers(_cachedRealPlayers, _mockFormations[newFormation]!);
+      _players =
+          _assignRealPlayers(_cachedRealPlayers, _mockFormations[newFormation]!);
       _players = _mergeMatchStats(_players, _cachedStats);
     } else {
       _players = _buildMockPlayers(_mockFormations[newFormation]!);
@@ -486,9 +470,9 @@ class CoachingBoardController extends ChangeNotifier {
             )
             .toList(),
       );
-      _savedMessage = 'Formación guardada ✓'; // <- español
+      _savedMessageKey = 'coachingBoardSaveSuccess';
     } catch (_) {
-      _savedMessage = 'Error al guardar la formación'; // <- español
+      _savedMessageKey = 'coachingBoardSaveError';
     }
     _isSaving = false;
     notifyListeners();

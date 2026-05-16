@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:playvision/features/analysis/data/player_service.dart';
 import 'package:playvision/features/analysis/domain/player_profile.dart';
+import 'package:playvision/l10n/generated/app_localizations.dart';
 
 class PlayerProfileScreen extends StatefulWidget {
   final int trackId;
@@ -20,27 +21,37 @@ class _PlayerProfileScreenState extends State<PlayerProfileScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        backgroundColor: const Color(0xFF0A0E1A),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          title: Text('Player #${widget.trackId}',
-              style: const TextStyle(color: Colors.white)),
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0E1A),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: Text(
+          l10n.playerProfileTitle(widget.trackId),
+          style: const TextStyle(color: Colors.white),
         ),
-        body: FutureBuilder<PlayerProfile>(
-          future: _future,
-          builder: (context, snap) {
-            if (snap.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snap.hasError) {
-              return Center(child: Text('${snap.error}',
-                  style: const TextStyle(color: Colors.red)));
-            }
-            return _Body(profile: snap.data!);
-          },
-        ),
-      );
+      ),
+      body: FutureBuilder<PlayerProfile>(
+        future: _future,
+        builder: (context, snap) {
+          if (snap.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snap.hasError) {
+            return Center(
+              child: Text(
+                l10n.playerLoadError,
+                style: const TextStyle(color: Colors.red),
+              ),
+            );
+          }
+          return _Body(profile: snap.data!);
+        },
+      ),
+    );
+  }
 }
 
 class _Body extends StatelessWidget {
@@ -68,18 +79,22 @@ class _SummaryCard extends StatelessWidget {
   const _SummaryCard({required this.summary});
 
   @override
-  Widget build(BuildContext context) => _Card(
-        title: '📍 ${summary.bestPosition}',
-        child: Column(
-          children: [
-            _Row('Distance',    '${summary.avgDistanceKm} km'),
-            _Row('Speed',       '${summary.avgSpeedKmh} km/h'),
-            _Row('Possession',  '${summary.avgPossessionPct}%'),
-            _Row('Dominant zone', summary.dominantZone),
-            _Row('Matches',     '${summary.matchesAnalyzed}'),
-          ],
-        ),
-      );
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return _Card(
+      title: l10n.playerBestPositionTitle(summary.bestPosition),
+      child: Column(
+        children: [
+          _Row(l10n.fieldDistance, '${summary.avgDistanceKm} km'),
+          _Row(l10n.fieldSpeed, '${summary.avgSpeedKmh} km/h'),
+          _Row(l10n.detailBallPossession, '${summary.avgPossessionPct}%'),
+          _Row(l10n.playerDominantZone, summary.dominantZone),
+          _Row(l10n.playerMatchesCount, '${summary.matchesAnalyzed}'),
+        ],
+      ),
+    );
+  }
 }
 
 class _InsightsCard extends StatelessWidget {
@@ -87,25 +102,41 @@ class _InsightsCard extends StatelessWidget {
   const _InsightsCard({required this.insights});
 
   @override
-  Widget build(BuildContext context) => _Card(
-        title: '🧠 Coach Insights',
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: insights
-              .map((i) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('• ', style: TextStyle(color: Color(0xFF4CAF50))),
-                        Expanded(child: Text(i,
-                            style: const TextStyle(color: Colors.white70, fontSize: 13))),
-                      ],
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return _Card(
+      title: l10n.playerCoachInsights,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: insights
+            .map(
+              (i) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '• ',
+                      style: TextStyle(color: Color(0xFF4CAF50)),
                     ),
-                  ))
-              .toList(),
-        ),
-      );
+                    Expanded(
+                      child: Text(
+                        i,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
 }
 
 class _HistoryCard extends StatelessWidget {
@@ -113,35 +144,54 @@ class _HistoryCard extends StatelessWidget {
   const _HistoryCard({required this.history});
 
   @override
-  Widget build(BuildContext context) => _Card(
-        title: '📅 Match History',
-        child: Column(
-          children: history
-              .map((s) => Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Match ${s.matchId}',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                        Text('${s.distanceKm} km · ${s.speedKmh} km/h',
-                            style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                        Text(s.date,
-                            style: const TextStyle(color: Colors.white38, fontSize: 11)),
-                      ],
-                    ),
-                  ))
-              .toList(),
-        ),
-      );
-}
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
 
-// ── Shared UI helpers ─────────────────────────────────────────────────────────
+    return _Card(
+      title: l10n.matchHistory,
+      child: Column(
+        children: history
+            .map(
+              (s) => Container(
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                      Text(
+                        '${l10n.matchWord} ${s.matchId}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    Text(
+                      '${s.distanceKm} km · ${s.speedKmh} km/h',
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      s.date,
+                      style: const TextStyle(
+                        color: Colors.white38,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+}
 
 class _Card extends StatelessWidget {
   final String title;
@@ -159,11 +209,14 @@ class _Card extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title,
-                style: const TextStyle(
-                    color: Color(0xFF4CAF50),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15)),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Color(0xFF4CAF50),
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
             const SizedBox(height: 12),
             child,
           ],
@@ -183,9 +236,13 @@ class _Row extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(label, style: const TextStyle(color: Colors.white54)),
-            Text(value,
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w600)),
+            Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       );

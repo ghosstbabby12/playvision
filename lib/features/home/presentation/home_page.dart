@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -132,13 +133,16 @@ class _HomePageState extends State<HomePage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         final c = context.colors;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(error ?? success!),
-          backgroundColor: error != null ? c.danger : c.accentMid,
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error ?? success!),
+            backgroundColor: error != null ? c.danger : c.accentMid,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
       });
     }
   }
@@ -184,18 +188,17 @@ class _HomePageState extends State<HomePage> {
                 SliverToBoxAdapter(
                   child: SelectedTeamHeader(
                     controller: _controller,
-                    onEdit: () =>
-                        _openTeamDialog(team: _controller.selectedTeam),
-                    onDelete: () =>
-                        _deleteTeam(_controller.selectedTeam!),
+                    onEdit: () => _openTeamDialog(
+                      team: _controller.selectedTeam,
+                    ),
+                    onDelete: () => _deleteTeam(_controller.selectedTeam!),
                   ),
                 ),
 
               // ── 5. Continue last analysis ─────────────────────────────────
               if (_controller.hasResult)
                 SliverToBoxAdapter(
-                  child:
-                      ContinueAnalysisSection(controller: _controller),
+                  child: ContinueAnalysisSection(controller: _controller),
                 ),
 
               // ── 6. Team match history ─────────────────────────────────────
@@ -206,12 +209,13 @@ class _HomePageState extends State<HomePage> {
                     onViewAnalysis: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) => const AnalysisPage()),
+                        builder: (_) => const AnalysisPage(),
+                      ),
                     ),
                   ),
                 ),
 
-              // ── 7. Resultados / Noticias tabs ──────────────────────────────
+              // ── 7. Resultados / Noticias tabs ─────────────────────────────
               SliverToBoxAdapter(
                 child: HomeTabBar(
                   selected: _selectedTab,
@@ -261,33 +265,43 @@ class _HomePageState extends State<HomePage> {
         builder: (ctx, setDlg) {
           final c = ctx.colors;
           final l10n = AppLocalizations.of(ctx)!;
+
+          final categories = _categories(l10n);
+          final countries = _countries(l10n);
+
           return AlertDialog(
             backgroundColor: c.surface,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20)),
+              borderRadius: BorderRadius.circular(20),
+            ),
             title: Text(
               isEdit ? l10n.teamEditTitle : l10n.teamNewTitle,
-              style:
-                  TextStyle(color: c.text, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                color: c.text,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             content: SingleChildScrollView(
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                GestureDetector(
-                  onTap: () async {
-                    final picker = ImagePicker();
-                    final file = await picker.pickImage(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: () async {
+                      final picker = ImagePicker();
+                      final file = await picker.pickImage(
                         source: ImageSource.gallery,
                         maxWidth: 512,
                         maxHeight: 512,
-                        imageQuality: 85);
-                    if (file == null) return;
-                    final bytes = await file.readAsBytes();
-                    setDlg(() {
-                      pickedLogo = file;
-                      logoBytes = bytes;
-                    });
-                  },
-                  child: Stack(
+                        imageQuality: 85,
+                      );
+                      if (file == null) return;
+                      final bytes = await file.readAsBytes();
+                      setDlg(() {
+                        pickedLogo = file;
+                        logoBytes = bytes;
+                      });
+                    },
+                    child: Stack(
                       alignment: Alignment.bottomRight,
                       children: [
                         Container(
@@ -297,72 +311,90 @@ class _HomePageState extends State<HomePage> {
                             color: c.elevated,
                             shape: BoxShape.circle,
                             border: Border.all(
-                                color: c.borderGreen, width: 2),
+                              color: c.borderGreen,
+                              width: 2,
+                            ),
                             image: logoBytes != null
                                 ? DecorationImage(
                                     image: MemoryImage(logoBytes!),
-                                    fit: BoxFit.cover)
-                                : (team?['logo_url'] as String?)
-                                            ?.isNotEmpty ==
+                                    fit: BoxFit.cover,
+                                  )
+                                : (team?['logo_url'] as String?)?.isNotEmpty ==
                                         true
                                     ? DecorationImage(
                                         image: NetworkImage(
-                                            team!['logo_url'] as String),
-                                        fit: BoxFit.cover)
+                                          team!['logo_url'] as String,
+                                        ),
+                                        fit: BoxFit.cover,
+                                      )
                                     : null,
                           ),
                           child: logoBytes == null &&
                                   (team?['logo_url'] as String?) == null
-                              ? Icon(Icons.groups_outlined,
-                                  color: c.accent, size: 32)
+                              ? Icon(
+                                  Icons.groups_outlined,
+                                  color: c.accent,
+                                  size: 32,
+                                )
                               : null,
                         ),
                         Container(
                           width: 24,
                           height: 24,
                           decoration: BoxDecoration(
-                              color: c.accent,
-                              shape: BoxShape.circle),
-                          child: const Icon(Icons.camera_alt,
-                              color: Colors.black, size: 13),
+                            color: c.accent,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            color: Colors.black,
+                            size: 13,
+                          ),
                         ),
-                      ]),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  pickedLogo != null
-                      ? l10n.teamLogoSelected
-                      : l10n.teamLogoTapToAdd,
-                  style: TextStyle(color: c.muted, fontSize: 11),
-                ),
-                const SizedBox(height: 16),
-                FormTextField(
-                    controller: nameCtrl, label: l10n.teamFieldName),
-                const SizedBox(height: 10),
-                _DropdownField(
-                  label: 'País',
-                  value: selectedCountry,
-                  options: _kCountries,
-                  onSelected: (v) =>
-                      setDlg(() => selectedCountry = v),
-                  c: c,
-                ),
-                const SizedBox(height: 10),
-                _DropdownField(
-                  label: 'Categoría',
-                  value: selectedCategory,
-                  options: _kCategories,
-                  onSelected: (v) =>
-                      setDlg(() => selectedCategory = v),
-                  c: c,
-                ),
-              ]),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    pickedLogo != null
+                        ? l10n.teamLogoSelected
+                        : l10n.teamLogoTapToAdd,
+                    style: TextStyle(
+                      color: c.muted,
+                      fontSize: 11,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  FormTextField(
+                    controller: nameCtrl,
+                    label: l10n.teamFieldName,
+                  ),
+                  const SizedBox(height: 10),
+                  _DropdownField(
+                    label: l10n.teamFieldClub,
+                    value: selectedCountry,
+                    options: countries,
+                    onSelected: (v) => setDlg(() => selectedCountry = v),
+                    c: c,
+                  ),
+                  const SizedBox(height: 10),
+                  _DropdownField(
+                    label: l10n.teamFieldCategory,
+                    value: selectedCategory,
+                    options: categories,
+                    onSelected: (v) => setDlg(() => selectedCategory = v),
+                    c: c,
+                  ),
+                ],
+              ),
             ),
             actions: [
               TextButton(
                 onPressed: isSaving ? null : () => Navigator.pop(ctx),
-                child: Text(l10n.teamDialogCancel,
-                    style: TextStyle(color: c.muted)),
+                child: Text(
+                  l10n.teamDialogCancel,
+                  style: TextStyle(color: c.muted),
+                ),
               ),
               TextButton(
                 onPressed: isSaving
@@ -375,16 +407,16 @@ class _HomePageState extends State<HomePage> {
                         if (pickedLogo != null && logoBytes != null) {
                           final tmpId = isEdit
                               ? (team['id'] as int)
-                              : DateTime.now()
-                                  .millisecondsSinceEpoch;
+                              : DateTime.now().millisecondsSinceEpoch;
                           final ext = pickedLogo!.name
                               .split('.')
                               .last
                               .toLowerCase();
                           logoUrl = await _controller.uploadLogo(
-                              teamId: tmpId,
-                              bytes: logoBytes!,
-                              extension: ext);
+                            teamId: tmpId,
+                            bytes: logoBytes!,
+                            extension: ext,
+                          );
                         }
 
                         if (isEdit) {
@@ -411,15 +443,18 @@ class _HomePageState extends State<HomePage> {
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: context.colors.accent))
+                          strokeWidth: 2,
+                          color: context.colors.accent,
+                        ),
+                      )
                     : Text(
                         isEdit
                             ? l10n.teamDialogSave
                             : l10n.teamDialogCreate,
                         style: TextStyle(
-                            color: context.colors.accent,
-                            fontWeight: FontWeight.w700),
+                          color: context.colors.accent,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
               ),
             ],
@@ -438,23 +473,38 @@ class _HomePageState extends State<HomePage> {
         return AlertDialog(
           backgroundColor: c.surface,
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20)),
-          title: Text(l10n.teamDeleteTitle,
-              style:
-                  TextStyle(color: c.text, fontWeight: FontWeight.w700)),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            l10n.teamDeleteTitle,
+            style: TextStyle(
+              color: c.text,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           content: Text(
             l10n.teamDeleteConfirm(team['name'] as String),
-            style: TextStyle(color: c.muted, fontSize: 13, height: 1.5),
+            style: TextStyle(
+              color: c.muted,
+              fontSize: 13,
+              height: 1.5,
+            ),
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: Text(l10n.teamDialogCancel,
-                    style: TextStyle(color: c.muted))),
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(
+                l10n.teamDialogCancel,
+                style: TextStyle(color: c.muted),
+              ),
+            ),
             TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: Text(l10n.teamDeleteButton,
-                    style: TextStyle(color: c.danger))),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(
+                l10n.teamDeleteButton,
+                style: TextStyle(color: c.danger),
+              ),
+            ),
           ],
         );
       },
@@ -462,25 +512,55 @@ class _HomePageState extends State<HomePage> {
 
     if (confirm == true) await _controller.deleteTeam(team['id'] as int);
   }
+
+  // ── Localized team form options ─────────────────────────────────────────────
+
+  List<String> _categories(AppLocalizations l10n) => [
+        l10n.categoryU6,
+        l10n.categoryU8,
+        l10n.categoryU10,
+        l10n.categoryU12,
+        l10n.categoryU14,
+        l10n.categoryU16,
+        l10n.categoryU18,
+        l10n.categoryU20,
+        l10n.categoryU23,
+        l10n.categoryAmateur,
+        l10n.categorySemiProfessional,
+        l10n.categoryProfessional,
+        l10n.categoryFemaleU12,
+        l10n.categoryFemaleU16,
+        l10n.categoryFemaleU18,
+        l10n.categoryFemale,
+        l10n.categoryMixed,
+      ];
+
+  List<String> _countries(AppLocalizations l10n) => [
+        l10n.countryArgentina,
+        l10n.countryBolivia,
+        l10n.countryBrazil,
+        l10n.countryChile,
+        l10n.countryColombia,
+        l10n.countryCostaRica,
+        l10n.countryCuba,
+        l10n.countryEcuador,
+        l10n.countryElSalvador,
+        l10n.countrySpain,
+        l10n.countryUnitedStates,
+        l10n.countryGuatemala,
+        l10n.countryHonduras,
+        l10n.countryMexico,
+        l10n.countryNicaragua,
+        l10n.countryPanama,
+        l10n.countryParaguay,
+        l10n.countryPeru,
+        l10n.countryPuertoRico,
+        l10n.countryDominicanRepublic,
+        l10n.countryUruguay,
+        l10n.countryVenezuela,
+        l10n.countryOther,
+      ];
 }
-
-// ── Team form constants ────────────────────────────────────────────────────────
-
-const _kCategories = [
-  'Sub-6', 'Sub-8', 'Sub-10', 'Sub-12', 'Sub-14', 'Sub-16', 'Sub-18',
-  'Sub-20', 'Sub-23',
-  'Amateur', 'Semiprofesional', 'Profesional',
-  'Femenino Sub-12', 'Femenino Sub-16', 'Femenino Sub-18', 'Femenino',
-  'Mixto',
-];
-
-const _kCountries = [
-  'Argentina', 'Bolivia', 'Brasil', 'Chile', 'Colombia', 'Costa Rica',
-  'Cuba', 'Ecuador', 'El Salvador', 'España', 'Estados Unidos',
-  'Guatemala', 'Honduras', 'México', 'Nicaragua', 'Panamá', 'Paraguay',
-  'Perú', 'Puerto Rico', 'República Dominicana', 'Uruguay', 'Venezuela',
-  'Otro',
-];
 
 // ── Dropdown field widget ─────────────────────────────────────────────────────
 
@@ -505,8 +585,7 @@ class _DropdownField extends StatelessWidget {
     return GestureDetector(
       onTap: () => _showPicker(context),
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           color: c.elevated,
           borderRadius: BorderRadius.circular(12),
@@ -516,29 +595,41 @@ class _DropdownField extends StatelessWidget {
                 : c.border2.withValues(alpha: 0.7),
           ),
         ),
-        child: Row(children: [
-          Expanded(
-            child: Column(
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label,
-                      style: TextStyle(
-                          color: hasValue ? c.accent : c.text,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500)),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: hasValue ? c.accent : c.text,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                   if (hasValue) ...[
                     const SizedBox(height: 2),
-                    Text(value!,
-                        style: TextStyle(
-                            color: c.textHi,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600)),
+                    Text(
+                      value!,
+                      style: TextStyle(
+                        color: c.textHi,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
-                ]),
-          ),
-          Icon(Icons.expand_more_rounded,
-              color: hasValue ? c.accent : c.muted, size: 20),
-        ]),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.expand_more_rounded,
+              color: hasValue ? c.accent : c.muted,
+              size: 20,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -550,80 +641,99 @@ class _DropdownField extends StatelessWidget {
       isScrollControlled: true,
       builder: (_) => Container(
         constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.6),
+          maxHeight: MediaQuery.of(context).size.height * 0.6,
+        ),
         decoration: BoxDecoration(
           color: c.surface,
-          borderRadius:
-              const BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           border: Border(top: BorderSide(color: c.border)),
         ),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const SizedBox(height: 8),
-          Container(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                  color: c.border2,
-                  borderRadius: BorderRadius.circular(2))),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-            child: Row(children: [
-              Text(label,
-                  style: TextStyle(
+                color: c.border2,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Row(
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
                       color: c.textHi,
                       fontSize: 16,
-                      fontWeight: FontWeight.w800)),
-            ]),
-          ),
-          Flexible(
-            child: ListView.builder(
-              shrinkWrap: true,
-              padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
-              itemCount: options.length,
-              itemBuilder: (_, i) {
-                final opt = options[i];
-                final selected = opt == value;
-                return GestureDetector(
-                  onTap: () {
-                    onSelected(opt);
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 6),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 13),
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? c.accent.withValues(alpha: 0.12)
-                          : c.elevated,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
+                itemCount: options.length,
+                itemBuilder: (_, i) {
+                  final opt = options[i];
+                  final selected = opt == value;
+                  return GestureDetector(
+                    onTap: () {
+                      onSelected(opt);
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 13,
+                      ),
+                      decoration: BoxDecoration(
                         color: selected
-                            ? c.accent.withValues(alpha: 0.4)
-                            : c.border,
+                            ? c.accent.withValues(alpha: 0.12)
+                            : c.elevated,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: selected
+                              ? c.accent.withValues(alpha: 0.4)
+                              : c.border,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              opt,
+                              style: TextStyle(
+                                color: selected ? c.accent : c.textHi,
+                                fontSize: 14,
+                                fontWeight: selected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          if (selected)
+                            Icon(
+                              Icons.check_rounded,
+                              color: c.accent,
+                              size: 18,
+                            ),
+                        ],
                       ),
                     ),
-                    child: Row(children: [
-                      Expanded(
-                        child: Text(opt,
-                            style: TextStyle(
-                              color: selected ? c.accent : c.textHi,
-                              fontSize: 14,
-                              fontWeight: selected
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
-                            )),
-                      ),
-                      if (selected)
-                        Icon(Icons.check_rounded,
-                            color: c.accent, size: 18),
-                    ]),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-        ]),
+          ],
+        ),
       ),
     );
   }

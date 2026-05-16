@@ -13,11 +13,11 @@ class HeroSection extends StatelessWidget {
   final HomeController controller;
   const HeroSection({super.key, required this.controller});
 
-  static String _greeting() {
+  static String _greeting(AppLocalizations l10n) {
     final h = DateTime.now().hour;
-    if (h < 12) return 'Buenos días, DT';
-    if (h < 19) return 'Buenas tardes, DT';
-    return 'Buenas noches, DT';
+    if (h < 12) return l10n.greetingMorningCoach;
+    if (h < 19) return l10n.greetingAfternoonCoach;
+    return l10n.greetingEveningCoach;
   }
 
   @override
@@ -30,107 +30,113 @@ class HeroSection extends StatelessWidget {
     final done = controller.recentMatches
         .where((m) => m['status'] == AppConstants.statusDone)
         .length;
-    final todayStr = DateFormat('d MMM').format(DateTime.now());
+    final todayStr = DateFormat('d MMM', l10n.localeName).format(DateTime.now());
     final teamName = controller.selectedTeam?['name'] as String?;
 
     return SizedBox(
       height: 185,
-      child: Stack(fit: StackFit.expand, children: [
-        // Stadium background
-        Image.network(
-          'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=900&q=80',
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Container(color: c.heroTop),
-        ),
-
-        // Gradient overlay
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: isDark
-                  ? [
-                      const Color(0xFF050816).withValues(alpha: 0.50),
-                      const Color(0xFF050816).withValues(alpha: 0.96),
-                    ]
-                  : [
-                      const Color(0xFF07111F).withValues(alpha: 0.30),
-                      const Color(0xFF07111F).withValues(alpha: 0.94),
-                    ],
-            ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.network(
+            'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=900&q=80',
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Container(color: c.heroTop),
           ),
-        ),
-
-        // Ambient glow blob bottom-left
-        Positioned(
-          bottom: -20,
-          left: -20,
-          child: IgnorePointer(
-            child: Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF32FF88)
-                        .withValues(alpha: isDark ? 0.12 : 0.18),
-                    blurRadius: 70,
-                    spreadRadius: 30,
-                  ),
-                ],
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: isDark
+                    ? [
+                        const Color(0xFF050816).withValues(alpha: 0.50),
+                        const Color(0xFF050816).withValues(alpha: 0.96),
+                      ]
+                    : [
+                        const Color(0xFF07111F).withValues(alpha: 0.30),
+                        const Color(0xFF07111F).withValues(alpha: 0.94),
+                      ],
               ),
             ),
           ),
-        ),
-
-        // Content
-        SafeArea(
-          bottom: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-            child: Column(
+          Positioned(
+            bottom: -20,
+            left: -20,
+            child: IgnorePointer(
+              child: Container(
+                width: 140,
+                height: 140,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF32FF88)
+                          .withValues(alpha: isDark ? 0.12 : 0.18),
+                      blurRadius: 70,
+                      spreadRadius: 30,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── App bar row ────────────────────────────────────────────
-                  Row(children: [
-                    Icon(Icons.sports_soccer_outlined,
-                        color: c.accent, size: 18),
-                    const SizedBox(width: 7),
-                    Expanded(
-                      child: Text(
-                        l10n.appTitle,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.2,
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.sports_soccer_outlined,
+                        color: c.accent,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 7),
+                      Expanded(
+                        child: Text(
+                          l10n.appTitle,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.2,
+                          ),
                         ),
                       ),
-                    ),
-                    GestureDetector(
-                      onTap: () => showSearch(
+                      GestureDetector(
+                        onTap: () => showSearch(
                           context: context,
-                          delegate: HomeSearchDelegate(controller)),
-                      child: const Icon(Icons.search_rounded,
-                          color: Colors.white70, size: 21),
-                    ),
-                    const SizedBox(width: 10),
-                    Builder(
-                      builder: (ctx) => GestureDetector(
-                        onTap: () => Scaffold.of(ctx).openEndDrawer(),
-                        child: const Icon(Icons.settings_outlined,
-                            color: Colors.white70, size: 21),
+                          delegate: HomeSearchDelegate(
+                            controller,
+                            searchHint: l10n.searchFieldLabel,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.search_rounded,
+                          color: Colors.white70,
+                          size: 21,
+                        ),
                       ),
-                    ),
-                  ]),
-
+                      const SizedBox(width: 10),
+                      Builder(
+                        builder: (ctx) => GestureDetector(
+                          onTap: () => Scaffold.of(ctx).openEndDrawer(),
+                          child: const Icon(
+                            Icons.settings_outlined,
+                            color: Colors.white70,
+                            size: 21,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 10),
-
-                  // ── Greeting ───────────────────────────────────────────────
                   Text(
-                    _greeting(),
+                    _greeting(l10n),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 19,
@@ -142,31 +148,32 @@ class HeroSection extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     teamName != null
-                        ? '$teamName · listo para analizar'
-                        : 'PlayVision · plataforma táctica IA',
+                        ? l10n.heroTeamReady(teamName)
+                        : l10n.heroPlatformTagline,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.60),
                       fontSize: 11.5,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-
                   const Spacer(),
-
-                  // ── Stat pills ─────────────────────────────────────────────
-                  Row(children: [
-                    _StatPill(label: l10n.totalMatches, value: '$total'),
-                    const SizedBox(width: 7),
-                    _StatPill(label: l10n.analysed, value: '$done'),
-                    const SizedBox(width: 7),
-                    _StatPill(label: l10n.heroAiAccuracy, value: '94%'),
-                    const SizedBox(width: 7),
-                    _StatPill(label: l10n.heroLatest, value: todayStr),
-                  ]),
-                ]),
+                  Row(
+                    children: [
+                      _StatPill(label: l10n.totalMatches, value: '$total'),
+                      const SizedBox(width: 7),
+                      _StatPill(label: l10n.analysed, value: '$done'),
+                      const SizedBox(width: 7),
+                      _StatPill(label: l10n.heroAiAccuracy, value: '94%'),
+                      const SizedBox(width: 7),
+                      _StatPill(label: l10n.heroLatest, value: todayStr),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ]),
+        ],
+      ),
     );
   }
 }
@@ -180,6 +187,7 @@ class _StatPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Expanded(
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
@@ -231,7 +239,6 @@ class _StatPill extends StatelessWidget {
   }
 }
 
-// SparkLine kept for potential reuse elsewhere
 class SparkLine extends StatelessWidget {
   final List<double> values;
   final Color color;

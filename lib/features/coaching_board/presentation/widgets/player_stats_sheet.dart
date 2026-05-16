@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:playvision/l10n/generated/app_localizations.dart';
 import 'package:playvision/core/theme/app_color_tokens.dart';
 import '../../data/player_profile_service.dart';
 import '../../domain/player_profile.dart';
@@ -59,20 +60,14 @@ List<double> _teamAvg(List<PlayerToken> players) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Insight generator
+// Insight generator  (now receives l10n for localized strings)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const _axisLabels = ['Velocidad', 'Pase', 'Disparo', 'Defensa', 'Físico'];
-const _axisExplains = [
-  'Distancia cubierta y velocidad de sprints',
-  'Precisión y volumen de pases completados',
-  'Goles y remates efectivos al arco',
-  'Recuperaciones y entradas defensivas',
-  'Resistencia física y duelos ganados',
-];
-
 List<_Insight> _generateInsights(
-    PlayerToken token, PlayerProfile? profile, List<PlayerToken> allPlayers) {
+    AppLocalizations l10n,
+    PlayerToken token,
+    PlayerProfile? profile,
+    List<PlayerToken> allPlayers) {
   final out = <_Insight>[];
   final s   = token.stats;
 
@@ -90,11 +85,11 @@ List<_Insight> _generateInsights(
 
   // Rating
   if (rating >= 8.5) {
-    out.add(_Insight('🔥', 'Alto rendimiento · ${rating.toStringAsFixed(1)} ★', _Level.positive));
+    out.add(_Insight('🔥', l10n.insightHighRating(rating.toStringAsFixed(1)), _Level.positive));
   } else if (rating >= 7.5) {
-    out.add(_Insight('✅', 'Buen partido · ${rating.toStringAsFixed(1)} ★', _Level.positive));
+    out.add(_Insight('✅', l10n.insightGoodMatch(rating.toStringAsFixed(1)), _Level.positive));
   } else if (rating < 6.5) {
-    out.add(_Insight('⚠️', 'Rendimiento bajo · ${rating.toStringAsFixed(1)} ★', _Level.warning));
+    out.add(_Insight('⚠️', l10n.insightLowRating(rating.toStringAsFixed(1)), _Level.warning));
   }
 
   // Trend from profile history
@@ -103,55 +98,56 @@ List<_Insight> _generateInsights(
         .map((h) => h.rating).reduce((a, b) => a + b) / 3;
     final pct = ((rating - avg) / avg * 100).round();
     if (pct >= 10) {
-      out.add(_Insight('📈', '+$pct% vs media reciente', _Level.positive));
+      out.add(_Insight('📈', l10n.insightTrendUp(pct), _Level.positive));
     } else if (pct <= -10) {
-      out.add(_Insight('📉', '$pct% vs media reciente', _Level.warning));
+      out.add(_Insight('📉', l10n.insightTrendDown(pct.abs()), _Level.warning));
     }
   }
 
   // Offensive contribution
   if (!isGK) {
     if (goals >= 2 || assists >= 2 || (goals >= 1 && assists >= 1)) {
-      out.add(_Insight('⚡', 'Alta contribución ofensiva · ${goals}G ${assists}A', _Level.positive));
+      out.add(_Insight('⚡', l10n.insightHighOffensive(goals, assists), _Level.positive));
     } else if (isAtk && goals == 0 && assists == 0) {
-      out.add(_Insight('📉', 'Sin participación directa en goles', _Level.warning));
+      out.add(_Insight('📉', l10n.insightNoGoalContribution, _Level.warning));
     }
   }
 
   // Defensive work
   if (!isGK) {
     if (isDef && tackles <= 2) {
-      out.add(_Insight('🛡️', 'Baja contribución defensiva · $tackles recuperaciones', _Level.warning));
+      out.add(_Insight('🛡️', l10n.insightLowDefensive(tackles), _Level.warning));
     } else if (tackles >= 12) {
-      out.add(_Insight('🏆', 'Trabajo defensivo excelente · $tackles recuperaciones', _Level.positive));
+      out.add(_Insight('🏆', l10n.insightExcellentDefensive(tackles), _Level.positive));
     }
   }
 
   // Distance
   if (!isGK) {
     if (distance >= 12.0) {
-      out.add(_Insight('🏃', 'Cobertura excepcional · ${distance.toStringAsFixed(1)} km', _Level.positive));
+      out.add(_Insight('🏃', l10n.insightExceptionalDistance(distance.toStringAsFixed(1)), _Level.positive));
     } else if (distance < 7.5) {
-      out.add(_Insight('⚠️', 'Baja cobertura de campo · ${distance.toStringAsFixed(1)} km', _Level.warning));
+      out.add(_Insight('⚠️', l10n.insightLowDistance(distance.toStringAsFixed(1)), _Level.warning));
     }
   }
 
   // Pass accuracy
   if (passAcc >= 90) {
-    out.add(_Insight('🎯', 'Precisión de pase élite · $passAcc%', _Level.positive));
+    out.add(_Insight('🎯', l10n.insightElitePass(passAcc), _Level.positive));
   } else if (passAcc < 68) {
-    out.add(_Insight('⚠️', 'Precisión de pase baja · $passAcc%', _Level.warning));
+    out.add(_Insight('⚠️', l10n.insightLowPass(passAcc), _Level.warning));
   }
 
   // vs Position ideal
+  final axisLabels = _axisLabelsList(l10n);
   final ideal = _idealFor(pos);
   final vals  = token.radarValues;
   for (int i = 0; i < 5; i++) {
     final diff = vals[i] - ideal[i];
     if (diff >= 0.22) {
-      out.add(_Insight('📈', '↑ ${_axisLabels[i]} superior al perfil ideal', _Level.positive));
+      out.add(_Insight('📈', l10n.insightAboveIdeal(axisLabels[i]), _Level.positive));
     } else if (diff <= -0.22) {
-      out.add(_Insight('📉', '↓ ${_axisLabels[i]} por debajo del perfil de posición', _Level.warning));
+      out.add(_Insight('📉', l10n.insightBelowIdeal(axisLabels[i]), _Level.warning));
     }
   }
 
@@ -162,12 +158,29 @@ List<_Insight> _generateInsights(
       out.add(_Insight('🧠', ai.recommendation, _Level.info));
     }
     if (ai.bestPosition.isNotEmpty && ai.bestPosition != pos) {
-      out.add(_Insight('🔄', 'Posición óptima sugerida: ${ai.bestPosition}', _Level.neutral));
+      out.add(_Insight('🔄', l10n.insightBestPosition(ai.bestPosition), _Level.neutral));
     }
   }
 
   return out.take(6).toList();
 }
+
+// Axis labels list built from l10n (avoids global const)
+List<String> _axisLabelsList(AppLocalizations l10n) => [
+  l10n.axisSpeed,
+  l10n.axisPass,
+  l10n.axisShoot,
+  l10n.axisDefend,
+  l10n.axisPhysical,
+];
+
+List<String> _axisExplainsList(AppLocalizations l10n) => [
+  l10n.axisSpeedExplain,
+  l10n.axisPassExplain,
+  l10n.axisShootExplain,
+  l10n.axisDefendExplain,
+  l10n.axisPhysicalExplain,
+];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PlayerStatsSheet
@@ -208,9 +221,9 @@ class _PlayerStatsSheetState extends State<PlayerStatsSheet> {
   late int _idx;
   PlayerProfile? _profile;
   bool _loading = true;
-  int  _tab        = 0; // 0=Asistente  1=Perfil  2=Partido
-  int  _radarMode  = 0; // 0=Posición   1=Equipo
-  int? _axisDetail;     // tapped axis index
+  int  _tab        = 0; // 0=Assistant  1=Profile  2=Match
+  int  _radarMode  = 0; // 0=Position   1=Team
+  int? _axisDetail;
   bool _pinned     = false;
 
   List<PlayerToken> get _players =>
@@ -241,7 +254,8 @@ class _PlayerStatsSheetState extends State<PlayerStatsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
+    final c    = context.colors;
+    final l10n = AppLocalizations.of(context)!;
 
     return GestureDetector(
       onHorizontalDragEnd: (d) {
@@ -283,14 +297,13 @@ class _PlayerStatsSheetState extends State<PlayerStatsSheet> {
                       Row(mainAxisSize: MainAxisSize.min, children: [
                         Icon(Icons.push_pin_rounded, color: c.accent, size: 11),
                         const SizedBox(width: 4),
-                        Text('Fijado', style: TextStyle(
+                        Text(l10n.sheetPinned, style: TextStyle(
                             color: c.accent, fontSize: 10, fontWeight: FontWeight.w600)),
                       ]),
                     ],
                   ]),
                 ),
               ),
-              // Botón cerrar / minimizar
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
@@ -326,13 +339,13 @@ class _PlayerStatsSheetState extends State<PlayerStatsSheet> {
             // ── Tab pills ─────────────────────────────────────────────────
             _TabPills(
               selected: _tab,
-              labels: const ['🧠 Asistente', '📊 Perfil', '⚡ Partido'],
+              labels: [l10n.tabAssistant, l10n.tabProfile, l10n.tabMatch],
               onSelect: (i) => setState(() { _tab = i; _axisDetail = null; }),
               c: c,
             ),
             const SizedBox(height: 16),
 
-            // ── Body scrollable (fix overflow) ────────────────────────────
+            // ── Body scrollable ────────────────────────────────────────────
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -367,7 +380,7 @@ class _PlayerStatsSheetState extends State<PlayerStatsSheet> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Quick stats row (4 pills below the header)
+// Quick stats row
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _QuickStatsRow extends StatelessWidget {
@@ -378,6 +391,7 @@ class _QuickStatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n     = AppLocalizations.of(context)!;
     final s        = token.stats;
     final rating   = (profile?.overall?.toDouble() ?? (s['rating'] as num?)?.toDouble() ?? 7.0);
     final goals    = (s['goals']        as num?)?.toInt()    ?? 0;
@@ -386,15 +400,15 @@ class _QuickStatsRow extends StatelessWidget {
     final passAcc  = (s['passAccuracy'] as num?)?.toInt()    ?? 0;
 
     return Row(children: [
-      _QStat(label: 'Rating',  value: rating.toStringAsFixed(1), icon: Icons.star_rounded,            color: c.accent,                 c: c),
+      _QStat(label: l10n.quickStatRating,   value: rating.toStringAsFixed(1), icon: Icons.star_rounded,            color: c.accent,                 c: c),
       const SizedBox(width: 8),
-      _QStat(label: 'Goles',   value: '$goals',                  icon: Icons.sports_soccer_rounded,   color: const Color(0xFF10B981),  c: c),
+      _QStat(label: l10n.quickStatGoals,    value: '$goals',                  icon: Icons.sports_soccer_rounded,   color: const Color(0xFF10B981),  c: c),
       const SizedBox(width: 8),
-      _QStat(label: 'Asist.',  value: '$assists',                icon: Icons.assistant_rounded,        color: const Color(0xFF3B82F6),  c: c),
+      _QStat(label: l10n.quickStatAssists,  value: '$assists',                icon: Icons.assistant_rounded,        color: const Color(0xFF3B82F6),  c: c),
       const SizedBox(width: 8),
-      _QStat(label: 'Km',      value: distance.toStringAsFixed(1), icon: Icons.directions_run_rounded, color: const Color(0xFF8B5CF6), c: c),
+      _QStat(label: l10n.quickStatKm,       value: distance.toStringAsFixed(1), icon: Icons.directions_run_rounded, color: const Color(0xFF8B5CF6), c: c),
       const SizedBox(width: 8),
-      _QStat(label: 'Pases%',  value: '$passAcc%',               icon: Icons.track_changes_rounded,   color: const Color(0xFFF59E0B),  c: c),
+      _QStat(label: l10n.quickStatPassPct,  value: '$passAcc%',               icon: Icons.track_changes_rounded,   color: const Color(0xFFF59E0B),  c: c),
     ]);
   }
 }
@@ -453,7 +467,6 @@ class _NavHeader extends StatelessWidget {
     final photoUrl = profile?.photoUrl;
 
     return Row(children: [
-      // Prev arrow
       if (total > 1)
         GestureDetector(
           onTap: onPrev,
@@ -560,13 +573,15 @@ class _CoachTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final insights = _generateInsights(token, profile, allPlayers);
+    final l10n     = AppLocalizations.of(context)!;
+    final insights = _generateInsights(l10n, token, profile, allPlayers);
     final ideal    = _idealFor(token.position);
     final compVals = radarMode == 0 ? ideal : _teamAvg(allPlayers);
+    final axisLabels = _axisLabelsList(l10n);
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      // ── Insight cards ─────────────────────────────────────────────────────
-      _SectionLabel('ASISTENTE DE COACH', c),
+      // ── Insight cards ──────────────────────────────────────────────────────
+      _SectionLabel(l10n.sectionCoachAssistant, c),
       const SizedBox(height: 10),
 
       ...insights.map((ins) => Padding(
@@ -577,20 +592,20 @@ class _CoachTab extends StatelessWidget {
       const SizedBox(height: 20),
 
       // ── Comparison radar ──────────────────────────────────────────────────
-      _SectionLabel('RADAR COMPARATIVO', c),
+      _SectionLabel(l10n.sectionComparisonRadar, c),
       const SizedBox(height: 10),
 
-      // Toggle: Posición / Equipo
+      // Toggle: Position / Team
       Row(children: [
         _ToggleChip(
-          label: 'vs Posición ideal',
+          label: l10n.toggleVsPosition,
           active: radarMode == 0,
           onTap: () => onRadarMode(0),
           c: c,
         ),
         const SizedBox(width: 8),
         _ToggleChip(
-          label: 'vs Promedio equipo',
+          label: l10n.toggleVsTeam,
           active: radarMode == 1,
           onTap: () => onRadarMode(1),
           c: c,
@@ -604,11 +619,11 @@ class _CoachTab extends StatelessWidget {
         const SizedBox(width: 14),
         _RadarLegendDot(
           color: Colors.white54,
-          label: radarMode == 0 ? 'Perfil ideal' : 'Media equipo',
+          label: radarMode == 0 ? l10n.legendIdealProfile : l10n.legendTeamAverage,
           dashed: true,
         ),
         const Spacer(),
-        Text('Toca un eje para detalle',
+        Text(l10n.tapAxisForDetail,
             style: TextStyle(color: c.dim, fontSize: 9)),
       ]),
       const SizedBox(height: 10),
@@ -649,7 +664,7 @@ class _CoachTab extends StatelessWidget {
       // Comparison bars
       const SizedBox(height: 16),
       ...List.generate(5, (i) => _CompBar(
-        label:     _axisLabels[i],
+        label:     axisLabels[i],
         player:    token.radarValues[i],
         reference: compVals[i],
         isHighlight: i == axisDetail,
@@ -693,11 +708,8 @@ class _InsightRow extends StatelessWidget {
     _Level.info     => (const Color(0xFF3B82F6), Icons.lightbulb_outline_rounded),
   };
 
-  // Extract trailing metric token (e.g. "7.2 ★", "9.8 km", "82%")
   static (String, String) _splitText(String text) {
-    final patterns = [
-      RegExp(r'^(.*?)\s*·\s*(.+)$'),
-    ];
+    final patterns = [RegExp(r'^(.*?)\s*·\s*(.+)$')];
     for (final rx in patterns) {
       final m = rx.firstMatch(text);
       if (m != null) return (m.group(1)!.trim(), m.group(2)!.trim());
@@ -707,6 +719,7 @@ class _InsightRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final (color, iconData) = _meta(insight.level);
     final (mainText, metric) = _splitText(insight.text);
 
@@ -719,7 +732,6 @@ class _InsightRow extends StatelessWidget {
       ),
       child: IntrinsicHeight(
         child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          // Left accent bar
           Container(
             width: 4,
             decoration: BoxDecoration(
@@ -728,13 +740,11 @@ class _InsightRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          // Icon
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 11),
             child: Icon(iconData, color: color, size: 16),
           ),
           const SizedBox(width: 10),
-          // Main text
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),
@@ -745,13 +755,12 @@ class _InsightRow extends StatelessWidget {
                 if (insight.level == _Level.warning || insight.level == _Level.info)
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
-                    child: Text(_levelHint(insight.level),
+                    child: Text(_levelHint(l10n, insight.level),
                         style: TextStyle(color: c.dim, fontSize: 9)),
                   ),
               ]),
             ),
           ),
-          // Metric badge on right
           if (metric.isNotEmpty)
             Padding(
               padding: const EdgeInsets.all(10),
@@ -770,10 +779,10 @@ class _InsightRow extends StatelessWidget {
     );
   }
 
-  String _levelHint(_Level l) => switch (l) {
-    _Level.warning => 'Requiere atención',
-    _Level.info    => 'Sugerencia IA',
-    _            => '',
+  String _levelHint(AppLocalizations l10n, _Level l) => switch (l) {
+    _Level.warning => l10n.insightHintWarning,
+    _Level.info    => l10n.insightHintInfo,
+    _              => '',
   };
 }
 
@@ -789,10 +798,13 @@ class _AxisDetailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n     = AppLocalizations.of(context)!;
+    final axisLabels   = _axisLabelsList(l10n);
+    final axisExplains = _axisExplainsList(l10n);
     final diff     = playerVal - compVal;
     final isAbove  = diff > 0;
     final pct      = (diff * 100).round().abs();
-    final refLabel = radarMode == 0 ? 'Perfil ideal' : 'Media equipo';
+    final refLabel = radarMode == 0 ? l10n.legendIdealProfile : l10n.legendTeamAverage;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -803,18 +815,18 @@ class _AxisDetailCard extends StatelessWidget {
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Text(_axisLabels[axisIndex],
+          Text(axisLabels[axisIndex],
               style: TextStyle(color: c.accent, fontSize: 13,
                   fontWeight: FontWeight.w800)),
           const SizedBox(width: 8),
-          Text(_axisExplains[axisIndex],
+          Text(axisExplains[axisIndex],
               style: TextStyle(color: c.muted, fontSize: 10)),
         ]),
         const SizedBox(height: 10),
         Row(children: [
-          _StatBadge(label: 'Jugador',  val: (playerVal * 100).round(), color: c.accent, c: c),
+          _StatBadge(label: l10n.axisDetailPlayer,  val: (playerVal * 100).round(), color: c.accent, c: c),
           const SizedBox(width: 8),
-          _StatBadge(label: refLabel,   val: (compVal   * 100).round(), color: Colors.white54, c: c),
+          _StatBadge(label: refLabel,                val: (compVal   * 100).round(), color: Colors.white54, c: c),
           const Spacer(),
           Icon(
             isAbove ? Icons.trending_up_rounded : Icons.trending_down_rounded,
@@ -862,11 +874,11 @@ class _CompBar extends StatelessWidget {
   final AppColorTokens c;
 
   static const _axisColors = [
-    Color(0xFF22FF88), // 0: Speed  — neon green
-    Color(0xFF60A5FA), // 1: Pass   — blue
-    Color(0xFFF87171), // 2: Shoot  — red
-    Color(0xFFC084FC), // 3: Defend — purple
-    Color(0xFFFB923C), // 4: Physical — orange
+    Color(0xFF22FF88), // 0: Speed
+    Color(0xFF60A5FA), // 1: Pass
+    Color(0xFFF87171), // 2: Shoot
+    Color(0xFFC084FC), // 3: Defend
+    Color(0xFFFB923C), // 4: Physical
   ];
 
   static const _axisIcons = ['⚡', '💬', '🎯', '🛡️', '💪'];
@@ -891,7 +903,6 @@ class _CompBar extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(children: [
-        // Icon + label
         SizedBox(width: 70,
           child: Row(children: [
             Text(_axisIcons[idx], style: const TextStyle(fontSize: 11)),
@@ -1005,6 +1016,8 @@ class _ProfileTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final attrs = profile?.attributes;
 
+    // Abbreviations (PAC, SHO, etc.) and fullLabels in English are standard
+    // football abbreviations — they stay untranslated intentionally.
     final statTiles = attrs != null
         ? [
             ('PAC', attrs.pace,      'Pace',      const Color(0xFF10B981)),
@@ -1134,24 +1147,25 @@ class _MatchTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lm = profile?.lastMatch;
+    final l10n = AppLocalizations.of(context)!;
+    final lm   = profile?.lastMatch;
 
     final stats = lm != null
         ? [
-            ('⚽', 'Goles',     '${lm.goals ?? 0}'),
-            ('🅰️', 'Asistencias', '${lm.assists ?? 0}'),
-            ('📏', 'Distancia', '${lm.distanceKm?.toStringAsFixed(1) ?? '—'} km'),
-            ('🎯', 'Pases',     '${lm.passes ?? 0}'),
-            ('✅', 'Precisión', '${lm.passAccuracy ?? 0}%'),
-            ('⏱',  'Minutos',  '${lm.minutes ?? 90}\''),
+            ('⚽', l10n.matchStatGoals,     '${lm.goals ?? 0}'),
+            ('🅰️', l10n.matchStatAssists,   '${lm.assists ?? 0}'),
+            ('📏', l10n.matchStatDistance,  '${lm.distanceKm?.toStringAsFixed(1) ?? '—'} km'),
+            ('🎯', l10n.matchStatPasses,    '${lm.passes ?? 0}'),
+            ('✅', l10n.matchStatAccuracy,  '${lm.passAccuracy ?? 0}%'),
+            ('⏱',  l10n.matchStatMinutes,  "${lm.minutes ?? 90}'"),
           ]
         : [
-            ('⚽', 'Goles',     '${token.stats['goals']}'),
-            ('🅰️', 'Asistencias', '${token.stats['assists']}'),
-            ('📏', 'Distancia', '${(token.stats['distance'] as num).toStringAsFixed(1)} km'),
-            ('🎯', 'Pases',     '${token.stats['passes']}'),
-            ('✅', 'Precisión', '${token.stats['passAccuracy']}%'),
-            ('⏱',  'Minutos',  "${token.stats['minutes']}'"),
+            ('⚽', l10n.matchStatGoals,     '${token.stats['goals']}'),
+            ('🅰️', l10n.matchStatAssists,   '${token.stats['assists']}'),
+            ('📏', l10n.matchStatDistance,  '${(token.stats['distance'] as num).toStringAsFixed(1)} km'),
+            ('🎯', l10n.matchStatPasses,    '${token.stats['passes']}'),
+            ('✅', l10n.matchStatAccuracy,  '${token.stats['passAccuracy']}%'),
+            ('⏱',  l10n.matchStatMinutes,  "${token.stats['minutes']}'"),
           ];
 
     final rating = lm?.rating ?? (token.stats['rating'] as num?)?.toDouble();
@@ -1172,7 +1186,7 @@ class _MatchTab extends StatelessWidget {
                 style: TextStyle(color: c.accent, fontSize: 32,
                     fontWeight: FontWeight.w900)),
             const SizedBox(width: 8),
-            Text('Rating del partido',
+            Text(l10n.matchRatingLabel,
                 style: TextStyle(color: c.muted, fontSize: 12)),
           ]),
         ),
@@ -1192,7 +1206,7 @@ class _MatchTab extends StatelessWidget {
 
       if (profile != null && profile!.history.isNotEmpty) ...[
         const SizedBox(height: 20),
-        Text('Tendencia de rating',
+        Text(l10n.matchRatingTrend,
             style: TextStyle(color: c.muted, fontSize: 11,
                 fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
@@ -1267,7 +1281,10 @@ class DualRadarChart extends StatelessWidget {
   final Color accentColor;
   final bool showValues;
 
-  static const _labels = ['Speed', 'Pass', 'Shoot', 'Defend', 'Physical'];
+  // Radar axis labels shown on the chart come from l10n now (see build).
+  // The static English list below is kept only as a fallback for the
+  // CustomPaint label overlay which needs a BuildContext.
+  static const _fallbackLabels = ['Speed', 'Pass', 'Shoot', 'Defend', 'Physical'];
 
   const DualRadarChart({
     super.key,
@@ -1280,6 +1297,9 @@ class DualRadarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n   = AppLocalizations.of(context);
+    final labels = l10n != null ? _axisLabelsList(l10n) : _fallbackLabels;
+
     return CustomPaint(
       painter: _DualRadarPainter(
         values: values,
@@ -1289,9 +1309,9 @@ class DualRadarChart extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(8),
-        child: Stack(children: List.generate(_labels.length, (i) {
+        child: Stack(children: List.generate(labels.length, (i) {
           const r = 0.85;
-          final angle = (i * 2 * math.pi / _labels.length) - math.pi / 2;
+          final angle = (i * 2 * math.pi / labels.length) - math.pi / 2;
           final highlighted = i == highlightAxis;
           final tx = 0.5 + (r + 0.10) * math.cos(angle);
           final ty = 0.5 + (r + 0.10) * math.sin(angle);
@@ -1299,7 +1319,7 @@ class DualRadarChart extends StatelessWidget {
           return Align(
             alignment: Alignment(tx * 2 - 1, ty * 2 - 1),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Text(_labels[i],
+              Text(labels[i],
                   style: TextStyle(
                     color: highlighted ? accentColor : Colors.white60,
                     fontSize: 10,
@@ -1342,7 +1362,6 @@ class _DualRadarPainter extends CustomPainter {
     final cy = size.height / 2;
     final r  = math.min(cx, cy) * 0.76;
 
-    // Rings
     final ringP = Paint()
       ..color = Colors.white.withValues(alpha: 0.07)
       ..style = PaintingStyle.stroke
@@ -1353,20 +1372,16 @@ class _DualRadarPainter extends CustomPainter {
         final a = (i * 2 * math.pi / n) - math.pi / 2;
         final rr = r * ring / 4;
         final pt = Offset(cx + rr * math.cos(a), cy + rr * math.sin(a));
-        if (i == 0) {
-          path.moveTo(pt.dx, pt.dy);
-        } else {
-          path.lineTo(pt.dx, pt.dy);
-        }
+        if (i == 0) { path.moveTo(pt.dx, pt.dy); }
+        else        { path.lineTo(pt.dx, pt.dy); }
       }
       path.close();
       canvas.drawPath(path, ringP);
     }
 
-    // Axis lines
     for (int i = 0; i < n; i++) {
-      final a     = (i * 2 * math.pi / n) - math.pi / 2;
-      final hlt   = i == highlightAxis;
+      final a   = (i * 2 * math.pi / n) - math.pi / 2;
+      final hlt = i == highlightAxis;
       canvas.drawLine(
         Offset(cx, cy),
         Offset(cx + r * math.cos(a), cy + r * math.sin(a)),
@@ -1378,18 +1393,14 @@ class _DualRadarPainter extends CustomPainter {
       );
     }
 
-    // Comparison polygon
     if (compValues != null && compValues!.length == n) {
       final compPath = Path();
       for (int i = 0; i < n; i++) {
         final a  = (i * 2 * math.pi / n) - math.pi / 2;
         final rv = r * compValues![i];
         final pt = Offset(cx + rv * math.cos(a), cy + rv * math.sin(a));
-        if (i == 0) {
-          compPath.moveTo(pt.dx, pt.dy);
-        } else {
-          compPath.lineTo(pt.dx, pt.dy);
-        }
+        if (i == 0) { compPath.moveTo(pt.dx, pt.dy); }
+        else        { compPath.lineTo(pt.dx, pt.dy); }
       }
       compPath.close();
       canvas.drawPath(compPath,
@@ -1404,31 +1415,24 @@ class _DualRadarPainter extends CustomPainter {
             ..strokeJoin = StrokeJoin.round);
     }
 
-    // Player polygon fill + stroke
     final dataPath = Path();
     for (int i = 0; i < n; i++) {
       final a  = (i * 2 * math.pi / n) - math.pi / 2;
       final rv = r * values[i];
       final pt = Offset(cx + rv * math.cos(a), cy + rv * math.sin(a));
-      if (i == 0) {
-        dataPath.moveTo(pt.dx, pt.dy);
-      } else {
-        dataPath.lineTo(pt.dx, pt.dy);
-      }
+      if (i == 0) { dataPath.moveTo(pt.dx, pt.dy); }
+      else        { dataPath.lineTo(pt.dx, pt.dy); }
     }
     dataPath.close();
-    // Outer glow fill
     canvas.drawPath(dataPath,
         Paint()
           ..color = accentColor.withValues(alpha: 0.10)
           ..style = PaintingStyle.fill
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6));
-    // Main fill
     canvas.drawPath(dataPath,
         Paint()
           ..color = accentColor.withValues(alpha: 0.30)
           ..style = PaintingStyle.fill);
-    // Stroke
     canvas.drawPath(dataPath,
         Paint()
           ..color = accentColor
@@ -1436,13 +1440,11 @@ class _DualRadarPainter extends CustomPainter {
           ..strokeWidth = 2.4
           ..strokeJoin = StrokeJoin.round);
 
-    // Dots on player polygon
     for (int i = 0; i < n; i++) {
       final a    = (i * 2 * math.pi / n) - math.pi / 2;
       final rv   = r * values[i];
       final hlt  = i == highlightAxis;
       final dotOff = Offset(cx + rv * math.cos(a), cy + rv * math.sin(a));
-      // White outer ring
       canvas.drawCircle(dotOff, hlt ? 6.5 : 5.0,
           Paint()..color = Colors.white.withValues(alpha: 0.25));
       canvas.drawCircle(dotOff, hlt ? 4.5 : 3.5,
@@ -1480,8 +1482,8 @@ class _SparkPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (values.length < 2) return;
-    final minV = values.reduce(math.min);
-    final maxV = values.reduce(math.max);
+    final minV  = values.reduce(math.min);
+    final maxV  = values.reduce(math.max);
     final range = (maxV - minV).clamp(0.5, double.infinity);
     final paint = Paint()
       ..color = color
@@ -1494,11 +1496,8 @@ class _SparkPainter extends CustomPainter {
     for (int i = 0; i < values.length; i++) {
       final x = size.width * i / (values.length - 1);
       final y = size.height * (1 - (values[i] - minV) / range);
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
-      }
+      if (i == 0) { path.moveTo(x, y); }
+      else        { path.lineTo(x, y); }
     }
     canvas.drawPath(path, paint);
 

@@ -41,15 +41,16 @@ class _MatchesPageState extends State<MatchesPage> {
     return ListenableBuilder(
       listenable: _controller,
       builder: (context, _) {
-        if (_controller.errorMessage != null) {
-          final msg = _controller.errorMessage!;
+        final resolvedError = _resolveMatchesError(l10n, _controller.errorKey);
+
+        if (resolvedError != null) {
           _controller.consumeError();
 
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(msg),
+                content: Text(resolvedError),
                 backgroundColor: c.elevated,
               ),
             );
@@ -143,7 +144,7 @@ class _MatchesPageState extends State<MatchesPage> {
                                   ),
                                   const SizedBox(height: 14),
                                   Text(
-                                    'No matches registered',
+                                    l10n.matchesEmptyTitle,
                                     style: TextStyle(
                                       color: c.dim,
                                       fontSize: 14,
@@ -153,7 +154,7 @@ class _MatchesPageState extends State<MatchesPage> {
                                   GestureDetector(
                                     onTap: _openCreateMatchDialog,
                                     child: Text(
-                                      '+ Add match',
+                                      l10n.matchesAddButton,
                                       style: TextStyle(
                                         color: c.accent,
                                         fontSize: 13,
@@ -175,15 +176,21 @@ class _MatchesPageState extends State<MatchesPage> {
                                 ..._controller.matches.map((m) {
                                   final teamData = m['teams'];
                                   final teamName = teamData is Map
-                                      ? (teamData['name'] ?? 'No team')
-                                      : 'No team';
+                                      ? (teamData['name'] ??
+                                          l10n.matchesNoTeam)
+                                      : l10n.matchesNoTeam;
 
                                   return MatchCard(
-                                    rival: m['opponent'] ?? '—',
+                                    rival: (m['opponent'] as String?)?.trim().isNotEmpty ==
+                                            true
+                                        ? m['opponent'] as String
+                                        : l10n.matchUnknownOpponent,
                                     date: _formatDate(m['match_date']),
                                     team: teamName,
-                                    source:
-                                        (m['source_type'] ?? '—').toString(),
+                                    source: _sourceLabel(
+                                      (m['source_type'] ?? '').toString(),
+                                      l10n,
+                                    ),
                                     statusText:
                                         _matchStatusLabel(m['status'], l10n),
                                     statusColor:
@@ -203,11 +210,12 @@ class _MatchesPageState extends State<MatchesPage> {
 
   Future<void> _openCreateMatchDialog() async {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
 
     if (_controller.teams.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Create at least one team first.'),
+          content: Text(l10n.matchesRequireTeamFirst),
           backgroundColor: c.elevated,
         ),
       );
@@ -225,6 +233,7 @@ class _MatchesPageState extends State<MatchesPage> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
           final dc = ctx.colors;
+          final l10n = AppLocalizations.of(ctx)!;
 
           return AlertDialog(
             backgroundColor: dc.surface,
@@ -232,7 +241,7 @@ class _MatchesPageState extends State<MatchesPage> {
               borderRadius: BorderRadius.circular(16),
             ),
             title: Text(
-              'New match',
+              l10n.matchesNewTitle,
               style: TextStyle(
                 color: dc.text,
                 fontWeight: FontWeight.w700,
@@ -245,14 +254,14 @@ class _MatchesPageState extends State<MatchesPage> {
                   DropdownButtonFormField<int>(
                     initialValue: selectedTeamId,
                     dropdownColor: dc.elevated,
-                    decoration: _fieldDecoration('Team', dc),
+                    decoration: _fieldDecoration(l10n.matchesTeamLabel, dc),
                     style: TextStyle(color: dc.text),
                     items: _controller.teams
                         .map(
                           (t) => DropdownMenuItem<int>(
                             value: t['id'] as int,
                             child: Text(
-                              t['name'] ?? '—',
+                              (t['name'] ?? '—').toString(),
                               style: TextStyle(color: dc.text),
                             ),
                           ),
@@ -267,26 +276,27 @@ class _MatchesPageState extends State<MatchesPage> {
                   const SizedBox(height: 12),
                   FormTextField(
                     controller: opponentController,
-                    label: 'Opponent',
+                    label: l10n.matchesOpponentLabel,
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     initialValue: selectedSourceType,
                     dropdownColor: dc.elevated,
-                    decoration: _fieldDecoration('Video source', dc),
+                    decoration:
+                        _fieldDecoration(l10n.matchesVideoSourceLabel, dc),
                     style: TextStyle(color: dc.text),
                     items: [
                       DropdownMenuItem(
                         value: AppConstants.sourceUpload,
                         child: Text(
-                          'Upload',
+                          l10n.matchesUploadSource,
                           style: TextStyle(color: dc.text),
                         ),
                       ),
                       DropdownMenuItem(
                         value: AppConstants.sourceYoutube,
                         child: Text(
-                          'YouTube',
+                          l10n.matchesYouTubeSource,
                           style: TextStyle(color: dc.text),
                         ),
                       ),
@@ -301,7 +311,10 @@ class _MatchesPageState extends State<MatchesPage> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(
-                      'Date: ${DateFormat(AppConstants.dateFormat).format(selectedDate)}',
+                      l10n.matchesDateLabel(
+                        DateFormat(AppConstants.dateFormat)
+                            .format(selectedDate),
+                      ),
                       style: TextStyle(color: dc.text, fontSize: 14),
                     ),
                     trailing: Icon(
@@ -324,7 +337,7 @@ class _MatchesPageState extends State<MatchesPage> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(
-                      'Time: ${selectedTime.format(ctx)}',
+                      l10n.matchesTimeLabel(selectedTime.format(ctx)),
                       style: TextStyle(color: dc.text, fontSize: 14),
                     ),
                     trailing: Icon(
@@ -349,7 +362,7 @@ class _MatchesPageState extends State<MatchesPage> {
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
                 child: Text(
-                  'Cancel',
+                  l10n.cancelBtn,
                   style: TextStyle(color: dc.dim),
                 ),
               ),
@@ -378,7 +391,7 @@ class _MatchesPageState extends State<MatchesPage> {
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Match saved'),
+                      content: Text(l10n.matchesSaved),
                       backgroundColor: dc.elevated,
                     ),
                   );
@@ -394,7 +407,7 @@ class _MatchesPageState extends State<MatchesPage> {
                     border: Border.all(color: dc.border2),
                   ),
                   child: Text(
-                    'Save',
+                    l10n.saveBtn,
                     style: TextStyle(
                       color: dc.text,
                       fontWeight: FontWeight.w600,
@@ -428,6 +441,30 @@ class _MatchesPageState extends State<MatchesPage> {
   String _formatDate(String value) {
     return DateFormat(AppConstants.dateTimeFormat)
         .format(DateTime.parse(value).toLocal());
+  }
+
+  String? _resolveMatchesError(AppLocalizations l10n, String? key) {
+    switch (key) {
+      case 'matchesTimeoutError':
+        return l10n.matchesTimeoutError;
+      case 'matchesLoadError':
+        return l10n.matchesLoadError;
+      case 'matchesSaveError':
+        return l10n.matchesSaveError;
+      default:
+        return null;
+    }
+  }
+
+  String _sourceLabel(String sourceType, AppLocalizations l10n) {
+    switch (sourceType) {
+      case AppConstants.sourceYoutube:
+        return l10n.matchesYouTubeSource;
+      case AppConstants.sourceUpload:
+        return l10n.matchesUploadSource;
+      default:
+        return sourceType.isEmpty ? '—' : sourceType;
+    }
   }
 
   Color _matchStatusColor(String? status) => switch (status) {

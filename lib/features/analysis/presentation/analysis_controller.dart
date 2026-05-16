@@ -7,23 +7,24 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/constants/app_constants.dart';
 import 'package:playvision/features/analysis/data/analysis_store.dart';
 import '../../../core/supabase/supabase_service.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class AnalysisController extends ChangeNotifier {
-  final ImagePicker     _picker  = ImagePicker();
+  final ImagePicker _picker = ImagePicker();
   final SupabaseService _service = SupabaseService.instance;
 
-  XFile?  videoFile;
+  XFile? videoFile;
   String? videoUrl;
-  bool    isAnalyzing     = false;
-  bool    _isPickingVideo = false;
-  bool    _cancelled      = false;
+  bool isAnalyzing = false;
+  bool _isPickingVideo = false;
+  bool _cancelled = false;
   http.Client? _httpClient;
 
   Map<String, dynamic>? result;
   String? errorMessage;
 
   void init() {
-    result    = AnalysisStore.instance.lastResult;
+    result = AnalysisStore.instance.lastResult;
     videoFile = AnalysisStore.instance.lastLocalFile;
   }
 
@@ -34,8 +35,8 @@ class AnalysisController extends ChangeNotifier {
       final file = await _picker.pickVideo(source: ImageSource.gallery);
       if (file == null) return;
       videoFile = file;
-      videoUrl  = null;
-      result    = null;
+      videoUrl = null;
+      result = null;
       notifyListeners();
     } catch (e) {
       debugPrint('[AnalysisController] Error picker: $e');
@@ -45,43 +46,42 @@ class AnalysisController extends ChangeNotifier {
   }
 
   void setVideoUrl(String url) {
-    videoUrl  = url.trim().isEmpty ? null : url.trim();
+    videoUrl = url.trim().isEmpty ? null : url.trim();
     videoFile = null;
-    result    = null;
+    result = null;
     notifyListeners();
   }
 
-  /// Cancela el análisis en curso cerrando la conexión HTTP.
   void cancelAnalysis() {
     _cancelled = true;
     _httpClient?.close();
-    _httpClient  = null;
-    isAnalyzing  = false;
+    _httpClient = null;
+    isAnalyzing = false;
     errorMessage = null;
     notifyListeners();
   }
 
-  Future<void> analyzeVideo() async {
+  Future<void> analyzeVideo(AppLocalizations l10n) async {
     if (videoFile == null && videoUrl == null) return;
 
     final teamId = AnalysisStore.instance.selectedTeamId;
     if (teamId == null) {
-      errorMessage = 'No hay equipo seleccionado. Vuelve atrás y elige uno.';
+      errorMessage = l10n.selectOrCreateTeam;
       notifyListeners();
       return;
     }
 
-    isAnalyzing  = true;
-    _cancelled   = false;
+    isAnalyzing = true;
+    _cancelled = false;
     errorMessage = null;
     notifyListeners();
 
     int? matchId;
     try {
       matchId = await _service.createMatchAndReturnId(
-        teamId:     teamId,
-        opponent:   '',
-        matchDate:  DateTime.now(),
+        teamId: teamId,
+        opponent: '',
+        matchDate: DateTime.now(),
         sourceType: AppConstants.sourceUpload,
       );
 
@@ -91,26 +91,34 @@ class AnalysisController extends ChangeNotifier {
 
       if (videoUrl != null) {
         final request = http.MultipartRequest(
-          'POST', Uri.parse('${AppConstants.apiBase}/analyze-url'),
+          'POST',
+          Uri.parse('${AppConstants.apiBase}/analyze-url'),
         );
-        request.fields['team_id']     = teamId.toString();
-        request.fields['match_id']    = matchId.toString();
+        request.fields['team_id'] = teamId.toString();
+        request.fields['match_id'] = matchId.toString();
         request.fields['source_type'] = 'url';
-        request.fields['video_url']   = videoUrl!;
-        streamed = await _httpClient!.send(request)
+        request.fields['video_url'] = videoUrl!;
+        streamed = await _httpClient!
+            .send(request)
             .timeout(AppConstants.analysisTimeout);
       } else {
-        final bytes   = await videoFile!.readAsBytes();
+        final bytes = await videoFile!.readAsBytes();
         final request = http.MultipartRequest(
-          'POST', Uri.parse('${AppConstants.apiBase}/analyze'),
+          'POST',
+          Uri.parse('${AppConstants.apiBase}/analyze'),
         );
-        request.fields['team_id']     = teamId.toString();
-        request.fields['match_id']    = matchId.toString();
+        request.fields['team_id'] = teamId.toString();
+        request.fields['match_id'] = matchId.toString();
         request.fields['source_type'] = AppConstants.sourceUpload;
         request.files.add(
-          http.MultipartFile.fromBytes('file', bytes, filename: videoFile!.name),
+          http.MultipartFile.fromBytes(
+            'file',
+            bytes,
+            filename: videoFile!.name,
+          ),
         );
-        streamed = await _httpClient!.send(request)
+        streamed = await _httpClient!
+            .send(request)
             .timeout(AppConstants.analysisTimeout);
       }
 
@@ -122,19 +130,20 @@ class AnalysisController extends ChangeNotifier {
         result = jsonDecode(body) as Map<String, dynamic>;
         AnalysisStore.instance.save(result!, localFile: videoFile);
         await _service.updateMatchStatus(matchId: matchId, status: 'done');
+
         final url = result!['video_url'] as String?;
         if (url != null && url.isNotEmpty) {
           await _service.updateMatchVideoUrl(matchId: matchId, videoUrl: url);
         }
       } else {
         if (!_cancelled) {
-          errorMessage = 'Error del servidor: ${streamed.statusCode}';
+          errorMessage = '${l10n.statusError}: ${streamed.statusCode}';
           await _service.updateMatchStatus(matchId: matchId, status: 'error');
         }
       }
     } catch (e) {
       if (!_cancelled) {
-        errorMessage = 'Error de conexión: $e';
+        errorMessage = '${l10n.statusError}: $e';
         if (matchId != null) {
           await _service.updateMatchStatus(matchId: matchId, status: 'error');
         }
@@ -148,12 +157,12 @@ class AnalysisController extends ChangeNotifier {
   }
 
   void reset() {
-    result          = null;
-    videoFile       = null;
-    videoUrl        = null;
-    errorMessage    = null;
+    result = null;
+    videoFile = null;
+    videoUrl = null;
+    errorMessage = null;
     _isPickingVideo = false;
-    _cancelled      = false;
+    _cancelled = false;
     notifyListeners();
   }
 

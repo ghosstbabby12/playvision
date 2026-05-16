@@ -10,7 +10,7 @@ class MatchesController extends ChangeNotifier {
   List<Map<String, dynamic>> matches = [];
   List<Map<String, dynamic>> teams = [];
   bool isLoading = true;
-  String? errorMessage;
+  String? errorKey;
 
   bool _disposed = false;
 
@@ -26,7 +26,7 @@ class MatchesController extends ChangeNotifier {
 
   Future<void> fetchData() async {
     isLoading = true;
-    errorMessage = null;
+    errorKey = null;
     _notify();
 
     try {
@@ -38,11 +38,11 @@ class MatchesController extends ChangeNotifier {
       teams = results[0];
       matches = results[1];
     } on TimeoutException {
-      errorMessage = 'La conexión tardó demasiado. Verifica tu red.';
+      errorKey = 'matchesTimeoutError';
       teams = [];
       matches = [];
     } catch (e) {
-      errorMessage = 'No se pudieron cargar los datos.';
+      errorKey = 'matchesLoadError';
       teams = [];
       matches = [];
       debugPrint('[MatchesController.fetchData] $e');
@@ -70,13 +70,13 @@ class MatchesController extends ChangeNotifier {
       );
       await fetchData();
     } catch (e) {
-      errorMessage = 'No se pudo guardar el partido.';
+      errorKey = 'matchesSaveError';
       debugPrint('[MatchesController.createMatch] $e');
       _notify();
     }
   }
 
   void consumeError() {
-    errorMessage = null;
+    errorKey = null;
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:playvision/core/theme/app_color_tokens.dart';
+import 'package:playvision/l10n/generated/app_localizations.dart';
 import 'package:playvision/shared/widgets/pv_back_button.dart';
 
 import 'coaching_board_controller.dart';
@@ -35,8 +36,15 @@ class _CoachingBoardPageState extends State<CoachingBoardPage> {
     return ListenableBuilder(
       listenable: _ctrl,
       builder: (context, _) {
-        if (_ctrl.savedMessage != null) {
-          final msg = _ctrl.savedMessage!;
+        if (_ctrl.savedMessageKey != null) {
+          final key = _ctrl.savedMessageKey!;
+          final l10n = AppLocalizations.of(context)!;
+          final msg = switch (key) {
+            'coachingBoardSaveSuccess' => l10n.coachingBoardSaveSuccess,
+            'coachingBoardSaveError' => l10n.coachingBoardSaveError,
+            _ => key,
+          };
+          _ctrl.consumeSavedMessage();
           _ctrl.consumeSavedMessage();
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
@@ -77,6 +85,7 @@ class _TeamSelectorStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -84,7 +93,6 @@ class _TeamSelectorStep extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top bar
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: Row(
@@ -97,10 +105,10 @@ class _TeamSelectorStep extends StatelessWidget {
                     size: 20,
                   ),
                   const SizedBox(width: 10),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Coaching Board',
-                      style: TextStyle(
+                      l10n.coachingBoardTitle,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
@@ -110,15 +118,13 @@ class _TeamSelectorStep extends StatelessWidget {
                 ],
               ),
             ),
-
-            // Title + subtitle
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Selecciona un equipo',
+                    l10n.coachingBoardSelectTeamTitle,
                     style: TextStyle(
                       color: c.textHi,
                       fontSize: 24,
@@ -127,16 +133,13 @@ class _TeamSelectorStep extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Elige un equipo para construir el tablero táctico',
+                    l10n.coachingBoardSelectTeamSubtitle,
                     style: TextStyle(color: c.muted, fontSize: 13),
                   ),
                 ],
               ),
             ),
-
             const SizedBox(height: 8),
-
-            // Teams list
             Expanded(
               child: ctrl.loadingTeams
                   ? Center(
@@ -148,11 +151,9 @@ class _TeamSelectorStep extends StatelessWidget {
                   : ctrl.teams.isEmpty
                       ? _EmptyTeams(c: c)
                       : ListView.separated(
-                          padding:
-                              const EdgeInsets.fromLTRB(20, 8, 20, 32),
+                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
                           itemCount: ctrl.teams.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 12),
+                          separatorBuilder: (_, __) => const SizedBox(height: 12),
                           itemBuilder: (_, i) => _TeamCard(
                             team: ctrl.teams[i],
                             c: c,
@@ -270,6 +271,8 @@ class _EmptyTeams extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -277,7 +280,7 @@ class _EmptyTeams extends StatelessWidget {
           Icon(Icons.groups_outlined, color: c.dim, size: 48),
           const SizedBox(height: 16),
           Text(
-            'Sin equipos',
+            l10n.coachingBoardNoTeams,
             style: TextStyle(
               color: c.text,
               fontSize: 16,
@@ -286,7 +289,7 @@ class _EmptyTeams extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Crea un equipo en la pestaña Inicio',
+            l10n.coachingBoardNoTeamsHint,
             style: TextStyle(color: c.muted, fontSize: 13),
           ),
         ],
@@ -304,6 +307,7 @@ class _AnalyzingStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final name = ctrl.selectedTeam?['name'] as String? ?? 'Team';
 
     return Scaffold(
@@ -317,7 +321,7 @@ class _AnalyzingStep extends StatelessWidget {
               _PulsingBall(color: c.accent),
               const SizedBox(height: 32),
               Text(
-                'Analizando $name',
+                l10n.coachingBoardAnalyzingTitle(name),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,
@@ -327,12 +331,12 @@ class _AnalyzingStep extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Construyendo el tablero táctico con IA',
+                l10n.coachingBoardAnalyzingSubtitle,
                 style: TextStyle(color: c.muted, fontSize: 13),
               ),
               const SizedBox(height: 36),
               ...List.generate(
-                CoachingBoardController.analysisSteps.length,
+                CoachingBoardController.analysisStepKeys.length,
                 (i) {
                   final done = i < ctrl.completedSteps;
                   final current = i == ctrl.completedSteps;
@@ -367,7 +371,13 @@ class _AnalyzingStep extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          CoachingBoardController.analysisSteps[i],
+                          switch (CoachingBoardController.analysisStepKeys[i]) {
+                            'coachingBoardStepLoadingPlayers' => l10n.coachingBoardStepLoadingPlayers,
+                            'coachingBoardStepReadingStats' => l10n.coachingBoardStepReadingStats,
+                            'coachingBoardStepComputingPositions' => l10n.coachingBoardStepComputingPositions,
+                            'coachingBoardStepBuildingBoard' => l10n.coachingBoardStepBuildingBoard,
+                            _ => '',
+                          }, 
                           style: TextStyle(
                             color: done
                                 ? c.textHi
@@ -461,6 +471,7 @@ class _BoardStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final selected = ctrl.selectedPlayer;
     final swapSource = ctrl.swapSource;
     final team = ctrl.selectedTeam;
@@ -470,7 +481,6 @@ class _BoardStep extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // AppBar
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
               child: Row(
@@ -500,7 +510,6 @@ class _BoardStep extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Save button
                   GestureDetector(
                     onTap: ctrl.isSaving ? null : ctrl.saveFormation,
                     child: AnimatedContainer(
@@ -525,7 +534,7 @@ class _BoardStep extends StatelessWidget {
                               ),
                             )
                           : Text(
-                              'Guardar',
+                              l10n.coachingBoardSave,
                               style: TextStyle(
                                 color: c.accent,
                                 fontSize: 12,
@@ -547,7 +556,7 @@ class _BoardStep extends StatelessWidget {
                         border: Border.all(color: c.border),
                       ),
                       child: Text(
-                        'Reset',
+                        l10n.coachingBoardReset,
                         style: TextStyle(
                           color: c.dim,
                           fontSize: 12,
@@ -559,8 +568,6 @@ class _BoardStep extends StatelessWidget {
                 ],
               ),
             ),
-
-            // Formation pills
             SizedBox(
               height: 34,
               child: ListView(
@@ -601,10 +608,7 @@ class _BoardStep extends StatelessWidget {
                 }).toList(),
               ),
             ),
-
             const SizedBox(height: 6),
-
-            // Legend
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -637,16 +641,13 @@ class _BoardStep extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    'Long press = swap',
+                    l10n.coachingBoardSwapHint,
                     style: TextStyle(color: c.dim, fontSize: 9),
                   ),
                 ],
               ),
             ),
-
             const SizedBox(height: 6),
-
-            // Isometric field
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(8, 0, 8, 4),
@@ -658,7 +659,6 @@ class _BoardStep extends StatelessWidget {
 
                     return Stack(
                       children: [
-                        // Field surface
                         SizedBox.expand(
                           child: CustomPaint(
                             painter: FieldPainter(
@@ -669,19 +669,13 @@ class _BoardStep extends StatelessWidget {
                             ),
                           ),
                         ),
-
-                        // Formation connection lines
                         SizedBox.expand(
                           child: CustomPaint(
                             painter:
                                 _IsometricLinesPainter(ctrl.players, proj),
                           ),
                         ),
-
-                        // Zone labels on left edge
                         ..._zoneLabels(proj),
-
-                        // Swap banner
                         if (swapSource != null)
                           Positioned(
                             top: 8,
@@ -705,18 +699,18 @@ class _BoardStep extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                child: const Row(
+                                child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.swap_horiz_rounded,
                                       color: Colors.black,
                                       size: 13,
                                     ),
-                                    SizedBox(width: 5),
+                                    const SizedBox(width: 5),
                                     Text(
-                                      'Toca otro jugador para intercambiar',
-                                      style: TextStyle(
+                                      l10n.coachingBoardSwapBanner,
+                                      style: const TextStyle(
                                         color: Colors.black,
                                         fontSize: 10,
                                         fontWeight: FontWeight.w700,
@@ -727,8 +721,6 @@ class _BoardStep extends StatelessWidget {
                               ),
                             ),
                           ),
-
-                        // Player tokens
                         ..._buildTokens(
                           context,
                           ctrl.players,
@@ -742,8 +734,6 @@ class _BoardStep extends StatelessWidget {
                 ),
               ),
             ),
-
-            // Selected player footer
             AnimatedContainer(
               duration: const Duration(milliseconds: 250),
               height: selected != null ? 72 : 0,
@@ -766,7 +756,6 @@ class _BoardStep extends StatelessWidget {
     );
   }
 
-  // Zone labels
   List<Widget> _zoneLabels(FieldProjector proj) {
     return [
       ('ATK', 0.13),
@@ -783,7 +772,6 @@ class _BoardStep extends StatelessWidget {
     }).toList();
   }
 
-  // Player tokens with isometric drag
   List<Widget> _buildTokens(
     BuildContext context,
     List<PlayerToken> players,
@@ -820,8 +808,7 @@ class _BoardStep extends StatelessWidget {
           onLongPress: () => ctrl.startSwap(player),
           onDrag: (ddx, ddy) => ctrl.movePlayer(
             player.id,
-            (player.dx + ddx / proj.rowWidth(player.dy))
-                .clamp(0.03, 0.97),
+            (player.dx + ddx / proj.rowWidth(player.dy)).clamp(0.03, 0.97),
             (player.dy + ddy / proj.colHeight).clamp(0.03, 0.97),
           ),
         ),
@@ -860,11 +847,9 @@ class _IsometricLinesPainter extends CustomPainter {
 
     for (final entry in groups.entries) {
       if (entry.value.length < 2) continue;
-      final sorted = [...entry.value]
-        ..sort((a, b) => a.dx.compareTo(b.dx));
+      final sorted = [...entry.value]..sort((a, b) => a.dx.compareTo(b.dx));
       final lineColor = _color(entry.key);
 
-      // Glow pass (wide, blurred)
       final glowPaint = Paint()
         ..color = lineColor.withValues(alpha: 0.22)
         ..strokeWidth = 5.0
@@ -872,7 +857,6 @@ class _IsometricLinesPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
 
-      // Sharp pass (thin, vivid)
       final sharpPaint = Paint()
         ..color = lineColor.withValues(alpha: 0.55)
         ..strokeWidth = 1.6
@@ -951,8 +935,8 @@ class _PlayerFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rating =
-        (player.stats['rating'] as num?)?.toDouble() ?? 7.0;
+    final l10n = AppLocalizations.of(context)!;
+    final rating = (player.stats['rating'] as num?)?.toDouble() ?? 7.0;
     final goals = (player.stats['goals'] as num?)?.toInt() ?? 0;
     final assists = (player.stats['assists'] as num?)?.toInt() ?? 0;
     final minutes = (player.stats['minutes'] as num?)?.toInt() ?? 90;
@@ -961,8 +945,7 @@ class _PlayerFooter extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: c.surface,
           borderRadius: BorderRadius.circular(18),
@@ -1033,10 +1016,9 @@ class _PlayerFooter extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.star_rounded,
-                        color: c.accent, size: 10),
+                    Icon(Icons.star_rounded, color: c.accent, size: 10),
                     Text(
-                      ' rating',
+                      ' ${l10n.quickStatRating.toLowerCase()}',
                       style: TextStyle(color: c.dim, fontSize: 8),
                     ),
                   ],
@@ -1092,9 +1074,9 @@ class _FooterAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final posColor = PlayerChip.positionColor(player.position);
-    final rating   = (player.stats['rating'] as num?)?.toDouble() ?? 0.0;
+    final rating = (player.stats['rating'] as num?)?.toDouble() ?? 0.0;
     final perfColor = PlayerChip.performanceColor(rating);
-    final hasPhoto  = player.photoUrl != null && player.photoUrl!.isNotEmpty;
+    final hasPhoto = player.photoUrl != null && player.photoUrl!.isNotEmpty;
 
     return Container(
       width: 36,

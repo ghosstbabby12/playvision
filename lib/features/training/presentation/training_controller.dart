@@ -6,13 +6,14 @@ import 'package:http/http.dart' as http;
 import 'package:playvision/core/constants/app_constants.dart';
 import 'package:playvision/core/supabase/supabase_service.dart';
 import 'package:playvision/features/analysis/data/analysis_store.dart';
+import '../domain/training_insight.dart';
 import '../domain/training_session.dart';
 
 class TrainingController extends ChangeNotifier {
   // ── Analysis result ────────────────────────────────────────────────────────
-  Map<String, dynamic>? get result => AnalysisStore.instance.lastResult;
-  List?                  get players => result?['players'] as List?;
-  Map<String, dynamic>?  get team    => result?['team']    as Map<String, dynamic>?;
+  Map<String, dynamic>? get result  => AnalysisStore.instance.lastResult;
+  List?                 get players => result?['players'] as List?;
+  Map<String, dynamic>? get team    => result?['team'] as Map<String, dynamic>?;
 
   // ── Saved sessions (Supabase) ─────────────────────────────────────────────
   List<TrainingSession> _sessions       = [];
@@ -37,16 +38,19 @@ class TrainingController extends ChangeNotifier {
   Future<void> createSession({
     required String title,
     required String category,
-    required int    durationMinutes,
-    String?         description,
+    required int durationMinutes,
+    String? description,
     List<Map<String, dynamic>>? exercises,
   }) async {
-    final ex = exercises ?? TrainingSession.defaultExercises(category)
-        .map((e) => e.toJson())
-        .toList();
+    final ex = exercises ??
+        TrainingSession.defaultExercises(category)
+            .map((e) => e.toJson())
+            .toList();
     await SupabaseService.instance.createTrainingSession(
-      title: title, category: category,
-      durationMinutes: durationMinutes, description: description,
+      title: title,
+      category: category,
+      durationMinutes: durationMinutes,
+      description: description,
       exercises: ex,
     );
     await loadSessions();
@@ -58,7 +62,7 @@ class TrainingController extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── AI Suggestions (backend) ───────────────────────────────────────────────
+  // ── AI Suggestions (backend) ──────────────────────────────────────────────
   List<Map<String, dynamic>> _suggestions       = [];
   bool                       _loadingSuggestions = false;
   String       _serverFitnessLevel = 'medium';
@@ -79,20 +83,23 @@ class TrainingController extends ChangeNotifier {
           .timeout(const Duration(seconds: 10));
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body) as Map<String, dynamic>;
-        _suggestions         = List<Map<String, dynamic>>.from(data['suggestions'] as List? ?? []);
-        _serverFitnessLevel  = data['fitness_level'] as String? ?? 'medium';
-        _serverInsights      = List<String>.from(data['insights']  as List? ?? []);
+        _suggestions = List<Map<String, dynamic>>.from(
+          data['suggestions'] as List? ?? [],
+        );
+        _serverFitnessLevel = data['fitness_level'] as String? ?? 'medium';
+        _serverInsights     = List<String>.from(data['insights'] as List? ?? []);
       } else {
-        _suggestions = _kGenericSuggestions;
+        _suggestions = kGenericSuggestions;
       }
     } catch (_) {
-      _suggestions = _kGenericSuggestions;
+      _suggestions = kGenericSuggestions;
     }
     _loadingSuggestions = false;
     notifyListeners();
   }
 
-  // ── Fitness computations ───────────────────────────────────────────────────
+  // ── Fitness computations ──────────────────────────────────────────────────
+
   double get fitnessScore {
     final speed = avgSpeedMs;
     if (speed == 0) return 0.0;
@@ -107,66 +114,98 @@ class TrainingController extends ChangeNotifier {
   double get avgSpeedMs {
     final p = players;
     if (p == null || p.isEmpty) return 0.0;
-    return p.fold(0.0, (sum, player) =>
-        sum + ((player as Map)['speed_ms'] as num? ?? 0).toDouble()) / p.length;
+    return p.fold(
+          0.0,
+          (sum, player) =>
+              sum + ((player as Map)['speed_ms'] as num? ?? 0).toDouble(),
+        ) /
+        p.length;
   }
 
-  String get fitnessStatusLabel {
+  /// Returns an internal technical level key: 'low' | 'medium' | 'high'
+  /// Never display this directly — resolve it in the UI via l10n.
+  String get fitnessLevel {
     final s = fitnessScore;
     if (s > 0) {
-      if (s < 35) return 'Baja';
-      if (s < 65) return 'Media';
-      return 'Alta';
+      if (s < 35) return 'low';
+      if (s < 65) return 'medium';
+      return 'high';
     }
     return switch (_serverFitnessLevel) {
-      'low'  => 'Baja',
-      'high' => 'Alta',
-      _      => 'Media',
+      'low'  => 'low',
+      'high' => 'high',
+      _      => 'medium',
     };
   }
 
-  Color get fitnessStatusColor {
-    final label = fitnessStatusLabel;
-    return switch (label) {
-      'Baja'  => const Color(0xFFFF5252),
-      'Alta'  => const Color(0xFF39D353),
-      'Media' => const Color(0xFFFFB300),
-      _       => const Color(0xFF888888),
+  Color get fitnessStatusColor => switch (fitnessLevel) {
+        'low'  => const Color(0xFFFF5252),
+        'high' => const Color(0xFF39D353),
+        _      => const Color(0xFFFFB300),
+      };
+
+  /// Returns a semantic key for the UI to translate.
+  /// Possible values: 'trainingFitnessNoVideo' | 'trainingFitnessLow' |
+  ///                  'trainingFitnessMedium'  | 'trainingFitnessHigh'
+  String get fitnessRecommendationKey {
+    if (result == null) return 'trainingFitnessNoVideo';
+    return switch (fitnessLevel) {
+      'low'  => 'trainingFitnessLow',
+      'high' => 'trainingFitnessHigh',
+      _      => 'trainingFitnessMedium',
     };
   }
 
-  String get fitnessRecommendation {
-    if (result == null) return 'Sube un vídeo de entrenamiento para ver el estado del equipo.';
-    final s = fitnessScore;
-    if (s < 35)  return 'Aumenta las sesiones de alta intensidad esta semana.';
-    if (s < 65)  return 'Buen estado. Mantén la carga con sesiones técnicas.';
-    return 'Excelente forma. Trabaja en recuperación y táctica.';
-  }
+  // ── Auto-insights (structured) ────────────────────────────────────────────
 
-  // ── Auto-insights (combined: server + local) ───────────────────────────────
-  List<String> get autoInsights {
-    final out = <String>[..._serverInsights];
+  /// Returns structured insights with keys and interpolation args.
+  /// The UI resolves these with AppLocalizations.
+  List<TrainingInsight> get autoInsights {
+    final out = <TrainingInsight>[];
+
+    // Server insights arrive as raw translated strings from the backend;
+    // wrap them in a special passthrough key.
+    for (final s in _serverInsights) {
+      out.add(TrainingInsight('_raw', args: {'text': s}));
+    }
+
     if (result != null) {
       final t = team;
       if (t != null) {
         final km = (t['avg_distance_km'] as num?)?.toDouble() ?? 0;
         if (km > 0 && out.isEmpty) {
-          if (km < 1.5) { out.add('⚠️ El equipo cubre poca distancia (${km.toStringAsFixed(1)} km). Incrementa la intensidad.'); }
-          else if (km > 3.0) { out.add('💪 Alta movilidad del equipo (${km.toStringAsFixed(1)} km/jugador).'); }
+          if (km < 1.5) {
+            out.add(TrainingInsight(
+              'trainingInsightLowDistance',
+              args: {'km': km.toStringAsFixed(1)},
+            ));
+          } else if (km > 3.0) {
+            out.add(TrainingInsight(
+              'trainingInsightHighDistance',
+              args: {'km': km.toStringAsFixed(1)},
+            ));
+          }
         }
       }
+
       final p = players;
       if (p != null && p.isNotEmpty && out.length < 3) {
-        out.add('✅ ${p.length} jugadores analizados en el último entrenamiento.');
+        out.add(TrainingInsight(
+          'trainingInsightPlayersAnalysed',
+          args: {'count': p.length.toString()},
+        ));
       }
     }
+
     if (out.isEmpty) {
-      out.add('📹 Sube un vídeo de entrenamiento para obtener insights automáticos.');
+      out.add(TrainingInsight('trainingInsightNoVideo'));
     }
+
     return out.take(3).toList();
   }
 
-  // ── Weekly calendar data ───────────────────────────────────────────────────
+  // ── Weekly calendar data ──────────────────────────────────────────────────
+
   Map<int, List<TrainingSession>> get sessionsByWeekday {
     final now    = DateTime.now();
     final monday = now.subtract(Duration(days: now.weekday - 1));
@@ -181,16 +220,19 @@ class TrainingController extends ChangeNotifier {
     };
   }
 
-  // (double x, double y) records for fl_chart — no fl_chart import in controller
   List<(double, double)> get weeklySpots {
     final byDay = sessionsByWeekday;
-    return List.generate(7, (i) => (i.toDouble(), byDay[i]!.length.toDouble()));
+    return List.generate(
+      7,
+      (i) => (i.toDouble(), byDay[i]!.length.toDouble()),
+    );
   }
 
-  // ── Team/player insight builders ───────────────────────────────────────────
-  List<String> buildTeamInsights() {
-    final insights = <String>[];
-    if (team == null || players == null || players!.isEmpty) return insights;
+  // ── Team/player insight builders ──────────────────────────────────────────
+
+  List<TrainingInsight> buildTeamInsights() {
+    final out = <TrainingInsight>[];
+    if (team == null || players == null || players!.isEmpty) return out;
 
     final avgKm       = (team!['avg_distance_km'] as num?)?.toDouble() ?? 0;
     final possPct     = (team!['possession_pct']  as num?)?.toDouble() ?? 0;
@@ -199,49 +241,94 @@ class TrainingController extends ChangeNotifier {
     final mostPoss    = team!['most_possession'];
 
     if (avgKm < 1.5) {
-      insights.add('El equipo cubre poca distancia promedio (${avgKm.toStringAsFixed(2)} km). Aumenta la intensidad aeróbica.');
+      out.add(TrainingInsight(
+        'trainingTeamLowDistance',
+        args: {'km': avgKm.toStringAsFixed(2)},
+      ));
     } else if (avgKm > 3.0) {
-      insights.add('Alta movilidad del equipo (${avgKm.toStringAsFixed(2)} km/jugador). Prioriza recuperación.');
+      out.add(TrainingInsight(
+        'trainingTeamHighDistance',
+        args: {'km': avgKm.toStringAsFixed(2)},
+      ));
     }
+
     if (possPct < 30) {
-      insights.add('Pérdida frecuente de posesión (${possPct.toStringAsFixed(1)}%). Refuerza el juego posicional.');
+      out.add(TrainingInsight(
+        'trainingTeamLowPossession',
+        args: {'pct': possPct.toStringAsFixed(1)},
+      ));
     } else if (possPct > 60) {
-      insights.add('Buena posesión del equipo (${possPct.toStringAsFixed(1)}%). Trabaja el remate y la explotación del dominio.');
+      out.add(TrainingInsight(
+        'trainingTeamHighPossession',
+        args: {'pct': possPct.toStringAsFixed(1)},
+      ));
     }
+
     if (mostActive != null && leastActive != null && mostActive != leastActive) {
-      insights.add('Gran diferencia entre jugador más activo (#$mostActive) y menos activo (#$leastActive).');
+      out.add(TrainingInsight(
+        'trainingTeamActivityGap',
+        args: {
+          'most':  mostActive.toString(),
+          'least': leastActive.toString(),
+        },
+      ));
     }
+
     if (mostPoss != null) {
-      insights.add('El jugador #$mostPoss concentra la posesión. Trabaja la circulación del balón.');
+      out.add(TrainingInsight(
+        'trainingTeamConcentratedPossession',
+        args: {'player': mostPoss.toString()},
+      ));
     }
-    if (insights.isEmpty) {
-      insights.add('Rendimiento equilibrado. Mantén el plan táctico actual.');
+
+    if (out.isEmpty) {
+      out.add(TrainingInsight('trainingTeamBalanced'));
     }
-    return insights;
+
+    return out;
   }
 
-  List<String> buildPlayerRecommendations(Map<String, dynamic> player) {
-    final recs     = <String>[];
+  List<TrainingInsight> buildPlayerRecommendations(
+    Map<String, dynamic> player,
+  ) {
+    final recs     = <TrainingInsight>[];
     final km       = (player['distance_km']    as num?)?.toDouble() ?? 0;
     final speed    = (player['speed_ms']       as num?)?.toDouble() ?? 0;
     final poss     = (player['possession_pct'] as num?)?.toDouble() ?? 0;
     final presence = (player['presence_pct']   as num?)?.toDouble() ?? 0;
     final zone     = player['zone'] as String? ?? '';
 
-    if (km < 0.5)       recs.add('Aumenta la resistencia: distancia corta. Añade series de carrera.');
-    if (speed < 1.5)    recs.add('Trabaja la velocidad explosiva: ritmo registrado bajo.');
-    if (poss < 5)       recs.add('Mejora la participación con el balón.');
-    if (presence < 50)  recs.add('Aumenta la presencia en el campo.');
-    if (zone.contains('Defensa')) recs.add('Rol defensivo: refuerza el posicionamiento.');
-    if (zone.contains('Ataque'))  recs.add('Rol ofensivo: trabaja el remate y el desmarque.');
-    if (recs.isEmpty)   recs.add('Rendimiento sólido. Mantén el ritmo de trabajo.');
+    if (km < 0.5)       recs.add(TrainingInsight('trainingPlayerLowDistance'));
+    if (speed < 1.5)    recs.add(TrainingInsight('trainingPlayerLowSpeed'));
+    if (poss < 5)       recs.add(TrainingInsight('trainingPlayerLowPossession'));
+    if (presence < 50)  recs.add(TrainingInsight('trainingPlayerLowPresence'));
+    if (zone.contains('Defensa')) recs.add(TrainingInsight('trainingPlayerDefRole'));
+    if (zone.contains('Ataque'))  recs.add(TrainingInsight('trainingPlayerAttRole'));
+    if (recs.isEmpty)   recs.add(TrainingInsight('trainingPlayerSolid'));
+
     return recs;
   }
 
-  // ── Fallback suggestions ───────────────────────────────────────────────────
-  static const _kGenericSuggestions = <Map<String, dynamic>>[
-    {'title': 'Presión alta y transiciones', 'duration_minutes': 90, 'category': 'Tactical',  'reason': 'Mejorar pressing'},
-    {'title': 'Posesión 4-3-3',              'duration_minutes': 75, 'category': 'Technical', 'reason': 'Juego posicional'},
-    {'title': 'Resistencia y explosividad',  'duration_minutes': 60, 'category': 'Physical',  'reason': 'Mejora física'},
+  // ── Fallback suggestions ──────────────────────────────────────────────────
+  // Keys only — titles/reasons are resolved in the UI via l10n.
+  static const kGenericSuggestions = <Map<String, dynamic>>[
+    {
+      'titleKey':    'trainingSugTitlePressing',
+      'duration_minutes': 90,
+      'category':    'Tactical',
+      'reasonKey':   'trainingSugReasonPressing',
+    },
+    {
+      'titleKey':    'trainingSugTitlePossession',
+      'duration_minutes': 75,
+      'category':    'Technical',
+      'reasonKey':   'trainingSugReasonPossession',
+    },
+    {
+      'titleKey':    'trainingSugTitlePhysical',
+      'duration_minutes': 60,
+      'category':    'Physical',
+      'reasonKey':   'trainingSugReasonPhysical',
+    },
   ];
 }

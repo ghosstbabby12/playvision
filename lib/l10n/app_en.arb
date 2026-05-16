@@ -71,9 +71,7 @@
   "liveRefreshTooltip": "Refresh",
   "liveLoadError": "An error occurred: {error}\nIs the Python server running?",
   "@liveLoadError": {
-    "placeholders": {
-      "error": { "type": "String" }
-    }
+    "placeholders": { "error": { "type": "String" } }
   },
   "liveNoMatches": "No live matches at the moment.",
   "fieldNoPlayerData": "No player data",
@@ -102,9 +100,7 @@
   "playersSection": "PLAYERS",
   "playerLabel": "Player {rank}",
   "@playerLabel": {
-    "placeholders": {
-      "rank": { "type": "int" }
-    }
+    "placeholders": { "rank": { "type": "int" } }
   },
   "detailsBtn": "Details",
   "statDistance": "DISTANCE",
@@ -127,27 +123,19 @@
   "summaryLeastActive": "Least active",
   "summaryPlayerRef": "Player {player}",
   "@summaryPlayerRef": {
-    "placeholders": {
-      "player": { "type": "String" }
-    }
+    "placeholders": { "player": { "type": "String" } }
   },
   "insightTotalKm": "The team covered {km} km in total during the match.",
   "@insightTotalKm": {
-    "placeholders": {
-      "km": { "type": "String" }
-    }
+    "placeholders": { "km": { "type": "String" } }
   },
   "insightPossession": "Recorded {pct}% average ball possession.",
   "@insightPossession": {
-    "placeholders": {
-      "pct": { "type": "String" }
-    }
+    "placeholders": { "pct": { "type": "String" } }
   },
   "insightActivePlayers": "{count} players were active on the field.",
   "@insightActivePlayers": {
-    "placeholders": {
-      "count": { "type": "String" }
-    }
+    "placeholders": { "count": { "type": "String" } }
   },
   "insightFastestPlayer": "Player {rank} reached the highest speed at {speed} m/s.",
   "@insightFastestPlayer": {
@@ -158,9 +146,7 @@
   },
   "insightTopZone": "The most active zone was {zone}.",
   "@insightTopZone": {
-    "placeholders": {
-      "zone": { "type": "String" }
-    }
+    "placeholders": { "zone": { "type": "String" } }
   },
   "insightHighActivity": "High-activity player: covered {km} km and reached {speed} m/s.",
   "@insightHighActivity": {
@@ -171,9 +157,7 @@
   },
   "insightModerateActivity": "Moderate activity concentrated in zone {zone}.",
   "@insightModerateActivity": {
-    "placeholders": {
-      "zone": { "type": "String" }
-    }
+    "placeholders": { "zone": { "type": "String" } }
   },
   "videoErrorTitle": "Error loading video",
   "videoErrorNetwork": "Network error: {error}\nURL: {url}",
@@ -185,9 +169,7 @@
   },
   "videoErrorLocal": "Local error: {error}",
   "@videoErrorLocal": {
-    "placeholders": {
-      "error": { "type": "String" }
-    }
+    "placeholders": { "error": { "type": "String" } }
   },
   "videoErrorWebLocal": "Local files cannot be played directly on web.",
   "videoErrorNoSource": "No URL or file provided.",
@@ -198,9 +180,7 @@
   "sceneTeamLabel": "Team",
   "scenePlayerShort": "P{rank}",
   "@scenePlayerShort": {
-    "placeholders": {
-      "rank": { "type": "int" }
-    }
+    "placeholders": { "rank": { "type": "int" } }
   },
   "sceneVideoNotAvailable": "Video not available",
   "sceneNetworkError": "Network error: {error}\n{url}",
@@ -212,9 +192,7 @@
   },
   "sceneLocalError": "Local file error: {error}",
   "@sceneLocalError": {
-    "placeholders": {
-      "error": { "type": "String" }
-    }
+    "placeholders": { "error": { "type": "String" } }
   },
   "sceneWebError": "Local files cannot be played on web. Run the backend to get a network URL.",
   "sceneNoSource": "No video source available.",
@@ -236,16 +214,12 @@
   },
   "scenePlayerKm": "{km} km",
   "@scenePlayerKm": {
-    "placeholders": {
-      "km": { "type": "String" }
-    }
+    "placeholders": { "km": { "type": "String" } }
   },
   "sceneUnknownZone": "Unknown",
   "scenePlayerCount": "{count}p",
   "@scenePlayerCount": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
+    "placeholders": { "count": { "type": "int" } }
   },
   "uploadFromDevice": "From device",
   "uploadFromUrl": "From URL",
@@ -298,9 +272,7 @@
   "teamDeleteTitle": "Delete team",
   "teamDeleteConfirm": "Delete team \"{name}\"? This cannot be undone.",
   "@teamDeleteConfirm": {
-    "placeholders": {
-      "name": { "type": "String" }
-    }
+    "placeholders": { "name": { "type": "String" } }
   },
   "teamDeleteButton": "Delete",
   "featureRivalAnalysisTitle": "Rival Analysis",
@@ -312,9 +284,7 @@
   "matchUnknownOpponent": "Unknown opponent",
   "matchVersusOpponent": "vs {opponent}",
   "@matchVersusOpponent": {
-    "placeholders": {
-      "opponent": { "type": "String" }
-    }
+    "placeholders": { "opponent": { "type": "String" } }
   },
   "matchLoadAnalysisFailed": "Failed to load analysis for this match.",
   "matchNotAnalysedYet": "This match is not analysed yet.",
@@ -328,9 +298,7 @@
   "todayLabel": "Today",
   "todayMatchesCount": "{count} matches",
   "@todayMatchesCount": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
+    "placeholders": { "count": { "type": "int" } }
   },
   "matchHomeTeam": "Home",
   "matchAwayTeam": "Away",
@@ -357,20 +325,13 @@
   "editPlayerPositionLabel": "Position",
   "editPlayerDefaultName": "Player {rank}",
   "@editPlayerDefaultName": {
-    "placeholders": {
-      "rank": { "type": "int" }
-    }
+    "placeholders": { "rank": { "type": "int" } }
   },
   "cancelBtn": "Cancel",
-  "saveBtn": "Save", 
+  "saveBtn": "Save",
+  "deleteBtn": "Delete",
   "coachingBoardTitle": "Coaching Board",
   "coachingBoardSubtitle": "Choose a team to build the tactical board",
-  "coachingBoardNoTeams": "No teams",
-  "coachingBoardNoTeamsHint": "Create a team in the Home tab",
-  "coachingBoardReset": "Reset",
-  "coachingBoardSwapHint": "Long press = swap",
-  "coachingBoardSwapBanner": "Tap another player to swap",
-  "coachingBoardTitle": "Coaching Board",
   "coachingBoardSelectTeamTitle": "Select a team",
   "coachingBoardSelectTeamSubtitle": "Choose a team to build the tactical board",
   "coachingBoardNoTeams": "No teams",
@@ -379,21 +340,452 @@
   "coachingBoardReset": "Reset",
   "coachingBoardSwapHint": "Long press = swap",
   "coachingBoardSwapBanner": "Tap another player to swap",
-
   "coachingBoardAnalyzingTitle": "Analyzing {teamName}",
   "@coachingBoardAnalyzingTitle": {
-    "placeholders": {
-      "teamName": { "type": "String" }
-    }
+    "placeholders": { "teamName": { "type": "String" } }
   },
   "coachingBoardAnalyzingSubtitle": "Building the tactical board with AI",
-
   "coachingBoardStepLoadingPlayers": "Loading players...",
   "coachingBoardStepReadingStats": "Reading statistics...",
   "coachingBoardStepComputingPositions": "Computing optimal positions...",
   "coachingBoardStepBuildingBoard": "Building tactical board...",
-
   "coachingBoardSaveSuccess": "Formation saved ✓",
-  "coachingBoardSaveError": "Error while saving the formation"
-  
+  "coachingBoardSaveError": "Error while saving the formation",
+  "categoryU6": "U6",
+  "categoryU8": "U8",
+  "categoryU10": "U10",
+  "categoryU12": "U12",
+  "categoryU14": "U14",
+  "categoryU16": "U16",
+  "categoryU18": "U18",
+  "categoryU20": "U20",
+  "categoryU23": "U23",
+  "categoryAmateur": "Amateur",
+  "categorySemiProfessional": "Semi-professional",
+  "categoryProfessional": "Professional",
+  "categoryFemaleU12": "Female U12",
+  "categoryFemaleU16": "Female U16",
+  "categoryFemaleU18": "Female U18",
+  "categoryFemale": "Female",
+  "categoryMixed": "Mixed",
+  "countryArgentina": "Argentina",
+  "countryBolivia": "Bolivia",
+  "countryBrazil": "Brazil",
+  "countryChile": "Chile",
+  "countryColombia": "Colombia",
+  "countryCostaRica": "Costa Rica",
+  "countryCuba": "Cuba",
+  "countryEcuador": "Ecuador",
+  "countryElSalvador": "El Salvador",
+  "countrySpain": "Spain",
+  "countryUnitedStates": "United States",
+  "countryGuatemala": "Guatemala",
+  "countryHonduras": "Honduras",
+  "countryMexico": "Mexico",
+  "countryNicaragua": "Nicaragua",
+  "countryPanama": "Panama",
+  "countryParaguay": "Paraguay",
+  "countryPeru": "Peru",
+  "countryPuertoRico": "Puerto Rico",
+  "countryDominicanRepublic": "Dominican Republic",
+  "countryUruguay": "Uruguay",
+  "countryVenezuela": "Venezuela",
+  "countryOther": "Other",
+  "greetingMorningCoach": "Good morning, Coach",
+  "@greetingMorningCoach": { "description": "Greeting shown in the morning for the coach" },
+  "greetingAfternoonCoach": "Good afternoon, Coach",
+  "@greetingAfternoonCoach": { "description": "Greeting shown in the afternoon for the coach" },
+  "greetingEveningCoach": "Good evening, Coach",
+  "@greetingEveningCoach": { "description": "Greeting shown in the evening for the coach" },
+  "heroPlatformTagline": "PlayVision · AI tactical platform",
+  "@heroPlatformTagline": { "description": "Hero secondary text when no team is selected" },
+  "heroTeamReady": "{teamName} · ready to analyze",
+  "@heroTeamReady": {
+    "description": "Hero secondary text when a team is selected",
+    "placeholders": { "teamName": { "type": "String" } }
+  },
+  "searchFieldLabel": "Search teams or matches…",
+  "searchNoResults": "No results for \"{query}\"",
+  "@searchNoResults": {
+    "placeholders": { "query": { "type": "String" } }
+  },
+  "searchTeamsCount": "Teams ({count})",
+  "@searchTeamsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "searchMatchesCount": "Matches ({count})",
+  "@searchMatchesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "newsNoDescriptionAvailable": "No description available",
+  "quickActionsTitle": "Quick actions",
+  "quickActionAnalyzeVideo": "Analyze\nVideo",
+  "quickActionTacticalBoard": "Tactical\nBoard",
+  "quickActionMyPlayers": "My\nPlayers",
+  "quickActionTraining": "Train-\ning",
+  "axisSpeed": "Speed",
+  "axisPass": "Pass",
+  "axisShoot": "Shoot",
+  "axisDefend": "Defend",
+  "axisPhysical": "Physical",
+  "axisSpeedExplain": "Distance covered and sprint speed",
+  "axisPassExplain": "Pass accuracy and volume",
+  "axisShootExplain": "Goals and shots on target",
+  "axisDefendExplain": "Recoveries and defensive tackles",
+  "axisPhysicalExplain": "Physical endurance and duels won",
+  "insightHighRating": "High performance · {rating} ★",
+  "@insightHighRating": { "placeholders": { "rating": { "type": "String" } } },
+  "insightGoodMatch": "Good match · {rating} ★",
+  "@insightGoodMatch": { "placeholders": { "rating": { "type": "String" } } },
+  "insightLowRating": "Low performance · {rating} ★",
+  "@insightLowRating": { "placeholders": { "rating": { "type": "String" } } },
+  "insightTrendUp": "+{pct}% vs recent average",
+  "@insightTrendUp": { "placeholders": { "pct": { "type": "int" } } },
+  "insightTrendDown": "-{pct}% vs recent average",
+  "@insightTrendDown": { "placeholders": { "pct": { "type": "int" } } },
+  "insightHighOffensive": "High offensive contribution · {goals}G {assists}A",
+  "@insightHighOffensive": {
+    "placeholders": {
+      "goals": { "type": "int" },
+      "assists": { "type": "int" }
+    }
+  },
+  "insightNoGoalContribution": "No direct goal contribution",
+  "insightLowDefensive": "Low defensive contribution · {tackles} recoveries",
+  "@insightLowDefensive": { "placeholders": { "tackles": { "type": "int" } } },
+  "insightExcellentDefensive": "Excellent defensive work · {tackles} recoveries",
+  "@insightExcellentDefensive": { "placeholders": { "tackles": { "type": "int" } } },
+  "insightExceptionalDistance": "Exceptional coverage · {km} km",
+  "@insightExceptionalDistance": { "placeholders": { "km": { "type": "String" } } },
+  "insightLowDistance": "Low field coverage · {km} km",
+  "@insightLowDistance": { "placeholders": { "km": { "type": "String" } } },
+  "insightElitePass": "Elite pass accuracy · {pct}%",
+  "@insightElitePass": { "placeholders": { "pct": { "type": "int" } } },
+  "insightLowPass": "Low pass accuracy · {pct}%",
+  "@insightLowPass": { "placeholders": { "pct": { "type": "int" } } },
+  "insightAboveIdeal": "↑ {axis} above ideal profile",
+  "@insightAboveIdeal": { "placeholders": { "axis": { "type": "String" } } },
+  "insightBelowIdeal": "↓ {axis} below position profile",
+  "@insightBelowIdeal": { "placeholders": { "axis": { "type": "String" } } },
+  "insightBestPosition": "Suggested optimal position: {position}",
+  "@insightBestPosition": { "placeholders": { "position": { "type": "String" } } },
+  "insightHintWarning": "Needs attention",
+  "insightHintInfo": "AI suggestion",
+  "sheetPinned": "Pinned",
+  "tabAssistant": "🧠 Assistant",
+  "tabProfile": "📊 Profile",
+  "tabMatch": "⚡ Match",
+  "sectionCoachAssistant": "COACH ASSISTANT",
+  "sectionComparisonRadar": "COMPARISON RADAR",
+  "toggleVsPosition": "vs Ideal position",
+  "toggleVsTeam": "vs Team average",
+  "legendIdealProfile": "Ideal profile",
+  "legendTeamAverage": "Team average",
+  "tapAxisForDetail": "Tap an axis for details",
+  "axisDetailPlayer": "Player",
+  "quickStatRating": "Rating",
+  "quickStatGoals": "Goals",
+  "quickStatAssists": "Ast.",
+  "quickStatKm": "Km",
+  "quickStatPassPct": "Pass%",
+  "matchRatingLabel": "Match rating",
+  "matchStatGoals": "Goals",
+  "matchStatAssists": "Assists",
+  "matchStatDistance": "Distance",
+  "matchStatPasses": "Passes",
+  "matchStatAccuracy": "Accuracy",
+  "matchStatMinutes": "Minutes",
+  "matchRatingTrend": "Rating trend",
+  "playersLoadingSquad": "Loading squad…",
+  "playersSquadAvailable": "{count} squad players available",
+  "@playersSquadAvailable": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playersNoSquadHint": "No players in the squad. Add players first.",
+  "playersLinked": "Linked",
+  "playersPresenceShort": "PRES",
+  "playersEditTitle": "Player {rank} · Edit",
+  "@playersEditTitle": {
+    "placeholders": { "rank": { "type": "int" } }
+  },
+  "playersUnlink": "Unlink",
+  "playersLinkToSquad": "Link to squad player",
+  "playersOrEditManually": "or edit manually",
+  "playersNoLinkedTeamHint": "No linked team. Add players to the squad to link them.",
+  "playersLinkAndSave": "Link and save",
+  "analysisNoTeamSelected": "No team selected. Go back and choose one.",
+  "analysisServerError": "Server error: {code}",
+  "@analysisServerError": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "analysisConnectionError": "Connection error: {error}",
+  "@analysisConnectionError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "playerProfileTitle": "Player {id}",
+  "@playerProfileTitle": {
+    "placeholders": { "id": { "type": "int" } }
+  },
+  "playerSummaryTitle": "Player summary",
+  "playerBestPositionTitle": "Best position: {position}",
+  "@playerBestPositionTitle": {
+    "placeholders": { "position": { "type": "String" } }
+  },
+  "playerMatchesCount": "Matches",
+  "playerCoachInsights": "Coach insights",
+  "playerDominantZone": "Dominant zone",
+  "playerLoadError": "Could not load the player profile.",
+  "matchesTimeoutError": "The connection took too long. Check your network.",
+  "matchesLoadError": "Could not load the data.",
+  "matchesSaveError": "Could not save the match.",
+  "matchesEmptyTitle": "No matches registered",
+  "matchesAddButton": "+ Add match",
+  "matchesRequireTeamFirst": "Create at least one team first.",
+  "matchesNewTitle": "New match",
+  "matchesTeamLabel": "Team",
+  "matchesOpponentLabel": "Opponent",
+  "matchesVideoSourceLabel": "Video source",
+  "matchesUploadSource": "Upload",
+  "matchesYouTubeSource": "YouTube",
+  "matchesDateLabel": "Date: {date}",
+  "@matchesDateLabel": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "matchesTimeLabel": "Time: {time}",
+  "@matchesTimeLabel": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "matchesSaved": "Match saved",
+  "matchesNoTeam": "No team",
+  "squadLoadError": "Could not load the squad.",
+  "playerSaveError": "Could not save the player.",
+  "playerUpdateError": "Could not update the player.",
+  "playerDeleteError": "Could not delete the player.",
+  "playerPhotoUploadError": "Could not upload the player's photo.",
+  "squadPageTitle": "Squad",
+  "squadPageSubtitle": "{count} players · Season 25/26",
+  "@squadPageSubtitle": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "squadSearchHint": "Search players...",
+  "squadPositionAll": "All",
+  "squadCountLabel": "{count} players",
+  "@squadCountLabel": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "squadAddPlayerTitle": "New player",
+  "squadEditPlayerTitle": "Edit player",
+  "squadDeletePlayerTitle": "Delete player",
+  "squadDeletePlayerConfirm": "Delete {name} from the squad? This cannot be undone.",
+  "@squadDeletePlayerConfirm": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "squadDeleteButton": "Delete",
+  "squadPlayerSaved": "Player saved",
+  "squadPlayerUpdated": "Player updated",
+  "squadPlayerDeleted": "Player deleted",
+  "squadPlayerSaveFailed": "Error saving player",
+  "squadPlayerUpdateFailed": "Error updating player",
+  "squadPlayerDeleteFailed": "Error deleting player",
+  "squadNameLabel": "Full name",
+  "squadNameHint": "E.g. Carlos García",
+  "squadNumberLabel": "Number",
+  "squadNumberHint": "E.g. 10",
+  "squadPositionLabel": "Position",
+  "squadStatusLabel": "Status",
+  "squadBirthDateLabel": "Date of birth",
+  "squadBirthDateOptional": "Date of birth (optional)",
+  "squadPhotoLabel": "Add photo",
+  "squadChangePhoto": "Change",
+  "squadPosGk": "Goalkeeper GK",
+  "squadPosDef": "Defender DEF",
+  "squadPosMid": "Midfielder MID",
+  "squadPosFwd": "Forward FWD",
+  "squadStatusActive": "Active",
+  "squadStatusInjured": "Injured",
+  "squadStatusSuspended": "Suspended",
+  "squadStatusInactive": "Inactive",
+  "squadFormExcellent": "Excellent",
+  "squadFormGood": "Good",
+  "squadFormRegular": "Regular",
+  "squadEmptyTitle": "No players",
+  "squadEmptySubtitle": "Tap to add players",
+  "squadDefaultTeam": "My team",
+  "squadMyTeam": "My team",
+  "weekdayMon": "M",
+  "weekdayTue": "T",
+  "weekdayWed": "W",
+  "weekdayThu": "T",
+  "weekdayFri": "F",
+  "weekdaySat": "S",
+  "weekdaySun": "S",
+  "weekdayMonFull": "Monday",
+  "weekdayTueFull": "Tuesday",
+  "weekdayWedFull": "Wednesday",
+  "weekdayThuFull": "Thursday",
+  "weekdayFriFull": "Friday",
+  "weekdaySatFull": "Saturday",
+  "weekdaySunFull": "Sunday",
+  "trainingFitnessNoVideo": "Upload a training video to see the team's fitness status.",
+  "trainingFitnessLow": "Increase high-intensity sessions this week.",
+  "trainingFitnessMedium": "Good shape. Keep the load with technical sessions.",
+  "trainingFitnessHigh": "Excellent form. Focus on recovery and tactics.",
+  "trainingFitnessLevelLow": "Low",
+  "trainingFitnessLevelMedium": "Medium",
+  "trainingFitnessLevelHigh": "High",
+  "trainingInsightLowDistance": "⚠️ The team covers little distance ({km} km). Increase intensity.",
+  "@trainingInsightLowDistance": { "placeholders": { "km": { "type": "String" } } },
+  "trainingInsightHighDistance": "💪 High team mobility ({km} km/player).",
+  "@trainingInsightHighDistance": { "placeholders": { "km": { "type": "String" } } },
+  "trainingInsightPlayersAnalysed": "✅ {count} players analysed in the last training.",
+  "@trainingInsightPlayersAnalysed": { "placeholders": { "count": { "type": "String" } } },
+  "trainingInsightNoVideo": "📹 Upload a training video to get automatic insights.",
+  "trainingTeamLowDistance": "The team covers little average distance ({km} km). Increase aerobic intensity.",
+  "@trainingTeamLowDistance": { "placeholders": { "km": { "type": "String" } } },
+  "trainingTeamHighDistance": "High team mobility ({km} km/player). Prioritise recovery.",
+  "@trainingTeamHighDistance": { "placeholders": { "km": { "type": "String" } } },
+  "trainingTeamLowPossession": "Frequent possession loss ({pct}%). Reinforce positional play.",
+  "@trainingTeamLowPossession": { "placeholders": { "pct": { "type": "String" } } },
+  "trainingTeamHighPossession": "Good team possession ({pct}%). Work on finishing and exploiting dominance.",
+  "@trainingTeamHighPossession": { "placeholders": { "pct": { "type": "String" } } },
+  "trainingTeamActivityGap": "Big gap between most active (#{most}) and least active (#{least}) player.",
+  "@trainingTeamActivityGap": { "placeholders": { "most": { "type": "String" }, "least": { "type": "String" } } },
+  "trainingTeamConcentratedPossession": "Player #{player} concentrates possession. Work on ball circulation.",
+  "@trainingTeamConcentratedPossession": { "placeholders": { "player": { "type": "String" } } },
+  "trainingTeamBalanced": "Balanced performance. Keep the current tactical plan.",
+  "trainingPlayerLowDistance": "Increase endurance: short distance recorded. Add running drills.",
+  "trainingPlayerLowSpeed": "Work on explosive speed: recorded pace is low.",
+  "trainingPlayerLowPossession": "Improve involvement with the ball.",
+  "trainingPlayerLowPresence": "Increase presence on the field.",
+  "trainingPlayerDefRole": "Defensive role: reinforce positioning.",
+  "trainingPlayerAttRole": "Offensive role: work on finishing and off-ball movement.",
+  "trainingPlayerSolid": "Solid performance. Maintain your work rate.",
+  "trainingSugTitlePressing": "High press and transitions",
+  "trainingSugReasonPressing": "Improve pressing",
+  "trainingSugTitlePossession": "4-3-3 possession",
+  "trainingSugReasonPossession": "Positional play",
+  "trainingSugTitlePhysical": "Endurance and explosiveness",
+  "trainingSugReasonPhysical": "Physical improvement",
+  "trainingNewSession": "New session",
+  "trainingSessionTitleHint": "Session title",
+  "trainingSessionDescHint": "Description (optional)",
+  "trainingDurationLabel": "Duration:",
+  "trainingCreateSession": "Create session",
+  "trainingAddOptionsTitle": "What would you like to add?",
+  "trainingOptionAnalyze": "Analyse match",
+  "trainingOptionAnalyzeSubtitle": "Upload a video and auto-generate a session with AI",
+  "trainingOptionManual": "Manual session",
+  "trainingOptionManualSubtitle": "Create a custom training session",
+  "trainingDeleteSessionTitle": "Delete session",
+  "trainingDeleteSessionConfirm": "Delete \"{title}\"?",
+  "@trainingDeleteSessionConfirm": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "trainingSessionCount": "{count, plural, =0{No sessions} =1{1 session} other{{count} sessions}}",
+  "@trainingSessionCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "trainingNoSessionsDay": "No sessions this day",
+  "trainingNoSessionsYet": "No sessions yet",
+  "trainingNoSessionsHint": "Create your first training session",
+  "trainingNoSuggestions": "No suggestions available",
+  "trainingPillFitness": "fitness",
+  "trainingPillPlayers": "players",
+  "trainingPillSessions": "sessions",
+  "trainingPillStatus": "status",
+  "trainingSmartAnalysisSubtitle": "Generate your training plan with AI",
+  "trainingUploadVideoBtn": "Upload match video",
+  "trainingStepUpload": "Upload match video",
+  "trainingStepDetect": "Detect players",
+  "trainingStepAnalyze": "Analyse movement",
+  "trainingStepInsights": "Generate insights",
+  "trainingStepExport": "Export PDF report",
+  "trainingStepPending": "pending",
+  "trainingLoadLabel": "Load",
+  "trainingPhysicalStatus": "physical status",
+  "trainingAvgDistance": "Avg. distance",
+  "trainingAvgSpeed": "Avg. speed",
+  "trainingPlayers": "Players",
+  "trainingTopPlayers": "TOP PLAYERS",
+  "trainingPlayerLabel": "Player",
+  "trainingStatDistance": "Distance",
+  "trainingStatSpeed": "Speed",
+  "trainingStatAccuracy": "Accuracy",
+  "trainingStatRating": "Rating",
+  "trainingAlertsTitle": "Team alerts",
+  "trainingAlertFatigue": "Fatigue risk in 3 players",
+  "trainingAlertFatigueSub": "Consider reducing intensity tomorrow",
+  "trainingAlertMobility": "2 players with reduced mobility",
+  "trainingAlertMobilitySub": "Recommend preventive stretching",
+  "trainingAlertTactical": "Low press in the middle zone",
+  "trainingAlertTacticalSub": "Work on pressing in the next session",
+  "trainingTacticalConnections": "Tactical connections",
+  "trainingAICoachTitle": "AI Coach",
+  "trainingAICoachSubtitle": "Personalised tactical analysis",
+  "trainingCoachTip1": "Widen spaces in the offensive phase with open full-backs",
+  "trainingCoachTip2": "High press after losing the ball in the build-up zone",
+  "trainingCoachTip3": "Reduce distance between lines in the defensive phase",
+  "trainingCoachTip4": "Quick switches of play to destabilise the opponent's defence",
+  "trainingWeeklyActivity": "Weekly activity",
+  "trainingSessionsPerDay": "sessions / day",
+  "trainingSuggestedByAI": "SUGGESTED BY AI",
+  "trainingMySessions": "MY SESSIONS",
+  "trainingNewBtn": "+ New",
+  "trainingDemoDefenseOpen": "Defensive line very open in recent plays",
+  "trainingDemoDefenseOpenSub": "Risk of space behind the defence",
+  "trainingDemoImprovement": "12% improvement in pressing vs last week",
+  "trainingDemoImprovementSub": "Keep the intensity up",
+  "trainingDemoConnection": "Torres-Ramírez connection very effective",
+  "trainingDemoConnectionSub": "Exploit that channel",
+  "trainingDemoPossession": "Dominant possession in the middle zone",
+  "trainingDemoPossessionSub": "Use it for overlapping runs",
+  "trainingDemoFatigueRisk": "Fatigue risk in the left defence",
+  "trainingDemoFatigueRiskSub": "Rotate in the next match",
+  "navHome": "Home",
+  "navAnalysis": "Analysis",
+  "navPlayers": "Players",
+  "navTraining": "Training",
+  "navBoard": "Board",
+  "trainingMinutesShort": "{minutes} min",
+  "@trainingMinutesShort": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "trainingExercisesCount": "{count} exercises",
+  "@trainingExercisesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "trainingDescriptionTitle": "Description",
+  "trainingSessionPlanTitle": "Session Plan",
+  "trainingMinutesTotal": "{minutes} min total",
+  "@trainingMinutesTotal": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "trainingStartSession": "Start session",
+  "trainingDeleteSessionQuestion": "Delete session?",
+  "trainingDeleteSessionBody": "This will permanently remove \"{title}\".",
+  "@trainingDeleteSessionBody": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "trainingExerciseProgress": "Exercise {current} of {total}",
+  "@trainingExerciseProgress": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "trainingRunning": "In progress",
+  "trainingReady": "Ready",
+  "trainingPaused": "Paused",
+  "trainingNext": "Next",
+  "trainingLastExercise": "Last exercise",
+  "trainingExitSessionQuestion": "Leave session?",
+  "trainingExitSessionBody": "Current progress will be lost.",
+  "trainingContinue": "Continue",
+  "trainingExit": "Exit",
+  "trainingSessionCompleted": "Session completed",
+  "trainingCompletedMinutes": "{minutes} min completed",
+  "@trainingCompletedMinutes": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "trainingBackHome": "Back to home"
 }

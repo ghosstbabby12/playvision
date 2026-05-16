@@ -561,7 +561,7 @@ class FeaturedMatchCard extends StatelessWidget {
     if (!isFinished && !isLive && dateStr.isNotEmpty) {
       try {
         final dt = DateTime.parse(dateStr).toLocal();
-        timeText = DateFormat('HH:mm · dd MMM').format(dt);
+        timeText = DateFormat('HH:mm · dd MMM', l10n.localeName).format(dt);
       } catch (_) {}
     }
     if (isLive && elapsed != null) timeText = "$elapsed'";
@@ -942,13 +942,16 @@ class MatchRow extends StatelessWidget {
       timeLabel   = '${homeGoals ?? 0}  –  ${awayGoals ?? 0}';
       statusLabel = l10n.matchStatusFinished;
       if (dateStr.isNotEmpty) {
-        try { dateLabel = DateFormat('dd MMM').format(DateTime.parse(dateStr).toLocal()); } catch (_) {}
+        try {
+          dateLabel = DateFormat('dd MMM', l10n.localeName)
+              .format(DateTime.parse(dateStr).toLocal());
+        } catch (_) {}
       }
     } else if (dateStr.isNotEmpty) {
       try {
         final dt  = DateTime.parse(dateStr).toLocal();
-        timeLabel   = DateFormat('HH:mm').format(dt);
-        dateLabel   = DateFormat('dd MMM').format(dt);
+        timeLabel = DateFormat('HH:mm', l10n.localeName).format(dt);
+        dateLabel = DateFormat('dd MMM', l10n.localeName).format(dt);
         statusLabel = l10n.matchStatusNotStarted;
       } catch (_) {}
     }

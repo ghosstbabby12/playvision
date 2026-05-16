@@ -71,9 +71,7 @@
   "liveRefreshTooltip": "Actualizar",
   "liveLoadError": "Hubo un error: {error}\n¿Está corriendo el servidor Python?",
   "@liveLoadError": {
-    "placeholders": {
-      "error": { "type": "String" }
-    }
+    "placeholders": { "error": { "type": "String" } }
   },
   "liveNoMatches": "No hay partidos en vivo en este momento.",
   "fieldNoPlayerData": "Sin datos de jugadores",
@@ -102,9 +100,7 @@
   "playersSection": "JUGADORES",
   "playerLabel": "Jugador {rank}",
   "@playerLabel": {
-    "placeholders": {
-      "rank": { "type": "int" }
-    }
+    "placeholders": { "rank": { "type": "int" } }
   },
   "detailsBtn": "Detalles",
   "statDistance": "DISTANCIA",
@@ -127,27 +123,19 @@
   "summaryLeastActive": "Menos activo",
   "summaryPlayerRef": "Jugador {player}",
   "@summaryPlayerRef": {
-    "placeholders": {
-      "player": { "type": "String" }
-    }
+    "placeholders": { "player": { "type": "String" } }
   },
   "insightTotalKm": "El equipo recorrió {km} km en total durante el partido.",
   "@insightTotalKm": {
-    "placeholders": {
-      "km": { "type": "String" }
-    }
+    "placeholders": { "km": { "type": "String" } }
   },
   "insightPossession": "Se registró {pct}% de posesión promedio del balón.",
   "@insightPossession": {
-    "placeholders": {
-      "pct": { "type": "String" }
-    }
+    "placeholders": { "pct": { "type": "String" } }
   },
   "insightActivePlayers": "{count} jugadores estuvieron activos en el campo.",
   "@insightActivePlayers": {
-    "placeholders": {
-      "count": { "type": "String" }
-    }
+    "placeholders": { "count": { "type": "String" } }
   },
   "insightFastestPlayer": "El jugador {rank} alcanzó la velocidad más alta con {speed} m/s.",
   "@insightFastestPlayer": {
@@ -158,9 +146,7 @@
   },
   "insightTopZone": "La zona más activa fue {zone}.",
   "@insightTopZone": {
-    "placeholders": {
-      "zone": { "type": "String" }
-    }
+    "placeholders": { "zone": { "type": "String" } }
   },
   "insightHighActivity": "Jugador con alta actividad: recorrió {km} km y alcanzó {speed} m/s.",
   "@insightHighActivity": {
@@ -171,9 +157,7 @@
   },
   "insightModerateActivity": "Actividad moderada concentrada en la zona {zone}.",
   "@insightModerateActivity": {
-    "placeholders": {
-      "zone": { "type": "String" }
-    }
+    "placeholders": { "zone": { "type": "String" } }
   },
   "videoErrorTitle": "Error al cargar el vídeo",
   "videoErrorNetwork": "Error de red: {error}\nURL: {url}",
@@ -185,9 +169,7 @@
   },
   "videoErrorLocal": "Error local: {error}",
   "@videoErrorLocal": {
-    "placeholders": {
-      "error": { "type": "String" }
-    }
+    "placeholders": { "error": { "type": "String" } }
   },
   "videoErrorWebLocal": "En web no se pueden reproducir archivos locales directamente.",
   "videoErrorNoSource": "URL o archivo no proporcionado.",
@@ -198,9 +180,7 @@
   "sceneTeamLabel": "Equipo",
   "scenePlayerShort": "P{rank}",
   "@scenePlayerShort": {
-    "placeholders": {
-      "rank": { "type": "int" }
-    }
+    "placeholders": { "rank": { "type": "int" } }
   },
   "sceneVideoNotAvailable": "Video no disponible",
   "sceneNetworkError": "Error de red: {error}\n{url}",
@@ -212,9 +192,7 @@
   },
   "sceneLocalError": "Error de archivo local: {error}",
   "@sceneLocalError": {
-    "placeholders": {
-      "error": { "type": "String" }
-    }
+    "placeholders": { "error": { "type": "String" } }
   },
   "sceneWebError": "No se pueden reproducir archivos locales en web. Ejecuta el backend para obtener una URL.",
   "sceneNoSource": "No hay fuente de video disponible.",
@@ -236,16 +214,12 @@
   },
   "scenePlayerKm": "{km} km",
   "@scenePlayerKm": {
-    "placeholders": {
-      "km": { "type": "String" }
-    }
+    "placeholders": { "km": { "type": "String" } }
   },
   "sceneUnknownZone": "Desconocida",
   "scenePlayerCount": "{count}j",
   "@scenePlayerCount": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
+    "placeholders": { "count": { "type": "int" } }
   },
   "uploadFromDevice": "Desde dispositivo",
   "uploadFromUrl": "Desde URL",
@@ -298,9 +272,7 @@
   "teamDeleteTitle": "Eliminar equipo",
   "teamDeleteConfirm": "Eliminar equipo \"{name}\"? Esta acción no se puede deshacer.",
   "@teamDeleteConfirm": {
-    "placeholders": {
-      "name": { "type": "String" }
-    }
+    "placeholders": { "name": { "type": "String" } }
   },
   "teamDeleteButton": "Eliminar",
   "featureRivalAnalysisTitle": "Análisis Rival",
@@ -312,9 +284,7 @@
   "matchUnknownOpponent": "Oponente desconocido",
   "matchVersusOpponent": "vs {opponent}",
   "@matchVersusOpponent": {
-    "placeholders": {
-      "opponent": { "type": "String" }
-    }
+    "placeholders": { "opponent": { "type": "String" } }
   },
   "matchLoadAnalysisFailed": "No se pudo cargar el análisis para este partido.",
   "matchNotAnalysedYet": "Este partido aún no está analizado.",
@@ -328,9 +298,7 @@
   "todayLabel": "Hoy",
   "todayMatchesCount": "{count} partidos",
   "@todayMatchesCount": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
+    "placeholders": { "count": { "type": "int" } }
   },
   "matchHomeTeam": "Local",
   "matchAwayTeam": "Visitante",
@@ -357,20 +325,13 @@
   "editPlayerPositionLabel": "Posición",
   "editPlayerDefaultName": "Jugador {rank}",
   "@editPlayerDefaultName": {
-    "placeholders": {
-      "rank": { "type": "int" }
-    }
+    "placeholders": { "rank": { "type": "int" } }
   },
   "cancelBtn": "Cancelar",
   "saveBtn": "Guardar",
+  "deleteBtn": "Eliminar",
   "coachingBoardTitle": "Coaching Board",
   "coachingBoardSubtitle": "Elige un equipo para construir el tablero táctico",
-  "coachingBoardNoTeams": "Sin equipos",
-  "coachingBoardNoTeamsHint": "Crea un equipo en la pestaña Inicio",
-  "coachingBoardReset": "Restablecer",
-  "coachingBoardSwapHint": "Mantén pulsado = intercambiar",
-  "coachingBoardSwapBanner": "Toca otro jugador para intercambiar",
-  "coachingBoardTitle": "Coaching Board",
   "coachingBoardSelectTeamTitle": "Selecciona un equipo",
   "coachingBoardSelectTeamSubtitle": "Elige un equipo para construir el tablero táctico",
   "coachingBoardNoTeams": "Sin equipos",
@@ -379,21 +340,452 @@
   "coachingBoardReset": "Restablecer",
   "coachingBoardSwapHint": "Mantén pulsado = intercambiar",
   "coachingBoardSwapBanner": "Toca otro jugador para intercambiar",
-
   "coachingBoardAnalyzingTitle": "Analizando {teamName}",
   "@coachingBoardAnalyzingTitle": {
-    "placeholders": {
-      "teamName": { "type": "String" }
-    }
+    "placeholders": { "teamName": { "type": "String" } }
   },
   "coachingBoardAnalyzingSubtitle": "Construyendo el tablero táctico con IA",
-
   "coachingBoardStepLoadingPlayers": "Cargando jugadores...",
   "coachingBoardStepReadingStats": "Leyendo estadísticas...",
   "coachingBoardStepComputingPositions": "Calculando posiciones óptimas...",
   "coachingBoardStepBuildingBoard": "Construyendo tablero táctico...",
-
   "coachingBoardSaveSuccess": "Formación guardada ✓",
-  "coachingBoardSaveError": "Error al guardar la formación"
-
+  "coachingBoardSaveError": "Error al guardar la formación",
+  "categoryU6": "Sub-6",
+  "categoryU8": "Sub-8",
+  "categoryU10": "Sub-10",
+  "categoryU12": "Sub-12",
+  "categoryU14": "Sub-14",
+  "categoryU16": "Sub-16",
+  "categoryU18": "Sub-18",
+  "categoryU20": "Sub-20",
+  "categoryU23": "Sub-23",
+  "categoryAmateur": "Amateur",
+  "categorySemiProfessional": "Semiprofesional",
+  "categoryProfessional": "Profesional",
+  "categoryFemaleU12": "Femenino Sub-12",
+  "categoryFemaleU16": "Femenino Sub-16",
+  "categoryFemaleU18": "Femenino Sub-18",
+  "categoryFemale": "Femenino",
+  "categoryMixed": "Mixto",
+  "countryArgentina": "Argentina",
+  "countryBolivia": "Bolivia",
+  "countryBrazil": "Brasil",
+  "countryChile": "Chile",
+  "countryColombia": "Colombia",
+  "countryCostaRica": "Costa Rica",
+  "countryCuba": "Cuba",
+  "countryEcuador": "Ecuador",
+  "countryElSalvador": "El Salvador",
+  "countrySpain": "España",
+  "countryUnitedStates": "Estados Unidos",
+  "countryGuatemala": "Guatemala",
+  "countryHonduras": "Honduras",
+  "countryMexico": "México",
+  "countryNicaragua": "Nicaragua",
+  "countryPanama": "Panamá",
+  "countryParaguay": "Paraguay",
+  "countryPeru": "Perú",
+  "countryPuertoRico": "Puerto Rico",
+  "countryDominicanRepublic": "República Dominicana",
+  "countryUruguay": "Uruguay",
+  "countryVenezuela": "Venezuela",
+  "countryOther": "Otro",
+  "greetingMorningCoach": "Buenos días, DT",
+  "@greetingMorningCoach": { "description": "Saludo mostrado en la mañana para el entrenador" },
+  "greetingAfternoonCoach": "Buenas tardes, DT",
+  "@greetingAfternoonCoach": { "description": "Saludo mostrado en la tarde para el entrenador" },
+  "greetingEveningCoach": "Buenas noches, DT",
+  "@greetingEveningCoach": { "description": "Saludo mostrado en la noche para el entrenador" },
+  "heroPlatformTagline": "PlayVision · plataforma táctica IA",
+  "@heroPlatformTagline": { "description": "Texto secundario del hero cuando no hay equipo seleccionado" },
+  "heroTeamReady": "{teamName} · listo para analizar",
+  "@heroTeamReady": {
+    "description": "Texto secundario del hero cuando hay un equipo seleccionado",
+    "placeholders": { "teamName": { "type": "String" } }
+  },
+  "searchFieldLabel": "Buscar equipos o partidos…",
+  "searchNoResults": "No hay resultados para \"{query}\"",
+  "@searchNoResults": {
+    "placeholders": { "query": { "type": "String" } }
+  },
+  "searchTeamsCount": "Equipos ({count})",
+  "@searchTeamsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "searchMatchesCount": "Partidos ({count})",
+  "@searchMatchesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "newsNoDescriptionAvailable": "Sin descripción disponible",
+  "quickActionsTitle": "Acciones rápidas",
+  "quickActionAnalyzeVideo": "Analizar\nVideo",
+  "quickActionTacticalBoard": "Tablero\nTáctico",
+  "quickActionMyPlayers": "Mis\nJugadores",
+  "quickActionTraining": "Entrena-\nmiento",
+  "axisSpeed": "Velocidad",
+  "axisPass": "Pase",
+  "axisShoot": "Disparo",
+  "axisDefend": "Defensa",
+  "axisPhysical": "Físico",
+  "axisSpeedExplain": "Distancia cubierta y velocidad de sprints",
+  "axisPassExplain": "Precisión y volumen de pases completados",
+  "axisShootExplain": "Goles y remates efectivos al arco",
+  "axisDefendExplain": "Recuperaciones y entradas defensivas",
+  "axisPhysicalExplain": "Resistencia física y duelos ganados",
+  "insightHighRating": "Alto rendimiento · {rating} ★",
+  "@insightHighRating": { "placeholders": { "rating": { "type": "String" } } },
+  "insightGoodMatch": "Buen partido · {rating} ★",
+  "@insightGoodMatch": { "placeholders": { "rating": { "type": "String" } } },
+  "insightLowRating": "Rendimiento bajo · {rating} ★",
+  "@insightLowRating": { "placeholders": { "rating": { "type": "String" } } },
+  "insightTrendUp": "+{pct}% vs media reciente",
+  "@insightTrendUp": { "placeholders": { "pct": { "type": "int" } } },
+  "insightTrendDown": "-{pct}% vs media reciente",
+  "@insightTrendDown": { "placeholders": { "pct": { "type": "int" } } },
+  "insightHighOffensive": "Alta contribución ofensiva · {goals}G {assists}A",
+  "@insightHighOffensive": {
+    "placeholders": {
+      "goals": { "type": "int" },
+      "assists": { "type": "int" }
+    }
+  },
+  "insightNoGoalContribution": "Sin participación directa en goles",
+  "insightLowDefensive": "Baja contribución defensiva · {tackles} recuperaciones",
+  "@insightLowDefensive": { "placeholders": { "tackles": { "type": "int" } } },
+  "insightExcellentDefensive": "Trabajo defensivo excelente · {tackles} recuperaciones",
+  "@insightExcellentDefensive": { "placeholders": { "tackles": { "type": "int" } } },
+  "insightExceptionalDistance": "Cobertura excepcional · {km} km",
+  "@insightExceptionalDistance": { "placeholders": { "km": { "type": "String" } } },
+  "insightLowDistance": "Baja cobertura de campo · {km} km",
+  "@insightLowDistance": { "placeholders": { "km": { "type": "String" } } },
+  "insightElitePass": "Precisión de pase élite · {pct}%",
+  "@insightElitePass": { "placeholders": { "pct": { "type": "int" } } },
+  "insightLowPass": "Precisión de pase baja · {pct}%",
+  "@insightLowPass": { "placeholders": { "pct": { "type": "int" } } },
+  "insightAboveIdeal": "↑ {axis} superior al perfil ideal",
+  "@insightAboveIdeal": { "placeholders": { "axis": { "type": "String" } } },
+  "insightBelowIdeal": "↓ {axis} por debajo del perfil de posición",
+  "@insightBelowIdeal": { "placeholders": { "axis": { "type": "String" } } },
+  "insightBestPosition": "Posición óptima sugerida: {position}",
+  "@insightBestPosition": { "placeholders": { "position": { "type": "String" } } },
+  "insightHintWarning": "Requiere atención",
+  "insightHintInfo": "Sugerencia IA",
+  "sheetPinned": "Fijado",
+  "tabAssistant": "🧠 Asistente",
+  "tabProfile": "📊 Perfil",
+  "tabMatch": "⚡ Partido",
+  "sectionCoachAssistant": "ASISTENTE DE COACH",
+  "sectionComparisonRadar": "RADAR COMPARATIVO",
+  "toggleVsPosition": "vs Posición ideal",
+  "toggleVsTeam": "vs Promedio equipo",
+  "legendIdealProfile": "Perfil ideal",
+  "legendTeamAverage": "Media equipo",
+  "tapAxisForDetail": "Toca un eje para detalle",
+  "axisDetailPlayer": "Jugador",
+  "quickStatRating": "Rating",
+  "quickStatGoals": "Goles",
+  "quickStatAssists": "Asist.",
+  "quickStatKm": "Km",
+  "quickStatPassPct": "Pases%",
+  "matchRatingLabel": "Rating del partido",
+  "matchStatGoals": "Goles",
+  "matchStatAssists": "Asistencias",
+  "matchStatDistance": "Distancia",
+  "matchStatPasses": "Pases",
+  "matchStatAccuracy": "Precisión",
+  "matchStatMinutes": "Minutos",
+  "matchRatingTrend": "Tendencia de rating",
+  "playersLoadingSquad": "Cargando plantel…",
+  "playersSquadAvailable": "{count} jugadores en el plantel disponibles",
+  "@playersSquadAvailable": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playersNoSquadHint": "Sin jugadores en el plantel. Agrega jugadores primero.",
+  "playersLinked": "Vinculado",
+  "playersPresenceShort": "PRES",
+  "playersEditTitle": "Jugador {rank} · Editar",
+  "@playersEditTitle": {
+    "placeholders": { "rank": { "type": "int" } }
+  },
+  "playersUnlink": "Desvincular",
+  "playersLinkToSquad": "Vincular a jugador del plantel",
+  "playersOrEditManually": "o editar manualmente",
+  "playersNoLinkedTeamHint": "Sin equipo vinculado. Agrega jugadores al plantel para vincularlos.",
+  "playersLinkAndSave": "Vincular y guardar",
+  "analysisNoTeamSelected": "No hay equipo seleccionado. Vuelve atrás y elige uno.",
+  "analysisServerError": "Error del servidor: {code}",
+  "@analysisServerError": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "analysisConnectionError": "Error de conexión: {error}",
+  "@analysisConnectionError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "playerProfileTitle": "Jugador {id}",
+  "@playerProfileTitle": {
+    "placeholders": { "id": { "type": "int" } }
+  },
+  "playerSummaryTitle": "Resumen del jugador",
+  "playerBestPositionTitle": "Posición ideal: {position}",
+  "@playerBestPositionTitle": {
+    "placeholders": { "position": { "type": "String" } }
+  },
+  "playerMatchesCount": "Partidos",
+  "playerCoachInsights": "Insights del coach",
+  "playerDominantZone": "Zona dominante",
+  "playerLoadError": "No se pudo cargar el perfil del jugador.",
+  "matchesTimeoutError": "La conexión tardó demasiado. Verifica tu red.",
+  "matchesLoadError": "No se pudieron cargar los datos.",
+  "matchesSaveError": "No se pudo guardar el partido.",
+  "matchesEmptyTitle": "No hay partidos registrados",
+  "matchesAddButton": "+ Agregar partido",
+  "matchesRequireTeamFirst": "Crea al menos un equipo primero.",
+  "matchesNewTitle": "Nuevo partido",
+  "matchesTeamLabel": "Equipo",
+  "matchesOpponentLabel": "Rival",
+  "matchesVideoSourceLabel": "Fuente del video",
+  "matchesUploadSource": "Subida",
+  "matchesYouTubeSource": "YouTube",
+  "matchesDateLabel": "Fecha: {date}",
+  "@matchesDateLabel": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "matchesTimeLabel": "Hora: {time}",
+  "@matchesTimeLabel": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "matchesSaved": "Partido guardado",
+  "matchesNoTeam": "Sin equipo",
+  "squadLoadError": "No se pudo cargar la plantilla.",
+  "playerSaveError": "No se pudo guardar el jugador.",
+  "playerUpdateError": "No se pudo actualizar el jugador.",
+  "playerDeleteError": "No se pudo eliminar el jugador.",
+  "playerPhotoUploadError": "No se pudo subir la foto del jugador.",
+  "squadPageTitle": "Plantilla",
+  "squadPageSubtitle": "{count} jugadores · Temporada 25/26",
+  "@squadPageSubtitle": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "squadSearchHint": "Buscar jugadores...",
+  "squadPositionAll": "All",
+  "squadCountLabel": "{count} jugadores",
+  "@squadCountLabel": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "squadAddPlayerTitle": "Nuevo jugador",
+  "squadEditPlayerTitle": "Editar jugador",
+  "squadDeletePlayerTitle": "Eliminar jugador",
+  "squadDeletePlayerConfirm": "¿Eliminar a {name} de la plantilla? Esta acción no se puede deshacer.",
+  "@squadDeletePlayerConfirm": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "squadDeleteButton": "Eliminar",
+  "squadPlayerSaved": "Jugador guardado",
+  "squadPlayerUpdated": "Jugador actualizado",
+  "squadPlayerDeleted": "Jugador eliminado",
+  "squadPlayerSaveFailed": "Error al guardar",
+  "squadPlayerUpdateFailed": "Error al actualizar",
+  "squadPlayerDeleteFailed": "Error al eliminar",
+  "squadNameLabel": "Nombre completo",
+  "squadNameHint": "Ej. Carlos García",
+  "squadNumberLabel": "Dorsal",
+  "squadNumberHint": "Ej. 10",
+  "squadPositionLabel": "Posición",
+  "squadStatusLabel": "Estado",
+  "squadBirthDateLabel": "Fecha de nacimiento",
+  "squadBirthDateOptional": "Fecha de nacimiento (opcional)",
+  "squadPhotoLabel": "Agregar foto",
+  "squadChangePhoto": "Cambiar",
+  "squadPosGk": "Portero GK",
+  "squadPosDef": "Defensa DEF",
+  "squadPosMid": "Centrocampista MID",
+  "squadPosFwd": "Delantero FWD",
+  "squadStatusActive": "Activo",
+  "squadStatusInjured": "Lesionado",
+  "squadStatusSuspended": "Suspendido",
+  "squadStatusInactive": "Inactivo",
+  "squadFormExcellent": "Excelente",
+  "squadFormGood": "Bueno",
+  "squadFormRegular": "Regular",
+  "squadEmptyTitle": "Sin jugadores",
+  "squadEmptySubtitle": "Toca para agregar jugadores",
+  "squadDefaultTeam": "Mi equipo",
+  "squadMyTeam": "Mi equipo",
+  "weekdayMon": "L",
+  "weekdayTue": "M",
+  "weekdayWed": "X",
+  "weekdayThu": "J",
+  "weekdayFri": "V",
+  "weekdaySat": "S",
+  "weekdaySun": "D",
+  "weekdayMonFull": "Lunes",
+  "weekdayTueFull": "Martes",
+  "weekdayWedFull": "Miércoles",
+  "weekdayThuFull": "Jueves",
+  "weekdayFriFull": "Viernes",
+  "weekdaySatFull": "Sábado",
+  "weekdaySunFull": "Domingo",
+  "trainingFitnessNoVideo": "Sube un vídeo de entrenamiento para ver el estado del equipo.",
+  "trainingFitnessLow": "Aumenta las sesiones de alta intensidad esta semana.",
+  "trainingFitnessMedium": "Buen estado. Mantén la carga con sesiones técnicas.",
+  "trainingFitnessHigh": "Excelente forma. Trabaja en recuperación y táctica.",
+  "trainingFitnessLevelLow": "Baja",
+  "trainingFitnessLevelMedium": "Media",
+  "trainingFitnessLevelHigh": "Alta",
+  "trainingInsightLowDistance": "⚠️ El equipo cubre poca distancia ({km} km). Incrementa la intensidad.",
+  "@trainingInsightLowDistance": { "placeholders": { "km": { "type": "String" } } },
+  "trainingInsightHighDistance": "💪 Alta movilidad del equipo ({km} km/jugador).",
+  "@trainingInsightHighDistance": { "placeholders": { "km": { "type": "String" } } },
+  "trainingInsightPlayersAnalysed": "✅ {count} jugadores analizados en el último entrenamiento.",
+  "@trainingInsightPlayersAnalysed": { "placeholders": { "count": { "type": "String" } } },
+  "trainingInsightNoVideo": "📹 Sube un vídeo de entrenamiento para obtener insights automáticos.",
+  "trainingTeamLowDistance": "El equipo cubre poca distancia promedio ({km} km). Aumenta la intensidad aeróbica.",
+  "@trainingTeamLowDistance": { "placeholders": { "km": { "type": "String" } } },
+  "trainingTeamHighDistance": "Alta movilidad del equipo ({km} km/jugador). Prioriza recuperación.",
+  "@trainingTeamHighDistance": { "placeholders": { "km": { "type": "String" } } },
+  "trainingTeamLowPossession": "Pérdida frecuente de posesión ({pct}%). Refuerza el juego posicional.",
+  "@trainingTeamLowPossession": { "placeholders": { "pct": { "type": "String" } } },
+  "trainingTeamHighPossession": "Buena posesión del equipo ({pct}%). Trabaja el remate y la explotación del dominio.",
+  "@trainingTeamHighPossession": { "placeholders": { "pct": { "type": "String" } } },
+  "trainingTeamActivityGap": "Gran diferencia entre jugador más activo (#{most}) y menos activo (#{least}).",
+  "@trainingTeamActivityGap": { "placeholders": { "most": { "type": "String" }, "least": { "type": "String" } } },
+  "trainingTeamConcentratedPossession": "El jugador #{player} concentra la posesión. Trabaja la circulación del balón.",
+  "@trainingTeamConcentratedPossession": { "placeholders": { "player": { "type": "String" } } },
+  "trainingTeamBalanced": "Rendimiento equilibrado. Mantén el plan táctico actual.",
+  "trainingPlayerLowDistance": "Aumenta la resistencia: distancia corta. Añade series de carrera.",
+  "trainingPlayerLowSpeed": "Trabaja la velocidad explosiva: ritmo registrado bajo.",
+  "trainingPlayerLowPossession": "Mejora la participación con el balón.",
+  "trainingPlayerLowPresence": "Aumenta la presencia en el campo.",
+  "trainingPlayerDefRole": "Rol defensivo: refuerza el posicionamiento.",
+  "trainingPlayerAttRole": "Rol ofensivo: trabaja el remate y el desmarque.",
+  "trainingPlayerSolid": "Rendimiento sólido. Mantén el ritmo de trabajo.",
+  "trainingSugTitlePressing": "Presión alta y transiciones",
+  "trainingSugReasonPressing": "Mejorar pressing",
+  "trainingSugTitlePossession": "Posesión 4-3-3",
+  "trainingSugReasonPossession": "Juego posicional",
+  "trainingSugTitlePhysical": "Resistencia y explosividad",
+  "trainingSugReasonPhysical": "Mejora física",
+  "trainingNewSession": "Nueva sesión",
+  "trainingSessionTitleHint": "Título de la sesión",
+  "trainingSessionDescHint": "Descripción (opcional)",
+  "trainingDurationLabel": "Duración:",
+  "trainingCreateSession": "Crear sesión",
+  "trainingAddOptionsTitle": "¿Qué deseas agregar?",
+  "trainingOptionAnalyze": "Analizar partido",
+  "trainingOptionAnalyzeSubtitle": "Sube un video y genera una sesión automática con IA",
+  "trainingOptionManual": "Sesión manual",
+  "trainingOptionManualSubtitle": "Crea una sesión de entrenamiento personalizada",
+  "trainingDeleteSessionTitle": "Eliminar sesión",
+  "trainingDeleteSessionConfirm": "¿Eliminar \"{title}\"?",
+  "@trainingDeleteSessionConfirm": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "trainingSessionCount": "{count, plural, =0{Sin sesiones} =1{1 sesión} other{{count} sesiones}}",
+  "@trainingSessionCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "trainingNoSessionsDay": "Sin sesiones este día",
+  "trainingNoSessionsYet": "Sin sesiones aún",
+  "trainingNoSessionsHint": "Crea tu primera sesión de entrenamiento",
+  "trainingNoSuggestions": "Sin sugerencias disponibles",
+  "trainingPillFitness": "fitness",
+  "trainingPillPlayers": "jugadores",
+  "trainingPillSessions": "sesiones",
+  "trainingPillStatus": "estado",
+  "trainingSmartAnalysisSubtitle": "Genera tu plan de entrenamiento con IA",
+  "trainingUploadVideoBtn": "Subir video de partido",
+  "trainingStepUpload": "Subir video del partido",
+  "trainingStepDetect": "Detectar jugadores",
+  "trainingStepAnalyze": "Analizar movimiento",
+  "trainingStepInsights": "Generar insights",
+  "trainingStepExport": "Exportar informe PDF",
+  "trainingStepPending": "pendiente",
+  "trainingLoadLabel": "Carga",
+  "trainingPhysicalStatus": "estado físico",
+  "trainingAvgDistance": "Dist. promedio",
+  "trainingAvgSpeed": "Vel. promedio",
+  "trainingPlayers": "Jugadores",
+  "trainingTopPlayers": "TOP JUGADORES",
+  "trainingPlayerLabel": "Jugador",
+  "trainingStatDistance": "Distancia",
+  "trainingStatSpeed": "Velocidad",
+  "trainingStatAccuracy": "Precisión",
+  "trainingStatRating": "Valoración",
+  "trainingAlertsTitle": "Alertas del equipo",
+  "trainingAlertFatigue": "Riesgo de fatiga en 3 jugadores",
+  "trainingAlertFatigueSub": "Considera reducir la intensidad mañana",
+  "trainingAlertMobility": "2 jugadores con movilidad reducida",
+  "trainingAlertMobilitySub": "Recomienda estiramientos preventivos",
+  "trainingAlertTactical": "Baja presión en zona media",
+  "trainingAlertTacticalSub": "Trabaja el pressing en el próximo entrenamiento",
+  "trainingTacticalConnections": "Conexiones tácticas",
+  "trainingAICoachTitle": "AI Coach",
+  "trainingAICoachSubtitle": "Análisis táctico personalizado",
+  "trainingCoachTip1": "Ampliar espacios en fase ofensiva con laterales abiertos",
+  "trainingCoachTip2": "Presión alta tras pérdida de balón en zona de construcción",
+  "trainingCoachTip3": "Reducir distancia entre líneas en fase defensiva",
+  "trainingCoachTip4": "Cambios de orientación rápidos para desestabilizar la defensa rival",
+  "trainingWeeklyActivity": "Actividad semanal",
+  "trainingSessionsPerDay": "sesiones / día",
+  "trainingSuggestedByAI": "SUGERIDO POR IA",
+  "trainingMySessions": "MIS SESIONES",
+  "trainingNewBtn": "+ Nueva",
+  "trainingDemoDefenseOpen": "Línea defensiva muy abierta en últimas jugadas",
+  "trainingDemoDefenseOpenSub": "Riesgo de espacios a la espalda",
+  "trainingDemoImprovement": "Mejora del 12% en pressing vs semana anterior",
+  "trainingDemoImprovementSub": "Mantén la intensidad",
+  "trainingDemoConnection": "Conexión Torres-Ramírez muy efectiva",
+  "trainingDemoConnectionSub": "Explotar ese pasillo",
+  "trainingDemoPossession": "Posesión dominante en zona media",
+  "trainingDemoPossessionSub": "Aprovechar para desdoblamientos",
+  "trainingDemoFatigueRisk": "Riesgo de fatiga en defensa izquierda",
+  "trainingDemoFatigueRiskSub": "Rotar en próximo partido",
+  "navHome": "Inicio",
+  "navAnalysis": "Análisis",
+  "navPlayers": "Jugadores",
+  "navTraining": "Entreno",
+  "navBoard": "Tablero",
+  "trainingMinutesShort": "{minutes} min",
+  "@trainingMinutesShort": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "trainingExercisesCount": "{count} ejercicios",
+  "@trainingExercisesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "trainingDescriptionTitle": "Descripción",
+  "trainingSessionPlanTitle": "Plan de sesión",
+  "trainingMinutesTotal": "{minutes} min total",
+  "@trainingMinutesTotal": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "trainingStartSession": "Iniciar sesión",
+  "trainingDeleteSessionQuestion": "¿Eliminar sesión?",
+  "trainingDeleteSessionBody": "Esto eliminará permanentemente \"{title}\".",
+  "@trainingDeleteSessionBody": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "trainingExerciseProgress": "Ejercicio {current} de {total}",
+  "@trainingExerciseProgress": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "trainingRunning": "En curso",
+  "trainingReady": "Listo",
+  "trainingPaused": "Pausado",
+  "trainingNext": "Siguiente",
+  "trainingLastExercise": "Último ejercicio",
+  "trainingExitSessionQuestion": "¿Salir de la sesión?",
+  "trainingExitSessionBody": "Se perderá el progreso actual.",
+  "trainingContinue": "Continuar",
+  "trainingExit": "Salir",
+  "trainingSessionCompleted": "Sesión completada",
+  "trainingCompletedMinutes": "{minutes} min completados",
+  "@trainingCompletedMinutes": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "trainingBackHome": "Volver al inicio"
 }
