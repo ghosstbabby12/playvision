@@ -44,43 +44,67 @@ _standings_cache: dict[str, list[Any]] = {}
 _standings_ts: dict[str, float] = {}
 
 
-def _normalize_match(m: dict) -> dict:
-    competition = m.get("competition", {})
-    home = m.get("homeTeam", {})
-    away = m.get("awayTeam", {})
-    score = m.get("score", {})
-    full = score.get("fullTime", {})
-    half = score.get("halfTime", {})
-    status_raw = m.get("status", "")
+def _map_status(status_raw: str) -> dict:
+    status_raw = (status_raw or "").upper()
 
-    return {
+    if status_raw in {"TIMED", "SCHEDULED"}:
+        return {"long": "Not Started", "short": "NS", "elapsed": None}
+
+    if status_raw == "IN_PLAY":
+        return {"long": "In Play", "short": "1H", "elapsed": None}
+
+    if status_raw == "PAUSED":
+        return {"long": "Half Time", "short": "HT", "elapsed": None}
+
+    if status_raw == "FINISHED":
+        return {"long": "Finished", "short": "FT", "elapsed": None}
+
+    if status_raw == "POSTPONED":
+        return {"long": "Postponed", "short": "PST", "elapsed": None}
+
+    if status_raw == "SUSPENDED":
+        return {"long": "Suspended", "short": "SUSP", "elapsed": None}
+
+    if status_raw == "CANCELLED":
+        return {"long": "Cancelled", "short": "CANC", "elapsed": None}
+
+    return {"long": status_raw, "short": status_raw, "elapsed": None}
+
+
+def _normalize_match(m: dict) -> dict:
+    competition = m.get("competition", {}) or {}
+    home = m.get("homeTeam", {}) or {}
+    away = m.get("awayTeam", {}) or {}
+    score = m.get("score", {}) or {}
+    full = score.get("fullTime", {}) or {}
+    half = score.get("halfTime", {}) or {}
+
+    status = _map_status(m.get("status", ""))
+
+    normalized = {
         "fixture": {
             "id": m.get("id"),
             "date": m.get("utcDate"),
-            "status": {
-                "long": status_raw,
-                "short": status_raw[:2] if status_raw else "",
-            },
-            "minute": m.get("minute"),
+            "status": status,
         },
         "league": {
-            "id": competition.get("code"),
-            "name": competition.get("name"),
+            "id": competition.get("id") or competition.get("code"),
+            "name": competition.get("name") or "",
             "country": competition.get("area", {}).get("name", ""),
-            "logo": competition.get("emblem", ""),
+            "logo": competition.get("emblem") or "",
             "flag": "",
         },
         "teams": {
             "home": {
                 "id": home.get("id"),
-                "name": home.get("name", ""),
-                "logo": home.get("crest", ""),
+                "name": home.get("name") or "",
+                "logo": home.get("crest") or "",
                 "winner": score.get("winner") == "HOME_TEAM",
             },
             "away": {
                 "id": away.get("id"),
-                "name": away.get("name", ""),
-                "logo": away.get("crest", ""),
+                "name": away.get("name") or "",
+                "logo": away.get("crest") or "",
                 "winner": score.get("winner") == "AWAY_TEAM",
             },
         },
@@ -94,6 +118,8 @@ def _normalize_match(m: dict) -> dict:
         },
     }
 
+    return normalized
+
 
 class SportsClient:
     BASE = settings.football_data_url
@@ -104,10 +130,6 @@ class SportsClient:
         }
 
     def get_featured_fixtures(self) -> dict[str, list]:
-        """
-        Partidos destacados del día, agrupados por liga.
-        Se cachea 5 minutos.
-        """
         global _featured_cache, _featured_ts
 
         if _featured_cache and (time.time() - _featured_ts < _TTL_FEATURED):
@@ -115,11 +137,7 @@ class SportsClient:
             return _featured_cache
 
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-
-        # Puedes probar también con:
-        # data = self._get(f"/matches?dateFrom={today}&dateTo={today}")
         data = self._get(f"/matches?date={today}")
-
         matches = data.get("matches", [])
 
         print(f"[sports_client] featured date={today}")
@@ -132,6 +150,7 @@ class SportsClient:
         print(f"[sports_client] featured sample competition codes={competition_codes}")
 
         grouped: dict[str, list] = {}
+        debug_count = 0
 
         for m in matches:
             code = m.get("competition", {}).get("code", "")
@@ -139,6 +158,20 @@ class SportsClient:
                 continue
 
             normalized = _normalize_match(m)
+
+            if debug_count < 5:
+                print(
+                    "[sports_client] sample logos:",
+                    normalized["teams"]["home"]["name"],
+                    "home_logo=",
+                    normalized["teams"]["home"]["logo"],
+                    "| away_logo=",
+                    normalized["teams"]["away"]["logo"],
+                    "| league_logo=",
+                    normalized["league"]["logo"],
+                )
+                debug_count += 1
+
             league_name = normalized["league"]["name"] or "Unknown League"
             grouped.setdefault(league_name, []).append(normalized)
 
@@ -149,10 +182,6 @@ class SportsClient:
         return _featured_cache
 
     def get_live_fixtures(self) -> list[Any]:
-        """
-        Partidos en vivo en este momento.
-        Cache 1 minuto.
-        """
         global _fixtures_cache, _fixtures_ts
 
         if _fixtures_cache and (time.time() - _fixtures_ts < _TTL_FIXTURES):
@@ -164,18 +193,30 @@ class SportsClient:
 
         print(f"[sports_client] live raw matches={len(matches)}")
 
-        _fixtures_cache = [_normalize_match(m) for m in matches[:15]]
+        normalized_matches = [_normalize_match(m) for m in matches[:15]]
+
+        for item in normalized_matches[:3]:
+            print(
+                "[sports_client] live sample logos:",
+                item["teams"]["home"]["name"],
+                "home_logo=",
+                item["teams"]["home"]["logo"],
+                "| away_logo=",
+                item["teams"]["away"]["logo"],
+                "| league_logo=",
+                item["league"]["logo"],
+            )
+
+        _fixtures_cache = normalized_matches
         _fixtures_ts = time.time()
         return _fixtures_cache
 
     def get_standings(self, league_id: str, season: int) -> list[Any]:
-        """
-        Tabla de posiciones por código de competición.
-        Ejemplo: PL, BL1, PD, COL1.
-        """
         key = f"{league_id}_{season}"
 
-        if key in _standings_cache and (time.time() - _standings_ts.get(key, 0) < _TTL_STANDINGS):
+        if key in _standings_cache and (
+            time.time() - _standings_ts.get(key, 0) < _TTL_STANDINGS
+        ):
             print(f"[sports_client] returning standings from cache key={key}")
             return _standings_cache[key]
 
@@ -204,16 +245,15 @@ class SportsClient:
             for row in total_table[:10]
         ]
 
-        print(f"[sports_client] standings league={league_id} season={season} teams={len(teams)}")
+        print(
+            f"[sports_client] standings league={league_id} season={season} teams={len(teams)}"
+        )
 
         _standings_cache[key] = teams
         _standings_ts[key] = time.time()
         return teams
 
     def search_team(self, name: str) -> list[Any]:
-        """
-        Buscar equipos por nombre.
-        """
         data = self._get(f"/teams?name={name}")
         teams = data.get("teams", [])
 
@@ -255,9 +295,7 @@ class SportsClient:
         print(f"[sports_client] content-type={content_type}")
 
         if not resp.ok:
-            raise Exception(
-                f"football-data error {resp.status_code}: {resp.text}"
-            )
+            raise Exception(f"football-data error {resp.status_code}: {resp.text}")
 
         try:
             data = resp.json()
