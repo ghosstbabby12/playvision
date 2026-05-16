@@ -787,5 +787,7 @@
   "@trainingCompletedMinutes": {
     "placeholders": { "minutes": { "type": "int" } }
   },
-  "trainingBackHome": "Volver al inicio"
+  "trainingBackHome": "Volver al inicio",
+  "otherLeagueGroup": "Otras ligas",
+  "otherLeagueGroup": "Other leagues"
 }
