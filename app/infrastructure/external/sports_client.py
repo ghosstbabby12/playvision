@@ -1,6 +1,7 @@
 import time
 from datetime import datetime, timezone
 from typing import Any
+from urllib.parse import quote
 
 import requests
 
@@ -44,6 +45,30 @@ _standings_cache: dict[str, list[Any]] = {}
 _standings_ts: dict[str, float] = {}
 
 
+def _public_base_url() -> str:
+    """
+    Base pública del backend, usando:
+    - settings.backend_public_url (config.py)
+    - o fallback a localhost:8000 por si acaso.
+    """
+    base = (
+        getattr(settings, "backend_public_url", None)
+        or "http://localhost:8000"
+    )
+    return str(base).rstrip("/")
+
+
+def _proxy_logo(url: str | None) -> str:
+    """
+    Convierte una URL de logo remota (crest de football-data, etc.)
+    en una URL proxied que pasa por nuestro backend.
+    """
+    if not url:
+        return ""
+    encoded = quote(url, safe="")
+    return f"{_public_base_url()}/api/logo-proxy?url={encoded}"
+
+
 def _map_status(status_raw: str) -> dict:
     status_raw = (status_raw or "").upper()
 
@@ -81,6 +106,10 @@ def _normalize_match(m: dict) -> dict:
 
     status = _map_status(m.get("status", ""))
 
+    competition_logo = competition.get("emblem") or ""
+    home_logo = home.get("crest") or ""
+    away_logo = away.get("crest") or ""
+
     normalized = {
         "fixture": {
             "id": m.get("id"),
@@ -91,20 +120,20 @@ def _normalize_match(m: dict) -> dict:
             "id": competition.get("id") or competition.get("code"),
             "name": competition.get("name") or "",
             "country": competition.get("area", {}).get("name", ""),
-            "logo": competition.get("emblem") or "",
+            "logo": _proxy_logo(competition_logo),
             "flag": "",
         },
         "teams": {
             "home": {
                 "id": home.get("id"),
                 "name": home.get("name") or "",
-                "logo": home.get("crest") or "",
+                "logo": _proxy_logo(home_logo),
                 "winner": score.get("winner") == "HOME_TEAM",
             },
             "away": {
                 "id": away.get("id"),
                 "name": away.get("name") or "",
-                "logo": away.get("crest") or "",
+                "logo": _proxy_logo(away_logo),
                 "winner": score.get("winner") == "AWAY_TEAM",
             },
         },
@@ -147,7 +176,10 @@ class SportsClient:
             m.get("competition", {}).get("code", "")
             for m in matches[:30]
         ]
-        print(f"[sports_client] featured sample competition codes={competition_codes}")
+        print(
+            "[sports_client] featured sample competition codes="
+            f"{competition_codes}"
+        )
 
         grouped: dict[str, list] = {}
         debug_count = 0
@@ -232,7 +264,7 @@ class SportsClient:
             {
                 "position": row.get("position"),
                 "team": row.get("team", {}).get("name"),
-                "logo": row.get("team", {}).get("crest"),
+                "logo": _proxy_logo(row.get("team", {}).get("crest")),
                 "played": row.get("playedGames"),
                 "won": row.get("won"),
                 "drawn": row.get("draw"),
@@ -246,7 +278,8 @@ class SportsClient:
         ]
 
         print(
-            f"[sports_client] standings league={league_id} season={season} teams={len(teams)}"
+            f"[sports_client] standings league={league_id} "
+            f"season={season} teams={len(teams)}"
         )
 
         _standings_cache[key] = teams
@@ -264,7 +297,7 @@ class SportsClient:
                 "id": team.get("id"),
                 "name": team.get("name"),
                 "country": team.get("area", {}).get("name", ""),
-                "logo": team.get("crest", ""),
+                "logo": _proxy_logo(team.get("crest", "")),
                 "founded": team.get("founded"),
             }
             for team in teams[:10]
@@ -301,7 +334,8 @@ class SportsClient:
             data = resp.json()
         except ValueError as exc:
             raise Exception(
-                f"football-data returned non-JSON response: {resp.text[:500]}"
+                "football-data returned non-JSON response: "
+                f"{resp.text[:500]}"
             ) from exc
 
         if isinstance(data, dict):
