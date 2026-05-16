@@ -21,7 +21,7 @@ def featured_matches():
 
 @router.get("/live-matches", summary="Live matches")
 def live_matches():
-    """Return today's fixtures with full team and league objects."""
+    """Return live matches with full team and league objects."""
     try:
         return {"data": sports_client.get_live_fixtures()}
     except Exception as exc:
@@ -57,6 +57,7 @@ def standings(region: str, season: int | None = None):
                     "teams":   teams,
                 })
         except Exception as exc:
+            # Log simple en consola; no rompemos todo el endpoint
             print(f"[warn] standings {league['name']}: {exc}")
 
     return {"region": region, "leagues": result}
